@@ -1,0 +1,3 @@
+/*! hawk-theme-typeflow | MIT */
+!function(e,o){"object"==typeof exports&&"undefined"!=typeof module?o(exports):"function"==typeof define&&define.amd?define(["exports"],o):o((e="undefined"!=typeof globalThis?globalThis:e||self).HawkThemeTypeflow={})}(this,function(e){"use strict";const o={name:"typeflow",apply(e){e.dataset.hawkTheme="typeflow"}};"undefined"!=typeof window&&(window.HawkThemeTypeflow=o),e.HawkThemeTypeflow=o,e.default=o,Object.defineProperties(e,{__esModule:{value:!0},[Symbol.toStringTag]:{value:"Module"}})});
+//# sourceMappingURL=hawk-theme-typeflow.js.map

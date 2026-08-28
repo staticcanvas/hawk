@@ -1,0 +1,75 @@
+baseURL = 'https://staticcanvas.gitlab.io/hawk/'
+locale = 'en-AU'
+title = 'Hawk documentation'
+publishDir = '../public'
+enableRobotsTXT = true
+enableGitInfo = true
+disableKinds = ['taxonomy', 'term']
+
+[params]
+  version = '0.1.0'
+  description = 'Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations, swappable visual themes.'
+  repository = 'https://gitlab.com/staticcanvas/hawk'
+  github = 'https://github.com/staticcanvas/hawk'
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+  [markup.highlight]
+    noClasses = true
+    style = 'github-dark'
+
+[[module.mounts]]
+  source = 'static'
+  target = 'static'
+[[module.mounts]]
+  source = '../branding'
+  target = 'static/assets/branding'
+
+[menu]
+  [[menu.main]]
+    name = 'Overview'
+    pageRef = '/'
+    weight = 10
+  [[menu.main]]
+    name = 'Get started'
+    pageRef = '/getting-started/'
+    weight = 20
+  [[menu.main]]
+    name = 'Guides'
+    identifier = 'guides'
+    pageRef = '/guides/'
+    weight = 30
+  [[menu.main]]
+    name = 'Theming'
+    parent = 'guides'
+    pageRef = '/guides/theming/'
+    weight = 31
+  [[menu.main]]
+    name = 'Animation Plugins'
+    parent = 'guides'
+    pageRef = '/guides/animation-plugins/'
+    weight = 32
+  [[menu.main]]
+    name = 'Pagefind Setup'
+    parent = 'guides'
+    pageRef = '/guides/pagefind-setup/'
+    weight = 33
+  [[menu.main]]
+    name = 'API reference'
+    pageRef = '/api/'
+    weight = 40
+  [[menu.main]]
+    name = 'Resources'
+    identifier = 'resources'
+    weight = 50
+  [[menu.main]]
+    name = 'Downloads'
+    parent = 'resources'
+    pageRef = '/downloads/'
+    weight = 51
+  [[menu.main]]
+    name = 'Changelog'
+    parent = 'resources'
+    pageRef = '/changelog/'
+    weight = 52
