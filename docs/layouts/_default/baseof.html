@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="{{ site.Language.Lang }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ if not .IsHome }}{{ .Title }} · {{ end }}{{ site.Title }}</title>
+  <meta name="description" content="{{ .Description | default site.Params.description }}">
+  <link rel="icon" href="{{ "assets/branding/hawk-logo.svg" | relURL }}">
+  <link rel="stylesheet" href="{{ "webutil/libs/hawk.css" | relURL }}">
+  <link rel="stylesheet" href="{{ "webutil/libs/hawk-theme-typeflow.css" | relURL }}">
+  <link rel="stylesheet" href="{{ "assets/docs.css" | relURL }}">
+</head>
+<body data-hawk-index="{{ "pagefind/" | relURL }}" data-hawk-theme="typeflow">
+
+  <header class="site-header" data-pagefind-ignore>
+    <div class="shell header-inner">
+      <a class="brand" href="{{ "" | relURL }}" aria-label="hawk home">
+        <span class="brand-text">hawk</span>
+      </a>
+
+      <button class="search-trigger-btn" type="button" data-search-trigger aria-label="Search documentation (Ctrl+K)">
+        <span>Search docs...</span>
+        <kbd>Ctrl+K</kbd>
+      </button>
+
+      <nav class="header-nav" aria-label="Main navigation">
+        {{ range site.Menus.main }}
+        {{ if not .Parent }}
+        <a class="header-link" href="{{ .URL | relURL }}">{{ .Name }}</a>
+        {{ end }}
+        {{ end }}
+      </nav>
+    </div>
+  </header>
+
+  <div class="shell page-shell" data-pagefind-body>
+    {{ block "main" . }}{{ end }}
+  </div>
+
+  <footer class="site-footer" data-pagefind-ignore>
+    <div class="shell">
+      <p>Hawk · <a href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab</a> · <a href="{{ site.Params.github }}" target="_blank" rel="noreferrer">GitHub</a> · MIT</p>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
+    import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
+
+    HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+
+    new HawkSearch({
+      index: document.body.dataset.hawkIndex,
+      theme: 'typeflow',
+    });
+  </script>
+</body>
+</html>
