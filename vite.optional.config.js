@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { cpSync, mkdirSync, readFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import terser from '@rollup/plugin-terser';
 
@@ -13,6 +13,7 @@ const MODES = {
     entry: 'src/hawk-theme-typeflow.js',
     globalName: 'HawkThemeTypeflow',
     external: [],
+    cssSource: 'src/hawk-theme-typeflow.css',
   },
   'animation-typeflow': {
     name: 'hawk-animation-typeflow',
@@ -28,7 +29,7 @@ if (!mode) {
     `vite.optional.config.js requires npm_config_mode to be one of: ${Object.keys(MODES).join(', ')}`
   );
 }
-const { name, entry, globalName, external } = mode;
+const { name, entry, globalName, external, cssSource } = mode;
 
 /** Vite plugin that copies optional bundles into the documentation web utility. */
 const stageOptionalAssets = {
@@ -37,6 +38,11 @@ const stageOptionalAssets = {
     const destination = resolve('docs/static/webutil/libs');
     mkdirSync(destination, { recursive: true });
     cpSync(resolve(bundleDist), destination, { recursive: true });
+    // Vite's lib build only bundles JS entry points — a mode's CSS (if any) ships
+    // separately and needs its own copy step here.
+    if (cssSource && existsSync(resolve(cssSource))) {
+      cpSync(resolve(cssSource), resolve(destination, cssSource.split('/').pop()));
+    }
   },
 };
 
