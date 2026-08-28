@@ -18,6 +18,10 @@ const banner = `/*! ${packageName} v${pkg.version} | ${pkg.homepage} | ${pkg.lic
 function stageWebUtilityAssets() {
   return {
     name: 'stage-web-utility-assets',
+    // Without this, Vitest (which loads this same vite.config.js) can still trigger
+    // closeBundle when it tears down its dev server — wiping docs/static/webutil/libs and
+    // only partially restoring it, since Vitest never runs vite.optional.config.js's build.
+    apply: 'build',
     closeBundle() {
       const destination = resolve('docs/static/webutil/libs');
       rmSync(destination, { recursive: true, force: true });

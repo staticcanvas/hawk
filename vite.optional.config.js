@@ -34,6 +34,9 @@ const { name, entry, globalName, external, cssSource } = mode;
 /** Vite plugin that copies optional bundles into the documentation web utility. */
 const stageOptionalAssets = {
   name: 'stage-optional-web-assets',
+  // See the matching note in vite.config.js's stageWebUtilityAssets — closeBundle can fire
+  // outside an actual `vite build` (e.g. under Vitest) without this guard.
+  apply: 'build',
   closeBundle() {
     const destination = resolve('docs/static/webutil/libs');
     mkdirSync(destination, { recursive: true });
