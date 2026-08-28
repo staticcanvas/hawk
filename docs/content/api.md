@@ -20,6 +20,7 @@ category: Reference
 | `categories` | `string[]` | derived from Pagefind `filters()` | Overrides the category filter pills. |
 | `categoryFilterName` | `string` | `'category'` | The Pagefind filter dimension used for category pills. |
 | `maxResults` | `number` | `18` | Maximum rendered result rows. |
+| `contentSelector` | `string` | `'[data-pagefind-body]'` | Selects the preview pane's content from a fetched result page. See [Rich preview content](#rich-preview-content). |
 | `hotkeys` | `object` | `{ open: true, slash: true, escape: true }` | Enables/disables Ctrl/Cmd+K, `/`, and Escape. |
 | `onOpen` | `(query) => void` | — | Called when the modal opens. |
 | `onClose` | `() => void` | — | Called when the modal closes. |
@@ -37,6 +38,20 @@ category: Reference
   breakpoint: 768,        // px
 }
 ```
+
+## Rich preview content
+
+The preview pane doesn't render Pagefind's short excerpt — it fetches the selected result's own
+page (`item.url`, same-origin), narrows it to `contentSelector`, and injects that HTML directly.
+That means full markdown structure (headings, lists, tables) and syntax-highlighted code blocks
+render exactly as your site's own build already produced them — nothing gets re-rendered or
+re-highlighted by hawk. For an anchor/section match, only that heading's subsection is extracted
+(the heading itself, plus siblings up to the next heading of the same or higher level).
+
+Falls back to Pagefind's excerpt automatically if `fetch`/`DOMParser` aren't available, the
+request fails, or `contentSelector` matches nothing on the fetched page. Fetched pages are
+cached per session (by URL, not per anchor) so re-selecting a section you've already viewed, or a
+different section of the same page, doesn't re-fetch.
 
 ## Instance methods
 

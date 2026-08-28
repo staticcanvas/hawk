@@ -107,6 +107,10 @@
   cursor: pointer;
   white-space: nowrap;
 }
+.hawk-filter-pill:focus-visible {
+  outline: 2px solid var(--hawk-accent, #38bdf8);
+  outline-offset: 1px;
+}
 .hawk-filter-pill.active {
   border-color: var(--hawk-accent, #38bdf8);
   color: var(--hawk-accent, #38bdf8);
@@ -210,6 +214,127 @@
   background: var(--hawk-accent-glow, rgba(56, 189, 248, 0.25));
   color: inherit;
   border-radius: 3px;
+}
+.hawk-preview-loading {
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.8rem;
+}
+
+/*
+ * Markdown element styling for fetched page content (see #loadPreviewContent in hawk.js).
+ * Code block *coloring* comes for free from the site's own build (e.g. Hugo's chroma
+ * highlighter with noClasses:true bakes token colors in as inline styles) — these rules only
+ * handle layout: spacing, block chrome, and readable defaults for un-highlighted markup.
+ */
+.hawk-preview-content :first-child {
+  margin-top: 0;
+}
+.hawk-preview-content :last-child {
+  margin-bottom: 0;
+}
+.hawk-preview-content h1,
+.hawk-preview-content h2,
+.hawk-preview-content h3,
+.hawk-preview-content h4,
+.hawk-preview-content h5,
+.hawk-preview-content h6 {
+  color: var(--hawk-text-primary, #f1f5f9);
+  line-height: 1.3;
+  margin: 1.1em 0 0.4em;
+}
+.hawk-preview-content h1 {
+  font-size: 1.15em;
+}
+.hawk-preview-content h2 {
+  font-size: 1.08em;
+}
+.hawk-preview-content h3,
+.hawk-preview-content h4,
+.hawk-preview-content h5,
+.hawk-preview-content h6 {
+  font-size: 1em;
+}
+.hawk-preview-content p,
+.hawk-preview-content ul,
+.hawk-preview-content ol,
+.hawk-preview-content blockquote,
+.hawk-preview-content table,
+.hawk-preview-content pre {
+  margin: 0 0 0.85em;
+}
+.hawk-preview-content ul,
+.hawk-preview-content ol {
+  padding-left: 1.3em;
+}
+.hawk-preview-content li {
+  margin: 0.2em 0;
+}
+.hawk-preview-content a {
+  color: var(--hawk-accent, #38bdf8);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.hawk-preview-content strong {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.hawk-preview-content hr {
+  border: none;
+  border-top: 1px solid var(--hawk-border-subtle, #1e293b);
+  margin: 1.2em 0;
+}
+.hawk-preview-content img {
+  max-width: 100%;
+  border-radius: 6px;
+}
+.hawk-preview-content blockquote {
+  border-left: 3px solid var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
+  padding: 0.1em 0 0.1em 0.9em;
+  color: var(--hawk-text-muted, #64748b);
+}
+.hawk-preview-content table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.hawk-preview-content th,
+.hawk-preview-content td {
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  padding: 0.35em 0.55em;
+  text-align: left;
+}
+.hawk-preview-content th {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+/* Code: inline vs. block. `pre > code` is a highlighted block; bare `code` is inline. */
+.hawk-preview-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88em;
+}
+.hawk-preview-content :not(pre) > code {
+  background: var(--hawk-bg-surface-elevated, #1e293b);
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+}
+.hawk-preview-content pre {
+  background: var(--hawk-bg-canvas, #090d16);
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  border-radius: 8px;
+  padding: 0.75em 0.9em;
+  overflow-x: auto;
+  line-height: 1.45;
+}
+.hawk-preview-content pre code {
+  background: none;
+  padding: 0;
+  white-space: pre;
+}
+/* Hugo/chroma wraps highlighted blocks in .highlight > pre — flatten our chrome onto it too. */
+.hawk-preview-content .highlight {
+  margin: 0 0 0.85em;
+}
+.hawk-preview-content .highlight pre {
+  margin: 0;
 }
 
 .hawk-modal-footer {

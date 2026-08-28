@@ -45,6 +45,7 @@ export interface HawkSearchConfig {
   categories?: string[];
   categoryFilterName?: string;
   maxResults?: number;
+  contentSelector?: string;
   hotkeys?: { open?: boolean; slash?: boolean; escape?: boolean };
   onOpen?: (query: string) => void;
   onClose?: () => void;
