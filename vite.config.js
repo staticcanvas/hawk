@@ -25,6 +25,12 @@ function stageWebUtilityAssets() {
       if (existsSync(resolve(bundleDist))) {
         cpSync(resolve(bundleDist), destination, { recursive: true });
       }
+      // Vite's lib build only bundles JS entry points — hawk.css ships separately
+      // (the "./css" export, matching lume's "./css": "./src/lume.css" convention)
+      // and needs its own copy step here.
+      if (existsSync(resolve('src/hawk.css'))) {
+        cpSync(resolve('src/hawk.css'), resolve(destination, 'hawk.css'));
+      }
       const brandingDestination = resolve('docs/static/webutil/assets/branding');
       mkdirSync(brandingDestination, { recursive: true });
       if (existsSync(resolve('branding/hawk-logo.svg'))) {
