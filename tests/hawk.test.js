@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { HawkSearch } from '../src/hawk.js';
 import { HawkAnimationInstant } from '../src/hawk-animation-instant.js';
 
@@ -27,6 +27,13 @@ function resultFor(data) {
 
 beforeEach(() => {
   document.body.innerHTML = '';
+  // No test relies on a real network — default fetch to rejecting so #loadPreviewContent
+  // falls back to the Pagefind excerpt unless a test stubs its own response.
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no network in tests')));
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('plugin registries', () => {
@@ -158,6 +165,161 @@ describe('search results and keyboard navigation', () => {
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
     expect(hawk.state.selectedIndex).toBe(1);
+
+    hawk.destroy();
+  });
+});
+
+describe('category tabs (keyboard + ARIA)', () => {
+  it('renders a roving tabindex, with aria-controls pointing at the results listbox', async () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill'));
+    expect(pills.map((p) => p.dataset.filter)).toEqual(['all', 'Guides', 'Reference']);
+    expect(pills[0].tabIndex).toBe(0);
+    expect(pills[1].tabIndex).toBe(-1);
+    expect(pills[2].tabIndex).toBe(-1);
+    expect(pills[0].getAttribute('aria-controls')).toBe(`${hawk.id}-results`);
+
+    hawk.destroy();
+  });
+
+  it('ArrowRight/ArrowLeft move focus and activate the tab under focus, wrapping around', async () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill'));
+
+    pills[0].focus();
+    pills[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    expect(document.activeElement.dataset.filter).toBe('Guides');
+    expect(document.activeElement.getAttribute('aria-selected')).toBe('true');
+    expect(pills[0].tabIndex).toBe(-1);
+
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    expect(document.activeElement.dataset.filter).toBe('all');
+
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    expect(document.activeElement.dataset.filter).toBe('Reference');
+
+    hawk.destroy();
+  });
+
+  it('Home/End jump to the first/last tab', async () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill'));
+
+    pills[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    expect(document.activeElement.dataset.filter).toBe('Reference');
+
+    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    expect(document.activeElement.dataset.filter).toBe('all');
+
+    hawk.destroy();
+  });
+});
+
+describe('rich preview content', () => {
+  const htmlPage = (bodyInner) => `<!doctype html><html><body>${bodyInner}</body></html>`;
+
+  it('fetches the result page and injects only the contentSelector region', async () => {
+    fetch.mockResolvedValue({
+      text: () =>
+        Promise.resolve(
+          htmlPage(`
+            <nav>should not appear</nav>
+            <main data-pagefind-body><h2 id="install">Install</h2><p>Run <code>npm install</code>.</p></main>
+          `)
+        ),
+    });
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Getting started' }, url: '/getting-started/', excerpt: 'excerpt', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'install';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.innerHTML).toContain('npm install'));
+
+    expect(fetch).toHaveBeenCalledWith('/getting-started/');
+    expect(content.innerHTML).not.toContain('should not appear');
+
+    hawk.destroy();
+  });
+
+  it('extracts only the matched heading subsection for a sub_result, and caches the page fetch', async () => {
+    fetch.mockResolvedValue({
+      text: () =>
+        Promise.resolve(
+          htmlPage(`
+            <main data-pagefind-body>
+              <h2 id="first">First</h2><p>first section</p>
+              <h2 id="second">Second</h2><p>second section</p>
+              <h2 id="third">Third</h2><p>third section</p>
+            </main>
+          `)
+        ),
+    });
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'Page' },
+            url: '/page/',
+            excerpt: 'page excerpt',
+            sub_results: [{ title: 'Second', url: '/page/#second', excerpt: 'sub excerpt' }],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'second';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Row 0 is the page itself, row 1 is the "Second" sub_result.
+    document.querySelectorAll('.hawk-result-item')[1].dispatchEvent(new Event('mouseenter', { bubbles: true }));
+
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.innerHTML).toContain('second section'));
+    expect(content.innerHTML).not.toContain('first section');
+    expect(content.innerHTML).not.toContain('third section');
+    expect(fetch).toHaveBeenCalledTimes(1); // same page as the initial (index 0) selection — cached, not refetched
+
+    hawk.destroy();
+  });
+
+  it('falls back to the Pagefind excerpt when the fetch fails', async () => {
+    // beforeEach's default fetch mock already rejects.
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Offline Page' }, url: '/offline/', excerpt: 'the excerpt text', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'offline';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.innerHTML).toContain('the excerpt text'));
 
     hawk.destroy();
   });

@@ -52,6 +52,10 @@
     new HawkSearch({
       index: document.body.dataset.hawkIndex,
       theme: 'typeflow',
+      // .doc-article wraps single.html and list.html pages alike (see both templates) —
+      // narrower than the default [data-pagefind-body], so the preview pane doesn't also
+      // pull in the sibling .doc-toc sidebar.
+      contentSelector: '.doc-article',
     });
   </script>
 </body>

@@ -74,6 +74,9 @@ export class HawkSearch {
    * @param {string[]} [config.categories] Overrides the category filter pills; by default derived from Pagefind's `filters()`.
    * @param {string} [config.categoryFilterName='category'] The Pagefind filter dimension used for category pills (see `data-pagefind-filter`).
    * @param {number} [config.maxResults=18] Maximum rendered result rows.
+   * @param {string} [config.contentSelector='[data-pagefind-body]'] Selector used to extract the
+   *   preview pane's content from a fetched result page (fetched from `item.url`, same-origin).
+   *   Falls back to Pagefind's short excerpt if `fetch`/`DOMParser` are unavailable or the request fails.
    * @param {(query: string) => void} [config.onOpen]
    * @param {() => void} [config.onClose]
    * @param {(item: object) => void} [config.onSelect]
@@ -91,6 +94,7 @@ export class HawkSearch {
     this.params = { ...DEFAULT_PARAMS, ...config.params, offset: { ...DEFAULT_PARAMS.offset, ...config.params?.offset } };
     this.categoryFilterName = config.categoryFilterName || 'category';
     this.maxResults = config.maxResults ?? 18;
+    this.contentSelector = config.contentSelector || '[data-pagefind-body]';
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.onOpen = config.onOpen;
     this.onClose = config.onClose;
@@ -109,6 +113,7 @@ export class HawkSearch {
     this.#pagefindLoadPromise = null;
     this.#previewController = null;
     this.#previewKey = null;
+    this.#fragmentCache = new Map();
 
     if (this.container) {
       this.#mount();
@@ -127,6 +132,7 @@ export class HawkSearch {
   #pagefindLoadPromise;
   #previewController;
   #previewKey;
+  #fragmentCache;
   #injectedPagefind;
   #root;
   #input;
@@ -221,9 +227,9 @@ export class HawkSearch {
               aria-autocomplete="list" aria-controls="${this.id}-results" />
             <button class="hawk-modal-esc" data-search-close type="button"><kbd>ESC</kbd></button>
           </div>
-          <div class="hawk-modal-filters" role="tablist"></div>
+          <div class="hawk-modal-filters" role="tablist" aria-label="Filter by category"></div>
           <div class="hawk-modal-body" data-hawk-alignment="${this.params.alignment}">
-            <div class="hawk-results-pane" id="${this.id}-results" role="listbox"></div>
+            <div class="hawk-results-pane" id="${this.id}-results" role="listbox" aria-live="polite"></div>
             <aside class="hawk-preview-pane" aria-live="polite">
               <div class="hawk-preview-empty">Type to search, or select a result to preview it here.</div>
             </aside>
@@ -313,22 +319,59 @@ export class HawkSearch {
     const categories = this.#categories || [];
     const pills = ['all', ...categories];
     this.#filtersEl.innerHTML = pills
-      .map(
-        (cat) =>
-          `<button type="button" class="hawk-filter-pill${cat === this.#currentCategory ? ' active' : ''}" data-filter="${cat}" role="tab" aria-selected="${cat === this.#currentCategory}">${cat === 'all' ? 'All' : cat}</button>`
-      )
+      .map((cat) => {
+        const isActive = cat === this.#currentCategory;
+        return `<button type="button" class="hawk-filter-pill${isActive ? ' active' : ''}" data-filter="${cat}" role="tab" aria-selected="${isActive}" aria-controls="${this.id}-results" tabindex="${isActive ? 0 : -1}">${cat === 'all' ? 'All' : cat}</button>`;
+      })
       .join('');
-    this.#filtersEl.querySelectorAll('.hawk-filter-pill').forEach((pill) => {
+
+    const pillEls = Array.from(this.#filtersEl.querySelectorAll('.hawk-filter-pill'));
+    pillEls.forEach((pill, idx) => {
       pill.addEventListener('click', () => {
-        this.#currentCategory = pill.dataset.filter;
-        this.#filtersEl.querySelectorAll('.hawk-filter-pill').forEach((p) => {
-          p.classList.toggle('active', p === pill);
-          p.setAttribute('aria-selected', String(p === pill));
-        });
-        this.#executeSearch(this.#query);
+        this.#activateFilter(pill);
         this.#input.focus();
       });
+      pill.addEventListener('keydown', (event) => this.#handleFilterKeydown(event, idx, pillEls));
     });
+  }
+
+  /**
+   * Activates a category tab: updates selection state/ARIA and re-runs the current search
+   * scoped to it. Flag a page for a tab with `data-pagefind-filter="<categoryFilterName>:<value>"`
+   * — a page can carry more than one such marker to appear under multiple tabs.
+   * @param {HTMLElement} pill
+   */
+  #activateFilter(pill) {
+    this.#currentCategory = pill.dataset.filter;
+    this.#filtersEl.querySelectorAll('.hawk-filter-pill').forEach((p) => {
+      const isActive = p === pill;
+      p.classList.toggle('active', isActive);
+      p.setAttribute('aria-selected', String(isActive));
+      p.tabIndex = isActive ? 0 : -1;
+    });
+    this.#executeSearch(this.#query);
+  }
+
+  /**
+   * Standard ARIA tablist keyboard pattern: Left/Right (wraparound) and Home/End move focus
+   * and activate the tab under focus.
+   */
+  #handleFilterKeydown(event, idx, pillEls) {
+    let nextIdx = null;
+    if (event.key === 'ArrowRight') {
+      nextIdx = (idx + 1) % pillEls.length;
+    } else if (event.key === 'ArrowLeft') {
+      nextIdx = (idx - 1 + pillEls.length) % pillEls.length;
+    } else if (event.key === 'Home') {
+      nextIdx = 0;
+    } else if (event.key === 'End') {
+      nextIdx = pillEls.length - 1;
+    }
+    if (nextIdx !== null) {
+      event.preventDefault();
+      pillEls[nextIdx].focus();
+      this.#activateFilter(pillEls[nextIdx]);
+    }
   }
 
   async #executeSearch(query) {
@@ -424,12 +467,86 @@ export class HawkSearch {
         ${item.isAnchor ? `<span class="hawk-anchor-badge">Section</span>` : ''}
       </div>
       <h3 class="hawk-preview-title"></h3>
-      <div class="hawk-preview-content"></div>
+      <div class="hawk-preview-content"><div class="hawk-preview-loading">Loading&hellip;</div></div>
     `;
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
     this.#animation.typeTitle(titleEl, item.title, { isAnchor: item.isAnchor });
-    this.#previewController = this.#animation.typeContent(contentEl, item.excerpt || '');
+    this.#loadPreviewContent(item, key, contentEl);
+  }
+
+  /**
+   * Fills the preview pane with the full rendered page content (markdown-rendered HTML,
+   * including syntax-highlighted code blocks — whatever the site's own build already produced),
+   * fetched from `item.url` and narrowed to `contentSelector`. For an anchor/section match, only
+   * that heading's subsection is extracted. Falls back to Pagefind's short excerpt if fetching
+   * isn't possible (no fetch/DOMParser, cross-origin, network error) or the selection has moved
+   * on by the time the fetch resolves.
+   */
+  async #loadPreviewContent(item, key, contentEl) {
+    let html = item.excerpt || '';
+    if (typeof fetch === 'function' && typeof DOMParser !== 'undefined') {
+      try {
+        const [pagePath, anchor] = item.url.split('#');
+        const root = await this.#fetchFragment(pagePath);
+        html = item.isAnchor && anchor ? this.#extractSection(root, anchor) : root.innerHTML;
+      } catch {
+        html = item.excerpt || '';
+      }
+    }
+    if (this.#previewKey !== key) {
+      return; // selection moved on while the fetch was in flight
+    }
+    this.#previewController = this.#animation.typeContent(contentEl, html);
+  }
+
+  /**
+   * Fetches and parses a result page, returning (and caching, by promise, so concurrent
+   * requests for the same page dedupe) the element matched by `contentSelector`.
+   * @param {string} pagePath URL without the `#anchor` suffix.
+   * @returns {Promise<Element>}
+   */
+  #fetchFragment(pagePath) {
+    if (this.#fragmentCache.has(pagePath)) {
+      return this.#fragmentCache.get(pagePath);
+    }
+    const promise = fetch(pagePath)
+      .then((res) => res.text())
+      .then((html) => {
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        return doc.querySelector(this.contentSelector) || doc.body;
+      })
+      .catch((err) => {
+        this.#fragmentCache.delete(pagePath);
+        throw err;
+      });
+    this.#fragmentCache.set(pagePath, promise);
+    return promise;
+  }
+
+  /**
+   * Extracts one heading's subsection (the heading itself plus every following sibling up to
+   * the next heading of the same or higher level) from a fetched page's content root.
+   * @param {Element} root
+   * @param {string} slug Anchor id, without the leading `#`.
+   * @returns {string} HTML, or the whole root's HTML if the heading isn't found.
+   */
+  #extractSection(root, slug) {
+    // Attribute-selector form instead of `#${slug}` — sidesteps needing CSS.escape() for
+    // CSS-identifier-special characters, which isn't implemented in every environment (jsdom
+    // included). Only `"` needs escaping inside the attribute-selector string literal itself.
+    const heading = root.querySelector(`[id="${String(slug).replace(/"/g, '\\"')}"]`);
+    if (!heading) {
+      return root.innerHTML;
+    }
+    const level = Number(heading.tagName[1]) || 6;
+    const parts = [heading.outerHTML];
+    let el = heading.nextElementSibling;
+    while (el && !(/^H[1-6]$/.test(el.tagName) && Number(el.tagName[1]) <= level)) {
+      parts.push(el.outerHTML);
+      el = el.nextElementSibling;
+    }
+    return parts.join('');
   }
 
   #handleInputKeydown(event) {
