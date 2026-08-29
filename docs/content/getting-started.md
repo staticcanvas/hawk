@@ -12,9 +12,9 @@ npm install @staticcanvas/hawk
 npm install --save-dev pagefind
 ```
 
-`pagefind` and `@staticcanvas/typeflow` are optional peer dependencies. `pagefind` is required at
-runtime — hawk has nothing to search without an index. `@staticcanvas/typeflow` is only needed if
-you use the typeflow animation driver instead of the built-in instant one.
+`pagefind` is a real dependency — hawk has nothing to search without an index, so it's installed
+automatically. `@staticcanvas/typeflow` is an optional peer dependency, only needed if you use the
+typeflow theme/animation driver instead of the built-in unstyled/instant ones.
 
 ## Build an index
 
@@ -58,10 +58,14 @@ Hawk ships UMD builds too, for script-tag usage without a bundler:
 <script src="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk-theme-typeflow.js"></script>
 <script>
-  Hawk.registerTheme('typeflow', window.HawkThemeTypeflow);
-  new Hawk({ index: '/pagefind/', theme: 'typeflow' });
+  new Hawk({ index: '/pagefind/' }); // hawk-theme-typeflow.js already self-registered as 'typeflow'
 </script>
 ```
+
+Loaded in this order, `hawk-theme-typeflow.js` registers itself against `window.Hawk` automatically
+— no `Hawk.registerTheme(...)` call needed. Add `typeflow.js` and `hawk-animation-typeflow.js` (in
+that order, both before the final `<script>`) for the typewriter animation driver too, which
+self-registers the same way once it sees both `window.Hawk` and `window.TypeFlow`.
 
 ## Next
 

@@ -71,14 +71,13 @@
   ],
   "author": "Garvey K. Snow",
   "license": "MIT",
+  "dependencies": {
+    "pagefind": "^1.5.2"
+  },
   "peerDependencies": {
-    "pagefind": "^1.5.0",
     "@staticcanvas/typeflow": "^0.20.0"
   },
   "peerDependenciesMeta": {
-    "pagefind": {
-      "optional": true
-    },
     "@staticcanvas/typeflow": {
       "optional": true
     }
@@ -99,7 +98,6 @@
     "eslint-config-prettier": "^10.0.1",
     "globals": "^15.14.0",
     "jsdom": "^26.0.0",
-    "pagefind": "^1.5.2",
     "prettier": "^3.5.0",
     "rollup-plugin-copy": "^3.5.0",
     "vite": "^6.1.0",

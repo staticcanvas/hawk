@@ -54,7 +54,9 @@ npm install @staticcanvas/hawk
 npm install --save-dev pagefind
 ```
 
-`pagefind` and `@staticcanvas/typeflow` are optional peer dependencies.
+`pagefind` is a real dependency (hawk has nothing to search without an index).
+`@staticcanvas/typeflow` is an optional peer dependency — only needed for the typeflow
+theme/animation driver instead of the built-in unstyled/instant ones.
 
 ## Usage
 

@@ -2,8 +2,10 @@
  * @fileoverview Optional animation driver backed by @staticcanvas/typeflow's typewriter
  * engine. Implements the same driver contract as hawk-animation-instant.js. TypeFlow is never
  * hard-imported (matches this org's framework-adapter convention, e.g. createTypeFlowReact in
- * typeflow.js) — the running TypeFlow instance is passed in by the consumer, so hawk's core
- * bundle never depends on it.
+ * typeflow.js) — the running TypeFlow instance is passed in by the consumer (ESM) or read off
+ * `window.TypeFlow` (script-tag, for self-registration below) — so hawk's core bundle never
+ * depends on it, and this optional bundle only needs it at the point a consumer actually loads
+ * this module.
  *
  * The specific type/scramble/rotate configs below are the defaults extracted from typeflow's
  * own docs search (docs/static/assets/docs.js) — anchor/section titles scramble-decode, page
@@ -83,6 +85,15 @@ export function createHawkAnimationTypeflow(TypeFlow, options = {}) {
 
 if (typeof window !== 'undefined') {
   window.HawkAnimationTypeflow = { create: createHawkAnimationTypeflow };
+  // Self-registers when loaded after both hawk.js and typeflow.js (script-tag order: hawk.js,
+  // typeflow.js, then this file) so `new Hawk({ index })` gets the typeflow animation driver
+  // with no explicit registerAnimation call — see architecture/plugin-system.md's "Two ways to
+  // use a plugin". Silently skipped if TypeFlow isn't loaded yet; ESM/bundler consumers still
+  // call createHawkAnimationTypeflow(TypeFlow) themselves, since import order isn't guaranteed
+  // there the way script-tag order is.
+  if (window.TypeFlow && window.Hawk) {
+    window.Hawk.registerAnimation('typeflow', createHawkAnimationTypeflow(window.TypeFlow));
+  }
 }
 
 export default createHawkAnimationTypeflow;
