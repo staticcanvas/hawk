@@ -51,6 +51,7 @@ export interface HawkTab {
   id?: string;
   label: string;
   filter?: Record<string, string | string[]>;
+  sort?: Record<string, 'asc' | 'desc'>;
   pagefindOptions?: Record<string, unknown>;
   defaultPreviewUrl?: string;
   defaultPreviewTitle?: string;
@@ -98,6 +99,7 @@ export interface HawkSearchConfig {
   animation?: string | HawkAnimationDriver | false;
   categories?: string[];
   tabs?: HawkTab[];
+  tabsUrl?: string;
   includeAllTab?: boolean;
   defaultTab?: string;
   pagefindOptions?: Record<string, unknown>;

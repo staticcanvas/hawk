@@ -144,13 +144,23 @@ export class HawkSearch {
    *   name is registered (i.e. the consumer loaded hawk-animation-typeflow.js and registered it), else `'instant'`.
    * @param {string[]} [config.categories] Shorthand for `config.tabs`: one tab per category name, each
    *   filtering on `categoryFilterName`. Ignored if `config.tabs` is given.
-   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, pagefindOptions?: Record<string, unknown>, defaultPreviewUrl?: string, defaultPreviewTitle?: string}>} [config.tabs]
+   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, sort?: Record<string, 'asc'|'desc'>, pagefindOptions?: Record<string, unknown>, defaultPreviewUrl?: string, defaultPreviewTitle?: string}>} [config.tabs]
    *   Explicit tab list. `filter` is a raw Pagefind `filters` object (passed to `search()`/`debouncedSearch()`
-   *   verbatim) — omit it for a filterless tab (e.g. "All"). `defaultPreviewUrl`/`defaultPreviewTitle` override
-   *   `config.defaultPreviewUrl`/`config.defaultPreviewTitle` while this tab is active and nothing is selected
-   *   (zero matches, or before a query is typed) — see the top-level options below for the fetch/extract
-   *   behavior those share. Replaces auto-derivation from Pagefind's `filters()` entirely and renders
-   *   synchronously on mount instead of waiting for Pagefind to load.
+   *   verbatim) — omit it for a filterless tab (e.g. "All"). `sort` is shorthand for
+   *   `pagefindOptions: { sort }` — Pagefind's own sort object (e.g. `{ date: 'desc' }`), which needs the
+   *   sorted field marked on every page via `data-pagefind-sort="date"` (see Pagefind's own docs); a tab
+   *   using `sort` is a listing, not ranked search, so it's most useful paired with an otherwise-filterless
+   *   or category-filtered tab a visitor browses rather than searches. `defaultPreviewUrl`/`defaultPreviewTitle`
+   *   override `config.defaultPreviewUrl`/`config.defaultPreviewTitle` while this tab is active and nothing is
+   *   selected (zero matches, or before a query is typed) — see the top-level options below for the
+   *   fetch/extract behavior those share. Replaces auto-derivation from Pagefind's `filters()` entirely and
+   *   renders synchronously on mount instead of waiting for Pagefind to load. Ignored if `config.tabsUrl` is
+   *   also given (this wins, being available with zero latency).
+   * @param {string} [config.tabsUrl] Fetches a JSON file (an array in the same shape as `config.tabs` above)
+   *   once Pagefind loads, instead of requiring the tab list to live in the mount script itself — lets a
+   *   non-JS site maintainer, or a separate build step, edit tabs without touching JS. Ignored if
+   *   `config.tabs`/`config.categories` is given. Falls back to auto-deriving from Pagefind's `filters()`
+   *   (with a console warning) if the fetch fails, the response isn't valid JSON, or isn't a JSON array.
    * @param {boolean} [config.includeAllTab=true] Prepend a filterless "All" tab to `tabs`/`categories`/the
    *   auto-derived list.
    * @param {string} [config.defaultTab='all'] Tab id active on open. Falls back to `'all'` (with a console
@@ -244,6 +254,9 @@ export class HawkSearch {
       offset: { ...DEFAULT_PARAMS.offset, ...config.params?.offset },
     };
     this.categoryFilterName = config.categoryFilterName || 'category';
+    // Ignored when config.tabs/config.categories is also given — those are synchronous
+    // (rendered on mount, #resolveExplicitTabs below) and always win over an async fetch.
+    this.tabsUrl = config.tabs || config.categories ? null : config.tabsUrl || null;
     this.includeAllTab = config.includeAllTab !== false;
     this.pagefindOptions = config.pagefindOptions || {};
     this.maxResults = config.maxResults ?? 18;
@@ -398,7 +411,9 @@ export class HawkSearch {
       id: t.id || this.#slugify(t.label),
       label: t.label,
       filter: t.filter || null,
-      pagefindOptions: t.pagefindOptions || null,
+      // t.sort is sugar for pagefindOptions.sort — merged in rather than replacing the rest of
+      // a tab's own pagefindOptions, so e.g. { sort, ranking } can both be set at once.
+      pagefindOptions: t.sort ? { ...(t.pagefindOptions || {}), sort: t.sort } : t.pagefindOptions || null,
       defaultPreviewUrl: t.defaultPreviewUrl || null,
       defaultPreviewTitle: t.defaultPreviewTitle || '',
     }));
@@ -852,13 +867,47 @@ export class HawkSearch {
   }
 
   /**
+   * Fetches and validates `config.tabsUrl` into a `config.tabs`-shaped array, or `null` (with a
+   * console warning) on any failure — network error, non-JSON response, or a JSON value that
+   * isn't an array — so a broken tabs file falls back to auto-derivation instead of leaving the
+   * tab strip empty.
+   */
+  async #fetchTabsUrl() {
+    if (typeof fetch !== 'function') {
+      console.warn('HawkSearch: config.tabsUrl was set but fetch() isn\'t available in this environment — falling back to auto-derived tabs.');
+      return null;
+    }
+    try {
+      const res = await fetch(this.tabsUrl);
+      const data = await res.json();
+      if (!Array.isArray(data)) {
+        throw new Error('expected a JSON array of tab objects');
+      }
+      return data;
+    } catch (err) {
+      console.warn(`HawkSearch: failed to load config.tabsUrl ("${this.tabsUrl}") — falling back to auto-derived tabs.`, err);
+      return null;
+    }
+  }
+
+  /**
    * Derives tabs from Pagefind's `filters()` for `categoryFilterName`, unless `tabs`/`categories`
-   * was explicitly configured — in which case this is a no-op, since `#mount()` already rendered
-   * them synchronously.
+   * was explicitly configured (a no-op here, since `#mount()` already rendered them
+   * synchronously) or `tabsUrl` resolves to a valid tab list (fetched here, once, since it
+   * needs Pagefind to have loaded first — same as the auto-derivation path below).
    */
   async #deriveTabs() {
     if (this.#tabsExplicit) {
       return;
+    }
+    if (this.tabsUrl) {
+      const fetched = await this.#fetchTabsUrl();
+      if (fetched) {
+        this.#applyDefaultTabAndRender(this.#withPinnedTab(this.#normalizeTabs(fetched)));
+        return;
+      }
+      // Fetch failed — fall through to the filters()-based auto-derivation below instead of
+      // leaving the tab strip empty.
     }
     if (!this.#pagefind) {
       this.#applyDefaultTabAndRender(this.#withPinnedTab(this.#normalizeTabs([])));

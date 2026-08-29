@@ -341,6 +341,75 @@ describe('explicit tabs config', () => {
     );
     hawk.destroy();
   });
+
+  it("a tab's sort shorthand merges into its own pagefindOptions.sort", async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      tabs: [{ id: 'recent', label: 'Recently updated', sort: { date: 'desc' }, pagefindOptions: { ranking: { termFrequency: 0 } } }],
+      defaultTab: 'recent',
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'x';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'x',
+      expect.objectContaining({ sort: { date: 'desc' }, ranking: { termFrequency: 0 } })
+    );
+    hawk.destroy();
+  });
+});
+
+describe('config.tabsUrl', () => {
+  it('fetches and renders tabs from a JSON file once Pagefind loads', async () => {
+    fetch.mockResolvedValue({
+      json: () => Promise.resolve([{ id: 'guides', label: 'Guides', filter: { category: 'Guides' } }]),
+    });
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), tabsUrl: '/tabs.json' });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetch).toHaveBeenCalledWith('/tabs.json');
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    expect(pills).toEqual(['all', 'guides']);
+    hawk.destroy();
+  });
+
+  it('falls back to auto-derived tabs (with a console warning) when the fetch fails', async () => {
+    // beforeEach's default fetch mock already rejects.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const pagefind = mockPagefind({ filters: vi.fn().mockResolvedValue({ category: { Reference: 1 } }) });
+    const hawk = new HawkSearch({ pagefind, tabsUrl: '/tabs.json' });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    expect(pills).toEqual(['all', 'Reference']);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('/tabs.json'), expect.anything());
+    warn.mockRestore();
+    hawk.destroy();
+  });
+
+  it('falls back to auto-derived tabs when the response is valid JSON but not an array', async () => {
+    fetch.mockResolvedValue({ json: () => Promise.resolve({ not: 'an array' }) });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const pagefind = mockPagefind({ filters: vi.fn().mockResolvedValue({ category: { Reference: 1 } }) });
+    const hawk = new HawkSearch({ pagefind, tabsUrl: '/tabs.json' });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    expect(pills).toEqual(['all', 'Reference']);
+    warn.mockRestore();
+    hawk.destroy();
+  });
+
+  it('is ignored when config.tabs is also given (the synchronous list always wins)', async () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), tabs: [{ id: 'inline', label: 'Inline' }], tabsUrl: '/tabs.json' });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(fetch).not.toHaveBeenCalledWith('/tabs.json');
+    hawk.destroy();
+  });
 });
 
 describe('pagefindOptions passthrough', () => {
