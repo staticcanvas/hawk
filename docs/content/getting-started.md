@@ -65,5 +65,7 @@ Hawk ships UMD builds too, for script-tag usage without a bundler:
 
 ## Next
 
+- [Pagefind setup]({{< relref "/guides/pagefind-setup" >}}) — index scoping, and dev-controlled tabs
+- [Density and keyboard navigation]({{< relref "/guides/density-and-navigation" >}})
 - [Theming]({{< relref "/guides/theming" >}})
 - [Animation plugins]({{< relref "/guides/animation-plugins" >}})
