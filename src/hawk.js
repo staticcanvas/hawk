@@ -24,9 +24,14 @@ const DEFAULT_PARAMS = {
   position: 'top-center', // 'top-center' | 'center' | 'top-left' | 'top-right'
   offset: { x: '1rem', y: '6vh' },
   alignment: 'stretch', // 'stretch' | 'start' | 'center'
-  columns: 2, // 1 | 2 — forced to 1 below `breakpoint` regardless of this value
+  columns: 2, // 1 | 2 — forced to 1 below `breakpoint` (or in 'compact' density) regardless of this value
   breakpoint: 768, // px
+  density: 'medium', // 'fit' | 'medium' | 'compact'
+  allowDensityToggle: true,
 };
+
+const DENSITY_VALUES = new Set(['fit', 'medium', 'compact']);
+const DENSITY_STORAGE_KEY = 'hawk:density';
 
 const DEFAULT_HOTKEYS = { open: true, slash: true, escape: true };
 
@@ -66,7 +71,11 @@ export class HawkSearch {
    *   bundles Pagefind, or in tests.
    * @param {string} [config.triggerSelector='[data-search-trigger]'] Elements that open the modal on click.
    * @param {HTMLElement} [config.container=document.body] Where the modal is mounted.
-   * @param {Partial<typeof DEFAULT_PARAMS>} [config.params] Layout params (scale/position/offset/alignment/columns/breakpoint).
+   * @param {Partial<typeof DEFAULT_PARAMS>} [config.params] Layout params: scale/position/offset/alignment/
+   *   columns/breakpoint, plus `density` ('fit'|'medium'|'compact', default 'medium' — 'compact' forces
+   *   1 column like below `breakpoint`) and `allowDensityToggle` (default true — shows an in-modal
+   *   fit/medium/compact switcher; the visitor's last choice persists to `localStorage`). If `density`
+   *   isn't given here, a previously-persisted choice is used before falling back to 'medium'.
    * @param {string|import('./hawk-theme-typeflow.js').HawkTheme} [config.theme='typeflow'] Registered theme name or a theme object.
    * @param {string|import('./hawk-animation-instant.js').HawkAnimationDriver|false} [config.animation] Registered
    *   animation name, a driver object, or `false` to force the instant driver. Defaults to `'typeflow'` if that
@@ -104,7 +113,13 @@ export class HawkSearch {
     this.#injectedPagefind = config.pagefind || null;
     this.triggerSelector = config.triggerSelector || '[data-search-trigger]';
     this.container = config.container || (typeof document !== 'undefined' ? document.body : null);
-    this.params = { ...DEFAULT_PARAMS, ...config.params, offset: { ...DEFAULT_PARAMS.offset, ...config.params?.offset } };
+    const storedDensity = this.#readStoredDensity();
+    this.params = {
+      ...DEFAULT_PARAMS,
+      ...(storedDensity ? { density: storedDensity } : {}),
+      ...config.params,
+      offset: { ...DEFAULT_PARAMS.offset, ...config.params?.offset },
+    };
     this.categoryFilterName = config.categoryFilterName || 'category';
     this.includeAllTab = config.includeAllTab !== false;
     this.pagefindOptions = config.pagefindOptions || {};
@@ -286,6 +301,12 @@ export class HawkSearch {
     this.#root.querySelectorAll('[data-search-close]').forEach((el) => {
       el.addEventListener('click', () => this.close());
     });
+    this.#root.querySelectorAll('.hawk-density-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        this.setParams({ density: btn.dataset.density });
+        this.#persistDensity(btn.dataset.density);
+      });
+    });
 
     this.#input.addEventListener('input', () => this.#executeSearch(this.#input.value));
     this.#input.addEventListener('keydown', (event) => this.#handleInputKeydown(event));
@@ -304,6 +325,15 @@ export class HawkSearch {
           <div class="hawk-modal-header">
             <input class="hawk-modal-input" type="search" placeholder="Search..." autocomplete="off" spellcheck="false"
               aria-autocomplete="list" aria-controls="${this.id}-results" />
+            ${
+              this.params.allowDensityToggle
+                ? `<div class="hawk-density-toggle" role="group" aria-label="Result density">
+              <button type="button" class="hawk-density-btn" data-density="fit">Fit</button>
+              <button type="button" class="hawk-density-btn" data-density="medium">Medium</button>
+              <button type="button" class="hawk-density-btn" data-density="compact">Compact</button>
+            </div>`
+                : ''
+            }
             <button class="hawk-modal-esc" data-search-close type="button"><kbd>ESC</kbd></button>
           </div>
           <div class="hawk-modal-filters" role="tablist" aria-label="Filter by category"></div>
@@ -325,12 +355,18 @@ export class HawkSearch {
   }
 
   #applyParams() {
-    const { scale, position, offset, columns, breakpoint } = this.params;
+    const { scale, position, offset, columns, breakpoint, density } = this.params;
     this.#root.style.setProperty('--hawk-scale', String(scale));
     this.#root.style.setProperty('--hawk-offset-x', this.#cssLength(offset.x));
     this.#root.style.setProperty('--hawk-offset-y', this.#cssLength(offset.y));
     this.#root.dataset.hawkPosition = position;
+    this.#root.dataset.hawkDensity = density;
     this.#root.querySelector('.hawk-modal-body').dataset.hawkColumns = String(columns);
+    this.#root.querySelectorAll('.hawk-density-btn').forEach((btn) => {
+      const isActive = btn.dataset.density === density;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-pressed', String(isActive));
+    });
 
     if (this.#mediaQuery) {
       this.#mediaQuery.removeEventListener?.('change', this.#onBreakpointChange);
@@ -348,6 +384,25 @@ export class HawkSearch {
 
   #cssLength(value) {
     return typeof value === 'number' ? `${value}px` : String(value);
+  }
+
+  /** Reads a persisted density preference, if any. Never throws (private browsing, SSR, etc.). */
+  #readStoredDensity() {
+    try {
+      const value = typeof localStorage !== 'undefined' ? localStorage.getItem(DENSITY_STORAGE_KEY) : null;
+      return DENSITY_VALUES.has(value) ? value : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Persists a density preference so it survives modal close/reopen and page reloads. */
+  #persistDensity(density) {
+    try {
+      localStorage?.setItem(DENSITY_STORAGE_KEY, density);
+    } catch {
+      // private browsing / storage disabled / no localStorage (SSR) — density still applies for this session.
+    }
   }
 
   /**

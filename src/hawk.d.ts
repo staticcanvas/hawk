@@ -17,6 +17,8 @@ export interface HawkParams {
   alignment?: 'stretch' | 'start' | 'center';
   columns?: 1 | 2;
   breakpoint?: number;
+  density?: 'fit' | 'medium' | 'compact';
+  allowDensityToggle?: boolean;
 }
 
 export interface HawkMatch {

@@ -99,6 +99,50 @@ describe('layout params', () => {
   });
 });
 
+describe('density', () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  it('defaults to medium and renders the fit/medium/compact toggle', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    const root = document.getElementById(hawk.id);
+    expect(root.dataset.hawkDensity).toBe('medium');
+    const buttons = Array.from(document.querySelectorAll('.hawk-density-btn')).map((b) => b.dataset.density);
+    expect(buttons).toEqual(['fit', 'medium', 'compact']);
+    expect(document.querySelector('.hawk-density-btn[data-density="medium"]').classList.contains('active')).toBe(true);
+    hawk.destroy();
+  });
+
+  it('omits the toggle when allowDensityToggle is false', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), params: { allowDensityToggle: false } });
+    expect(document.querySelectorAll('.hawk-density-btn')).toHaveLength(0);
+    hawk.destroy();
+  });
+
+  it('clicking a density button updates state, dataset, and persists the choice', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    const root = document.getElementById(hawk.id);
+    document.querySelector('.hawk-density-btn[data-density="compact"]').click();
+    expect(root.dataset.hawkDensity).toBe('compact');
+    expect(hawk.params.density).toBe('compact');
+    expect(document.querySelector('.hawk-density-btn[data-density="compact"]').classList.contains('active')).toBe(true);
+    expect(localStorage.getItem('hawk:density')).toBe('compact');
+    hawk.destroy();
+  });
+
+  it('a persisted density preference applies on construction, but explicit config.params.density wins', () => {
+    localStorage.setItem('hawk:density', 'fit');
+    const hawk1 = new HawkSearch({ pagefind: mockPagefind() });
+    expect(hawk1.params.density).toBe('fit');
+    hawk1.destroy();
+
+    const hawk2 = new HawkSearch({ pagefind: mockPagefind(), params: { density: 'compact' } });
+    expect(hawk2.params.density).toBe('compact');
+    hawk2.destroy();
+  });
+});
+
 describe('category derivation', () => {
   it('derives filter pills from Pagefind filters() when categories are not configured', async () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });

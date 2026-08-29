@@ -60,6 +60,26 @@
   overflow: hidden;
 }
 
+/*
+ * Density presets — user/dev-selectable sizing on top of the numeric --hawk-scale multiplier.
+ * 'medium' (the default) is the rule above, unchanged from before density existed.
+ */
+[data-hawk-density='fit'] .hawk-modal-dialog {
+  max-width: min(calc(1400px * var(--hawk-scale, 1)), 96vw);
+  max-height: 92vh;
+}
+[data-hawk-density='fit'] .hawk-results-pane,
+[data-hawk-density='fit'] .hawk-preview-pane {
+  padding: 1.25rem;
+}
+[data-hawk-density='compact'] .hawk-modal-dialog {
+  max-width: calc(560px * var(--hawk-scale, 1));
+  max-height: min(calc(520px * var(--hawk-scale, 1)), 70vh);
+}
+[data-hawk-density='compact'] .hawk-results-pane {
+  padding: 0.35rem;
+}
+
 .hawk-modal-header {
   display: flex;
   align-items: center;
@@ -87,6 +107,29 @@
   padding: 0.2rem 0.5rem;
   cursor: pointer;
   color: var(--hawk-text-muted, #64748b);
+}
+
+.hawk-density-toggle {
+  display: flex;
+  gap: 0.2rem;
+}
+.hawk-density-btn {
+  background: transparent;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.72rem;
+  cursor: pointer;
+  color: var(--hawk-text-muted, #64748b);
+}
+.hawk-density-btn:focus-visible {
+  outline: 2px solid var(--hawk-accent, #38bdf8);
+  outline-offset: 1px;
+}
+.hawk-density-btn.active {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-accent, #38bdf8);
+  background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
 }
 
 .hawk-modal-filters {
@@ -135,11 +178,21 @@
   align-items: center;
 }
 
-[data-hawk-compact='true'] .hawk-modal-body {
+[data-hawk-compact='true'] .hawk-modal-body,
+[data-hawk-density='compact'] .hawk-modal-body {
   grid-template-columns: 1fr !important;
 }
-[data-hawk-compact='true'] .hawk-preview-pane {
+[data-hawk-compact='true'] .hawk-preview-pane,
+[data-hawk-density='compact'] .hawk-preview-pane {
   display: none;
+}
+/* Focus-zone navigation (see hawk.js #handleGlobalKeydown/#focusPreviewPane) reveals the
+   preview pane in place of the results pane in single-column layouts. */
+[data-hawk-show-preview='true'] .hawk-results-pane {
+  display: none;
+}
+[data-hawk-show-preview='true'] .hawk-preview-pane {
+  display: block;
 }
 
 .hawk-results-pane {
