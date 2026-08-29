@@ -1,0 +1,24 @@
+{{/*
+  sidebar.html — persistent left nav for every non-home doc page, rendering site.Menus.main
+  hierarchically (top-level entries, each with its own .Children if any — see docs/hugo.toml's
+  [[menu.main]] parent= entries). Active-page highlighting via Hugo's own menu-current helpers,
+  not string-matching URLs by hand.
+*/}}
+<nav class="doc-sidebar" aria-label="Documentation sections" data-pagefind-ignore>
+  <ul class="sidebar-list">
+    {{ range site.Menus.main }}
+    <li class="sidebar-item{{ if or ($.IsMenuCurrent "main" .) ($.HasMenuCurrent "main" .) }} is-active{{ end }}">
+      <a href="{{ .URL | relURL }}">{{ .Name }}</a>
+      {{ if .Children }}
+      <ul class="sidebar-sublist">
+        {{ range .Children }}
+        <li class="sidebar-subitem{{ if $.IsMenuCurrent "main" . }} is-active{{ end }}">
+          <a href="{{ .URL | relURL }}">{{ .Name }}</a>
+        </li>
+        {{ end }}
+      </ul>
+      {{ end }}
+    </li>
+    {{ end }}
+  </ul>
+</nav>

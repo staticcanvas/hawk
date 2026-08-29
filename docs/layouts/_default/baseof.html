@@ -2,6 +2,20 @@
 <html lang="{{ site.Language.Lang }}">
 <head>
   <meta charset="utf-8">
+  <script>
+    // Runs synchronously before first paint (inline, before any stylesheet) so a returning
+    // visitor's stored light-mode choice never flashes dark-then-light. Kept deliberately tiny
+    // and inline rather than in docs.js — this one has to run before anything else.
+    (function () {
+      try {
+        var stored = localStorage.getItem('hawk-docs:theme');
+        var theme = stored || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+        if (theme === 'light') document.documentElement.dataset.theme = 'light';
+      } catch (e) {
+        // private browsing / storage disabled — falls back to the default dark theme below.
+      }
+    })();
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ if not .IsHome }}{{ .Title }} · {{ end }}{{ site.Title }}</title>
   <meta name="description" content="{{ .Description | default site.Params.description }}">
@@ -15,6 +29,7 @@
   <header class="site-header" data-pagefind-ignore>
     <div class="shell header-inner">
       <a class="brand" href="{{ "" | relURL }}" aria-label="hawk home">
+        <img class="brand-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="24" height="24">
         <span class="brand-text">hawk</span>
       </a>
 
@@ -30,11 +45,38 @@
         {{ end }}
         {{ end }}
       </nav>
+
+      <div class="header-actions">
+        <a class="icon-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer" aria-label="Hawk on GitLab">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z" transform="translate(0 2)"/></svg>
+        </a>
+        <a class="icon-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer" aria-label="Hawk on GitHub">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.64-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.1.39-2 1.03-2.7-.1-.25-.45-1.26.1-2.62 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.9-1.3 2.75-1.02 2.75-1.02.55 1.36.2 2.37.1 2.62.64.7 1.03 1.6 1.03 2.7 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
+        </a>
+        <button class="theme-toggle" type="button" aria-label="Toggle light/dark theme" aria-pressed="false">
+          <svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5" />
+            <path d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8" stroke-linecap="round" />
+          </svg>
+          <svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true">
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
 
   <div class="{{ if not .IsHome }}shell {{ end }}page-shell{{ if .IsHome }} page-shell--home{{ end }}" data-pagefind-body>
-    {{ block "main" . }}{{ end }}
+    {{ if .IsHome }}
+      {{ block "main" . }}{{ end }}
+    {{ else }}
+      <div class="docs-layout">
+        {{ partial "sidebar.html" . }}
+        <div class="docs-main">
+          {{ block "main" . }}{{ end }}
+        </div>
+      </div>
+    {{ end }}
   </div>
 
   <footer class="site-footer" data-pagefind-ignore>
@@ -43,20 +85,84 @@
     </div>
   </footer>
 
+  {{/* Explicit tabs computed from every category actually in use across the site's own content
+       right now (every content page's category/categories frontmatter) — renders synchronously
+       on mount instead of waiting on Pagefind's filters() to resolve, in a fixed, deliberate
+       order instead of whatever order that API happens to enumerate in. Still entirely
+       content-driven: a category with no pages simply never appears here, same as
+       auto-derivation, just computed at build time instead of query time. */}}
+  {{ $categories := slice }}
+  {{ range site.RegularPages }}
+    {{ with .Params.category }}{{ $categories = $categories | append . }}{{ end }}
+    {{ range .Params.categories }}{{ $categories = $categories | append . }}{{ end }}
+  {{ end }}
+  {{ $categories = $categories | uniq | sort }}
+
   <script type="module">
     import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
     import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
 
     HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
 
+    const categories = {{ $categories | jsonify | safeJS }};
+
     new HawkSearch({
       index: document.body.dataset.hawkIndex,
       theme: 'typeflow',
       // .doc-article wraps single.html and list.html pages alike (see both templates) —
       // narrower than the default [data-pagefind-body], so the preview pane doesn't also
-      // pull in the sibling .doc-toc sidebar.
+      // pull in the sibling .doc-toc/.doc-sidebar chrome.
       contentSelector: '.doc-article',
+      tabs: categories.map((name) => ({ id: name.toLowerCase(), label: name, filter: { category: name } })),
     });
+
+    // ── Theme toggle ──────────────────────────────────────────────────────────────────────
+    // Reuses hawk-theme-typeflow.css's existing [data-theme='light'] token overrides (already
+    // shipped for the search modal) for the whole site's chrome too — no separate light-mode
+    // color CSS needed in docs.css: every --hawk-* custom property docs.css reads inherits from
+    // <html>, and hawk-theme-typeflow.css's light-mode selector already matches any
+    // [data-theme='light'] ancestor of the [data-hawk-theme='typeflow'] element (body carries
+    // that attribute already), so toggling documentElement.dataset.theme re-themes everything at
+    // once.
+    const themeToggle = document.querySelector('.theme-toggle');
+    const applyTheme = (theme) => {
+      document.documentElement.dataset.theme = theme;
+      themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+    };
+    themeToggle.addEventListener('click', () => {
+      const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      try {
+        localStorage.setItem('hawk-docs:theme', next);
+      } catch (e) {
+        // private browsing / storage disabled — the choice still applies this session.
+      }
+    });
+    applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+
+    // ── Scroll-reveal ─────────────────────────────────────────────────────────────────────
+    // Fades/slides [data-reveal] elements in as they enter the viewport. Skips everything
+    // (elements start fully visible, no observer attached) when prefers-reduced-motion is set,
+    // or if IntersectionObserver isn't available at all — a static page is a correct fallback
+    // for either case, not a broken one.
+    const revealTargets = document.querySelectorAll('[data-reveal]');
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (revealTargets.length && !reduceMotion && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-revealed');
+              observer.unobserve(entry.target);
+            }
+          }
+        },
+        { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+      );
+      revealTargets.forEach((el) => observer.observe(el));
+    } else {
+      revealTargets.forEach((el) => el.classList.add('is-revealed'));
+    }
   </script>
 </body>
 </html>

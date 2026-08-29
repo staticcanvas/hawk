@@ -31,9 +31,9 @@
 
 {{ if .Params.features }}
 <section class="shell feature-section">
-  <div class="feature-grid">
+  <div class="feature-grid" data-reveal-group>
     {{ range .Params.features }}
-    <article class="feature-card">
+    <article class="feature-card" data-reveal>
       <h3>{{ .title }}</h3>
       <p>{{ .body }}</p>
     </article>
@@ -44,9 +44,9 @@
 
 <section class="shell guides-section">
   <h2>Guides</h2>
-  <div class="card-grid">
+  <div class="card-grid" data-reveal-group>
     {{ range where site.RegularPages "Section" "guides" }}
-    <a class="guide-card" href="{{ .Permalink }}">
+    <a class="guide-card" data-reveal href="{{ .Permalink }}">
       <h3>{{ .Title }}</h3>
       {{ with .Description }}<p>{{ . }}</p>{{ end }}
     </a>
