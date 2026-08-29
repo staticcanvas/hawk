@@ -294,9 +294,23 @@
 .hawk-result-item.is-selected {
   background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
 }
+.hawk-result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 .hawk-result-title {
   font-weight: 600;
   font-size: 0.9rem;
+}
+.hawk-meta-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--hawk-border-default, #253347);
+  color: var(--hawk-text-muted, #64748b);
+  white-space: nowrap;
 }
 .hawk-result-desc {
   margin-top: 0.2rem;

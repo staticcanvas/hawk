@@ -27,6 +27,7 @@ export interface HawkMatch {
   url: string;
   excerpt: string;
   isAnchor: boolean;
+  meta: Record<string, string>;
 }
 
 export interface HawkState {
@@ -34,6 +35,7 @@ export interface HawkState {
   query: string;
   selectedIndex: number;
   matches: HawkMatch[];
+  pageCount: number;
   activeTab: string;
   error: Error | null;
 }

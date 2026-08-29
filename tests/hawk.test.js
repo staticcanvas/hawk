@@ -476,6 +476,63 @@ describe('search results and keyboard navigation', () => {
   });
 });
 
+describe('result/page metadata', () => {
+  async function hawkWithResults(config = {}) {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'Page One', section: 'Guides' },
+            url: '/one/',
+            excerpt: 'first match',
+            sub_results: [{ title: 'A Section', url: '/one/#section', excerpt: 'section text' }],
+          }),
+          resultFor({ meta: { title: 'Page Two' }, url: '/two/', excerpt: 'second match', sub_results: [] }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, ...config });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'match';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return hawk;
+  }
+
+  it('exposes the full meta object on each match, including sub_results reusing the parent page meta', async () => {
+    const hawk = await hawkWithResults();
+    expect(hawk.state.matches[0].meta).toEqual({ title: 'Page One', section: 'Guides' });
+    expect(hawk.state.matches[1].meta).toEqual({ title: 'Page One', section: 'Guides' }); // the sub_result row
+    expect(hawk.state.matches[2].meta).toEqual({ title: 'Page Two' });
+    hawk.destroy();
+  });
+
+  it('renders a meta.section badge on the result row and, once selected, the preview header', async () => {
+    const hawk = await hawkWithResults();
+    const firstRow = document.querySelectorAll('.hawk-result-item')[0];
+    expect(firstRow.querySelector('.hawk-meta-badge').textContent).toBe('Guides');
+    expect(document.querySelector('.hawk-preview-header .hawk-meta-badge').textContent).toBe('Guides');
+
+    const secondRow = document.querySelectorAll('.hawk-result-item')[2]; // Page Two, no meta.section
+    expect(secondRow.querySelector('.hawk-meta-badge')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('tracks pageCount (distinct pages) separately from the flattened match count', async () => {
+    const hawk = await hawkWithResults();
+    expect(hawk.state.matches).toHaveLength(3); // 2 pages + 1 sub_result anchor
+    expect(hawk.state.pageCount).toBe(2);
+    hawk.destroy();
+  });
+
+  it('the default counter text includes page count only when it differs from the match count', async () => {
+    const hawk = await hawkWithResults();
+    expect(document.querySelector('.hawk-modal-counter').textContent).toBe('3 matching results across 2 pages');
+    hawk.destroy();
+  });
+});
+
 describe('two-pane keyboard navigation', () => {
   async function hawkWithResults() {
     const pagefind = mockPagefind({

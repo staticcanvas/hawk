@@ -39,6 +39,9 @@ const DEFAULT_HOTKEYS = { open: true, slash: true, escape: true };
  * Every piece of UI text hawk renders, overridable via `config.strings` for localization.
  * `matchingResults`/`entries`/`noResults` are functions (not plain strings) so a consumer can
  * supply real pluralization/interpolation logic for their locale instead of hawk guessing at it.
+ * `matchingResults`/`entries` receive `(count, pageCount)` — `pageCount` (the number of distinct
+ * pages represented, vs. `count`'s flattened row count including anchor/section sub-results) is
+ * additive: a single-argument override still works, `pageCount` is just ignored.
  */
 const DEFAULT_STRINGS = {
   dialogLabel: 'Search',
@@ -59,8 +62,14 @@ const DEFAULT_STRINGS = {
   untitled: 'Untitled',
   typeToSearch: 'Type to search',
   noResults: (query) => `No results${query ? ` for "${query}"` : ''}.`,
-  matchingResults: (count) => `${count} matching result${count === 1 ? '' : 's'}`,
-  entries: (count) => `${count} entries`,
+  matchingResults: (count, pageCount) => {
+    const base = `${count} matching result${count === 1 ? '' : 's'}`;
+    return pageCount && pageCount !== count ? `${base} across ${pageCount} page${pageCount === 1 ? '' : 's'}` : base;
+  },
+  entries: (count, pageCount) => {
+    const base = `${count} entries`;
+    return pageCount && pageCount !== count ? `${base} across ${pageCount} page${pageCount === 1 ? '' : 's'}` : base;
+  },
   unavailable: 'Search is unavailable right now. Try again later.',
   unavailableCounter: 'Search unavailable',
 };
@@ -189,6 +198,7 @@ export class HawkSearch {
     this.#query = '';
     this.#selectedIndex = -1;
     this.#matches = [];
+    this.#pageCount = 0;
     this.#currentTabId = config.defaultTab || 'all';
     this.#tabs = this.#resolveExplicitTabs(config);
     this.#tabsExplicit = this.#tabs !== null;
@@ -210,6 +220,7 @@ export class HawkSearch {
   #query;
   #selectedIndex;
   #matches;
+  #pageCount;
   #tabs;
   #currentTabId;
   #tabsExplicit;
@@ -240,6 +251,7 @@ export class HawkSearch {
       query: this.#query,
       selectedIndex: this.#selectedIndex,
       matches: this.#matches,
+      pageCount: this.#pageCount,
       activeTab: this.#currentTabId,
       error: this.#pagefindError,
     };
@@ -697,13 +709,22 @@ export class HawkSearch {
     const flattened = [];
     for (const result of (results || []).slice(0, this.maxResults)) {
       const data = await result.data();
-      flattened.push({ title: data.meta?.title || this.strings.untitled, url: data.url, excerpt: data.excerpt, isAnchor: false });
+      flattened.push({
+        title: data.meta?.title || this.strings.untitled,
+        url: data.url,
+        excerpt: data.excerpt,
+        isAnchor: false,
+        meta: data.meta || {},
+      });
       for (const sub of data.sub_results || []) {
         if (sub.url === data.url) continue;
-        flattened.push({ title: sub.title, url: sub.url, excerpt: sub.excerpt, isAnchor: true });
+        // sub_results don't carry their own meta — reuse the parent page's, so a section/category
+        // badge is consistent whether the row is the page itself or one of its anchors.
+        flattened.push({ title: sub.title, url: sub.url, excerpt: sub.excerpt, isAnchor: true, meta: data.meta || {} });
       }
     }
     this.#matches = flattened.slice(0, this.maxResults);
+    this.#pageCount = new Set(this.#matches.map((m) => m.url.split('#')[0])).size;
     this.#selectedIndex = this.#matches.length ? 0 : -1;
     this.#renderResults();
   }
@@ -712,14 +733,14 @@ export class HawkSearch {
     if (!this.#matches.length) {
       this.#resultsEl.innerHTML = `<div class="hawk-empty">${this.strings.noResults(this.#query)}</div>`;
       this.#resultsEl.removeAttribute('aria-activedescendant');
-      this.#counterEl.textContent = this.#query ? this.strings.matchingResults(0) : this.strings.typeToSearch;
+      this.#counterEl.textContent = this.#query ? this.strings.matchingResults(0, 0) : this.strings.typeToSearch;
       this.#renderPreview();
       return;
     }
 
     this.#counterEl.textContent = this.#query
-      ? this.strings.matchingResults(this.#matches.length)
-      : this.strings.entries(this.#matches.length);
+      ? this.strings.matchingResults(this.#matches.length, this.#pageCount)
+      : this.strings.entries(this.#matches.length, this.#pageCount);
 
     this.#resultsEl.innerHTML = this.#matches
       .map(
@@ -727,6 +748,7 @@ export class HawkSearch {
         <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}">
           <div class="hawk-result-header">
             <span class="hawk-result-title">${item.isAnchor ? '&sect; ' : ''}${item.title}</span>
+            ${item.meta?.section ? `<span class="hawk-meta-badge">${item.meta.section}</span>` : ''}
           </div>
           <div class="hawk-result-desc">${item.excerpt || ''}</div>
         </a>`
@@ -773,6 +795,7 @@ export class HawkSearch {
     this.#previewEl.innerHTML = `
       <div class="hawk-preview-header">
         ${item.isAnchor ? `<span class="hawk-anchor-badge">${this.strings.sectionBadge}</span>` : ''}
+        ${item.meta?.section ? `<span class="hawk-meta-badge">${item.meta.section}</span>` : ''}
       </div>
       <h3 class="hawk-preview-title"></h3>
       <div class="hawk-preview-content"><div class="hawk-preview-loading">${this.strings.previewLoading}</div></div>
