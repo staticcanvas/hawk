@@ -123,7 +123,8 @@ Full type declarations in `src/hawk.d.ts` (core), `src/hawk-theme-typeflow.d.ts`
 | `npm run build` | Builds core + optional (`theme-typeflow`, `animation-typeflow`) bundles |
 | `npm run dev:typeflow` | Builds hawk and copies the bundle + a preview Pagefind index into the sibling typeflow checkout's docs site, for live prototyping |
 | `npm run pagefind:index` | Wraps `pagefind --site <dir>` — see `scripts/pagefind-index.mjs` |
-| `npm test` / `npm run test:coverage` | Vitest |
+| `npm test` / `npm run test:coverage` | Vitest (jsdom) — unit coverage |
+| `npm run test:e2e` | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Not yet wired into CI (`.gitlab-ci.yml`) — browser install cost/compatibility on the CI image is unverified. |
 | `npm run lint` / `npm run lint:fix` | ESLint |
 | `npm run docs:build` / `npm run docs:serve` | Builds and serves hawk's own Hugo docs site |
 | `npm run check:size` | Enforces the gzip bundle size budget |
