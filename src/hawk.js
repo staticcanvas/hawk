@@ -37,6 +37,21 @@ const PINNED_TAB_ID = 'pinned';
 const DEFAULT_HOTKEYS = { open: true, slash: true, escape: true };
 
 /**
+ * The 5 built-in `config.revealAnimation` names, each paired with the duration (ms) hawk.css's
+ * own keyframes for that name are tuned to — used as the default for `config.revealDuration` and
+ * written to `--hawk-reveal-duration` on mount, so hawk.js's close() timer and hawk.css's
+ * `animation-duration` read the same single number instead of two hardcoded values drifting apart.
+ * A custom (unlisted) `revealAnimation` name falls back to 220ms unless `revealDuration` is given.
+ */
+const REVEAL_ANIMATION_DURATIONS = {
+  fade: 160,
+  'scale-fade': 200,
+  'slide-down': 220,
+  'blur-zoom': 260,
+  spring: 340,
+};
+
+/**
  * Every piece of UI text hawk renders, overridable via `config.strings` for localization.
  * `matchingResults`/`entries`/`noResults` are functions (not plain strings) so a consumer can
  * supply real pluralization/interpolation logic for their locale instead of hawk guessing at it.
@@ -129,10 +144,13 @@ export class HawkSearch {
    *   name is registered (i.e. the consumer loaded hawk-animation-typeflow.js and registered it), else `'instant'`.
    * @param {string[]} [config.categories] Shorthand for `config.tabs`: one tab per category name, each
    *   filtering on `categoryFilterName`. Ignored if `config.tabs` is given.
-   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, pagefindOptions?: Record<string, unknown>}>} [config.tabs]
+   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, pagefindOptions?: Record<string, unknown>, defaultPreviewUrl?: string, defaultPreviewTitle?: string}>} [config.tabs]
    *   Explicit tab list. `filter` is a raw Pagefind `filters` object (passed to `search()`/`debouncedSearch()`
-   *   verbatim) — omit it for a filterless tab (e.g. "All"). Replaces auto-derivation from Pagefind's
-   *   `filters()` entirely and renders synchronously on mount instead of waiting for Pagefind to load.
+   *   verbatim) — omit it for a filterless tab (e.g. "All"). `defaultPreviewUrl`/`defaultPreviewTitle` override
+   *   `config.defaultPreviewUrl`/`config.defaultPreviewTitle` while this tab is active and nothing is selected
+   *   (zero matches, or before a query is typed) — see the top-level options below for the fetch/extract
+   *   behavior those share. Replaces auto-derivation from Pagefind's `filters()` entirely and renders
+   *   synchronously on mount instead of waiting for Pagefind to load.
    * @param {boolean} [config.includeAllTab=true] Prepend a filterless "All" tab to `tabs`/`categories`/the
    *   auto-derived list.
    * @param {string} [config.defaultTab='all'] Tab id active on open. Falls back to `'all'` (with a console
@@ -151,8 +169,20 @@ export class HawkSearch {
    *   with their own CSS (e.g. an existing site-wide `.prose` class) instead of overriding hawk's.
    * @param {string} [config.defaultPreviewUrl] Shows this page's content in the preview pane as soon as the
    *   modal mounts, before any result is selected — fetched/extracted via the same path a real selection
-   *   uses. Replaced the instant real results exist (from a selection, or from `eagerResults`).
+   *   uses. Also shown whenever the active tab has zero matches and doesn't define its own
+   *   `defaultPreviewUrl` (see `config.tabs`). Replaced the instant real results exist (from a selection,
+   *   or from `eagerResults`).
    * @param {string} [config.defaultPreviewTitle=''] Title shown above `defaultPreviewUrl`'s content.
+   * @param {'fade'|'scale-fade'|'slide-down'|'blur-zoom'|'spring'|string|false} [config.revealAnimation='scale-fade']
+   *   Modal open/close reveal, applied to `.hawk-modal-backdrop`/`.hawk-modal-dialog` via hawk.css keyframes
+   *   selected on `[data-hawk-reveal]`. `false` disables it (today's instant show/hide). Any other string is
+   *   accepted too — hawk.js only sets the attribute and the CSS variable below, so a consumer can define
+   *   `[data-hawk-reveal="my-name"]` keyframes of their own. Always skipped (instant, matching `false`)
+   *   when the visitor has `prefers-reduced-motion: reduce` set.
+   * @param {number} [config.revealDuration] Milliseconds hawk.js waits before actually hiding the modal
+   *   after `close()` (and the value written to `--hawk-reveal-duration`, which hawk.css's keyframes read
+   *   for `animation-duration`) — defaults to the built-in duration for the 5 named animations above, or
+   *   220ms for an unrecognized/custom `revealAnimation` name.
    * @param {boolean} [config.eagerResults=true] Runs an empty-query search as soon as Pagefind loads, so the
    *   results pane shows a default listing instead of "Type to search". Set `false` to keep the results pane
    *   empty until the visitor types.
@@ -234,6 +264,8 @@ export class HawkSearch {
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
     this.defaultPreviewTitle = config.defaultPreviewTitle || '';
+    this.revealAnimation = config.revealAnimation === false ? false : config.revealAnimation || 'scale-fade';
+    this.revealDuration = config.revealDuration ?? REVEAL_ANIMATION_DURATIONS[this.revealAnimation] ?? 220;
     this.eagerResults = config.eagerResults !== false;
     this.onOpen = config.onOpen;
     this.onClose = config.onClose;
@@ -295,6 +327,7 @@ export class HawkSearch {
   #scrollBrightenTimers;
   #mediaQuery;
   #onBreakpointChange;
+  #revealTimer;
 
   /** Public, introspectable state — mirrors the org's "no emitter, poll the public state" convention. */
   get state() {
@@ -366,6 +399,8 @@ export class HawkSearch {
       label: t.label,
       filter: t.filter || null,
       pagefindOptions: t.pagefindOptions || null,
+      defaultPreviewUrl: t.defaultPreviewUrl || null,
+      defaultPreviewTitle: t.defaultPreviewTitle || '',
     }));
     return this.includeAllTab
       ? [{ id: 'all', label: 'All', filter: null, pagefindOptions: null }, ...normalized]
@@ -432,12 +467,17 @@ export class HawkSearch {
     if (this.disableDefaultMarkdownStyles) {
       this.#root.dataset.hawkMarkdownStyles = 'off';
     }
+    if (this.revealAnimation) {
+      this.#root.dataset.hawkReveal = this.revealAnimation;
+      this.#root.style.setProperty('--hawk-reveal-duration', `${this.revealDuration}ms`);
+    }
     this.#applyParams();
     if (this.#tabsExplicit) {
       this.#applyDefaultTabAndRender(this.#withPinnedTab(this.#tabs));
     }
-    if (this.defaultPreviewUrl) {
-      this.#renderDefaultPreview();
+    const initialDefault = this.#activeTabDefaultPreview();
+    if (initialDefault.url) {
+      this.#renderDefaultPreview(initialDefault.url, initialDefault.title);
     }
 
     document.querySelectorAll(this.triggerSelector).forEach((btn) => {
@@ -661,7 +701,10 @@ export class HawkSearch {
     if (!this.enablePins || !this.#pins.length) {
       return tabs;
     }
-    return [{ id: PINNED_TAB_ID, label: this.strings.pinnedTab, filter: null, pagefindOptions: null }, ...tabs];
+    return [
+      { id: PINNED_TAB_ID, label: this.strings.pinnedTab, filter: null, pagefindOptions: null, defaultPreviewUrl: null, defaultPreviewTitle: '' },
+      ...tabs,
+    ];
   }
 
   /**
@@ -770,14 +813,33 @@ export class HawkSearch {
   }
 
   /**
-   * Renders `defaultPreviewUrl`'s content into the preview pane on mount, before any result is
-   * selected — reuses the same fetch/extract path `#loadPreviewContent` uses for a real match, so
-   * it's real rendered page content, not a special-cased fixture. A real selection (or an
-   * `eagerResults` listing) replaces it the moment `#matches` is non-empty.
+   * The default preview to show when nothing is selected: the active tab's own
+   * `defaultPreviewUrl`/`defaultPreviewTitle` if it has one, else `config.defaultPreviewUrl`/
+   * `config.defaultPreviewTitle`, else neither.
+   * @returns {{url: string|null, title: string}}
    */
-  #renderDefaultPreview() {
-    const key = this.defaultPreviewUrl;
-    this.#previewKey = key;
+  #activeTabDefaultPreview() {
+    const tab = (this.#tabs || []).find((t) => t.id === this.#currentTabId);
+    if (tab?.defaultPreviewUrl) {
+      return { url: tab.defaultPreviewUrl, title: tab.defaultPreviewTitle };
+    }
+    return { url: this.defaultPreviewUrl, title: this.defaultPreviewTitle };
+  }
+
+  /**
+   * Renders `url`'s content into the preview pane in place of a real selection — on mount before
+   * any result exists, and whenever the active tab has zero matches. Reuses the same fetch/extract
+   * path `#loadPreviewContent` uses for a real match, so it's real rendered page content, not a
+   * special-cased fixture. A real selection (or an `eagerResults` listing) replaces it the moment
+   * `#matches` is non-empty.
+   * @param {string} url
+   * @param {string} title
+   */
+  #renderDefaultPreview(url, title) {
+    if (url === this.#previewKey) {
+      return;
+    }
+    this.#previewKey = url;
     this.#previewEl.innerHTML = `
       <div class="hawk-preview-header"></div>
       <h3 class="hawk-preview-title"></h3>
@@ -785,8 +847,8 @@ export class HawkSearch {
     `;
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
-    this.#animation.typeTitle(titleEl, this.defaultPreviewTitle, { isAnchor: false });
-    this.#loadPreviewContent({ url: this.defaultPreviewUrl, excerpt: '', isAnchor: false }, key, contentEl);
+    this.#animation.typeTitle(titleEl, title, { isAnchor: false });
+    this.#loadPreviewContent({ url, excerpt: '', isAnchor: false }, url, contentEl);
   }
 
   /**
@@ -931,9 +993,15 @@ export class HawkSearch {
     const searchTerm = this.inlineFilters ? remainingQuery : query;
     let results;
     try {
+      // Pagefind treats a real (even empty-string) search term and "no term at all" as two
+      // different modes: `search('', ...)` scores against an empty string and matches nothing,
+      // while `search(null, ...)` is its documented filter-only listing mode — every page
+      // matching `options.filters` (or every page, with none), unranked. Passing `null` here
+      // (not `''`) is what makes eagerResults' listing, and a just-switched tab's own listing,
+      // actually populate instead of silently showing zero results forever.
       ({ results } = searchTerm.trim()
         ? await this.#pagefind.debouncedSearch(searchTerm, options)
-        : await this.#pagefind.search('', options));
+        : await this.#pagefind.search(null, options));
     } catch (err) {
       // Covers every search call, not just the initial load — a transient failure on a later
       // keystroke (not just Pagefind's runtime failing to load in the first place) shouldn't
@@ -1036,7 +1104,13 @@ export class HawkSearch {
   #renderPreview() {
     const item = this.#matches[this.#selectedIndex];
     if (!item) {
-      this.#previewEl.innerHTML = `<div class="hawk-preview-empty">${this.strings.previewEmpty}</div>`;
+      const fallback = this.#activeTabDefaultPreview();
+      if (fallback.url) {
+        this.#renderDefaultPreview(fallback.url, fallback.title);
+      } else {
+        this.#previewKey = null;
+        this.#previewEl.innerHTML = `<div class="hawk-preview-empty">${this.strings.previewEmpty}</div>`;
+      }
       return;
     }
 
@@ -1341,13 +1415,31 @@ export class HawkSearch {
     }
   }
 
+  /**
+   * True unless `config.revealAnimation` is `false` or the visitor has `prefers-reduced-motion:
+   * reduce` set — the single check `open()`/`close()` gate their reveal-animation branch on.
+   */
+  #revealAnimationActive() {
+    return Boolean(this.revealAnimation) && !(typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
   /** Opens the search modal and focuses the input. */
   open() {
+    clearTimeout(this.#revealTimer);
+    delete this.#root.dataset.hawkAnimState;
     this.#root.hidden = false;
     document.body.style.overflow = 'hidden';
     this.#isOpen = true;
     this.#ensurePagefindLoaded();
     this.#updatePlaceholderVisibility();
+    if (this.#revealAnimationActive()) {
+      // 'opening' selects hawk.css's enter keyframes (see [data-hawk-reveal] rules); cleared once
+      // they finish so a later close() starts from a clean attribute state, not mid-animation.
+      this.#root.dataset.hawkAnimState = 'opening';
+      this.#revealTimer = setTimeout(() => {
+        delete this.#root.dataset.hawkAnimState;
+      }, this.revealDuration);
+    }
     setTimeout(() => {
       this.#input.focus();
       this.#input.select();
@@ -1357,11 +1449,23 @@ export class HawkSearch {
 
   /** Closes the search modal. */
   close() {
-    this.#root.hidden = true;
     document.body.style.overflow = '';
     this.#isOpen = false;
     this.#updatePlaceholderVisibility();
     this.onClose?.();
+    clearTimeout(this.#revealTimer);
+    if (this.#revealAnimationActive()) {
+      // Stays visible (not [hidden]) for the exit keyframes' duration — [data-hawk-anim-state
+      // ='closing'] also sets pointer-events: none (hawk.css) so the fading-out dialog can't
+      // still be clicked/tabbed into during that window.
+      this.#root.dataset.hawkAnimState = 'closing';
+      this.#revealTimer = setTimeout(() => {
+        this.#root.hidden = true;
+        delete this.#root.dataset.hawkAnimState;
+      }, this.revealDuration);
+    } else {
+      this.#root.hidden = true;
+    }
   }
 
   /**
@@ -1417,6 +1521,7 @@ export class HawkSearch {
     }
     this.#mediaQuery?.removeEventListener?.('change', this.#onBreakpointChange);
     this.#scrollBrightenTimers.forEach((id) => clearTimeout(id));
+    clearTimeout(this.#revealTimer);
     this.#root?.remove();
     this.#builtInTrigger?.remove();
   }

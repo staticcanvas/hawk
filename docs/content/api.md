@@ -33,8 +33,10 @@ category: Reference
 | `previewSectionExcerptLength` | `number` | `140` | Max characters of a row's excerpt before truncating with `…`. |
 | `hotkeys` | `object` | `{ open: true, slash: true, escape: true }` | Enables/disables Ctrl/Cmd+K, `/`, and Escape. |
 | `strings` | `object` | see [Strings and localization](#strings-and-localization) | Overrides for any UI text. |
-| `defaultPreviewUrl` | `string` | — | Shows this page's content in the preview pane on mount, before any result is selected. Replaced the instant real results exist. |
+| `defaultPreviewUrl` | `string` | — | Shows this page's content in the preview pane on mount, before any result is selected, and whenever the active tab has zero matches and doesn't define its own `defaultPreviewUrl`. Replaced the instant real results exist. |
 | `defaultPreviewTitle` | `string` | `''` | Title shown above `defaultPreviewUrl`'s content. |
+| `revealAnimation` | `'fade' \| 'scale-fade' \| 'slide-down' \| 'blur-zoom' \| 'spring' \| string \| false` | `'scale-fade'` | Modal open/close reveal. `false` disables it (instant show/hide). See [Modal reveal animations](#modal-reveal-animations). |
+| `revealDuration` | `number` | built-in per-name default | Milliseconds `close()` waits before actually hiding the modal, and the value written to `--hawk-reveal-duration`. |
 | `eagerResults` | `boolean` | `true` | Runs an empty-query search as soon as Pagefind loads, populating the results pane instead of leaving it on "Type to search". |
 | `rotatingPlaceholders` | `string[]` | — | Example queries cycled through the input's placeholder. See [Rotating placeholder](#rotating-placeholder). |
 | `showPoweredBy` | `boolean` | `true` | Shows a "Search powered by Pagefind" link in the modal footer. |
@@ -69,6 +71,8 @@ interface HawkTab {
   label: string;
   filter?: Record<string, string | string[]>; // a raw Pagefind filters object, passed through verbatim
   pagefindOptions?: Record<string, unknown>;   // merged over the top-level pagefindOptions for this tab only
+  defaultPreviewUrl?: string;    // overrides config.defaultPreviewUrl while this tab is active
+  defaultPreviewTitle?: string;
 }
 ```
 
@@ -78,6 +82,28 @@ interface HawkTab {
 [Pagefind setup]({{< relref "/guides/pagefind-setup" >}}) for the auto-derived (zero-config)
 tabs path, and [Density and keyboard navigation]({{< relref "/guides/density-and-navigation" >}})
 for `density`/`defaultPreviewUrl`/`eagerResults`.
+
+`defaultPreviewUrl`/`defaultPreviewTitle` set a landing page for one tab specifically — shown in
+the preview pane whenever that tab is active and nothing is selected (zero matches for the current
+query, or no query typed yet), taking priority over `config.defaultPreviewUrl` while that tab is
+active. A tab without its own default falls back to the top-level one, then to the plain
+`strings.previewEmpty` message if neither is set:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  tabs: [
+    { id: 'guides', label: 'Guides', filter: { category: 'Guides' }, defaultPreviewUrl: '/guides/', defaultPreviewTitle: 'Guides' },
+    { id: 'reference', label: 'Reference', filter: { category: 'Reference' }, defaultPreviewUrl: '/api/', defaultPreviewTitle: 'API reference' },
+  ],
+  defaultPreviewUrl: '/',
+  defaultPreviewTitle: 'Hawk',
+});
+```
+
+Fetched/extracted through the same path a real selection uses (see
+[Rich preview content](#rich-preview-content) below) — real rendered page content, not a
+special-cased fixture.
 
 ### Inline filter syntax
 
@@ -283,6 +309,41 @@ interface HawkStrings {
 real pluralization/interpolation instead of hawk guessing at it. `matchingResults`/`entries`'s
 `pageCount` argument is additive — a single-argument override still works, `pageCount` is just
 ignored.
+
+## Modal reveal animations
+
+`config.revealAnimation` selects how the modal opens and closes — one of 5 built-in names, or
+`false` for today's instant show/hide:
+
+| Name | Feel |
+| --- | --- |
+| `'fade'` | A plain crossfade on both the backdrop and dialog. No motion — the steadiest option. |
+| `'scale-fade'` (default) | The command-palette standard (Linear/Raycast/VS Code Quick Open): the dialog fades in while easing up from a slight scale-down. |
+| `'slide-down'` | The dialog drops in from just above its resting position (Alfred/Spotlight-top style). |
+| `'blur-zoom'` | The backdrop's blur ramps up from 0 alongside its fade, while the dialog eases in from a slight zoomed-in scale — reads as the surface "materializing". |
+| `'spring'` | The bounciest of the 5 (the Arc-browser/macOS spring feel): the dialog's scale overshoots past 1 before settling. Exits with a plain scale-fade — no bounce on the way out. |
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  revealAnimation: 'spring',
+  revealDuration: 300, // optional — defaults to a built-in duration tuned per name
+});
+```
+
+Every animation is implemented as CSS keyframes on `.hawk-modal-backdrop`/`.hawk-modal-dialog`,
+selected via `[data-hawk-reveal="<name>"][data-hawk-anim-state="opening"|"closing"]` (see
+hawk.css). `open()` sets `data-hawk-anim-state="opening"` and clears it after `revealDuration`;
+`close()` sets `data-hawk-anim-state="closing"`, keeping the modal visible (not `[hidden]`, so the
+exit keyframes actually play) until that same duration elapses. `--hawk-reveal-duration` is
+written inline from `revealDuration` — the one number hawk.js's timer and hawk.css's
+`animation-duration` both read, so they can't drift out of sync.
+
+Passing a name outside the 5 above is allowed — hawk.js only ever sets the attribute and the CSS
+variable, so a consumer can define their own `[data-hawk-reveal="my-name"]` keyframes (pair it
+with `revealDuration` to match your own timing; an unrecognized name otherwise defaults to
+220ms). Always skipped (instant, matching `revealAnimation: false`) when the visitor has
+`prefers-reduced-motion: reduce` set — no configuration needed for that.
 
 ## Instance methods
 

@@ -52,6 +52,8 @@ export interface HawkTab {
   label: string;
   filter?: Record<string, string | string[]>;
   pagefindOptions?: Record<string, unknown>;
+  defaultPreviewUrl?: string;
+  defaultPreviewTitle?: string;
 }
 
 export interface HawkStrings {
@@ -118,6 +120,8 @@ export interface HawkSearchConfig {
   previewSections?: boolean;
   previewSectionSelector?: string;
   previewSectionExcerptLength?: number;
+  revealAnimation?: 'fade' | 'scale-fade' | 'slide-down' | 'blur-zoom' | 'spring' | string | false;
+  revealDuration?: number;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;
