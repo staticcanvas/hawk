@@ -13,6 +13,9 @@ in the repository, following [Keep a Changelog](https://keepachangelog.com/en/1.
 pre-1.0 and hasn't cut a tagged release yet — the versions there track `package.json`'s history,
 not published tags.
 
+- **0.4.0** — section-outline previews, per-tab default previews, 5 built-in modal reveal
+  animations, and a fix for empty-query result listings never actually populating against a real
+  Pagefind index.
 - **0.3.0** — theming depth (fonts, JS-only `theme.tokens`, themed scrollbars, mark-highlight
   tokens), a rotating placeholder, result/page metadata, powered-by attribution, the pin system,
   structured inline filter syntax, a built-in trigger element, the modal focus trap, and

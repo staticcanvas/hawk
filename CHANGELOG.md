@@ -4,6 +4,50 @@ All notable changes to this project are documented in this file. The format is b
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Hawk is pre-1.0 and hasn't cut a
 tagged release yet — the versions below track `package.json`'s history, not published tags.
 
+## [0.4.0] - 2026-08-30
+
+### Added
+
+- **Section-outline previews**: `config.previewSections` renders a page-level match's preview as
+  clickable heading+excerpt rows (one per heading matching `previewSectionSelector`, default
+  `'h2, h3'`) instead of the full page dump. An anchor/sub-result match is unaffected — it still
+  shows its one matched section in full. Falls back to the full page dump if the page has no
+  matching headings. New `previewSectionExcerptLength` (default `140`).
+- **Per-tab default previews**: `HawkTab.defaultPreviewUrl`/`defaultPreviewTitle` set a landing
+  page for one tab specifically, shown whenever that tab is active and nothing is selected (zero
+  matches, or no query typed yet) — overriding `config.defaultPreviewUrl` while that tab is
+  active, falling back to it otherwise.
+- **Modal reveal animations**: `config.revealAnimation` — 5 built-in named CSS-keyframe reveals
+  (`'fade'`, `'scale-fade'` (default), `'slide-down'`, `'blur-zoom'`, `'spring'`), `false` for
+  instant show/hide, or a custom name paired with your own `[data-hawk-reveal="name"]` keyframes.
+  `config.revealDuration` overrides the built-in per-name timing. Always skipped (instant) under
+  `prefers-reduced-motion: reduce`.
+
+### Fixed
+
+- **Empty-query listings never actually populated against a real Pagefind index.** `eagerResults`
+  and a just-activated tab's own initial listing both called `pagefind.search('', options)` —
+  Pagefind treats `''` as a real (zero-match) search term, not "no term". Its documented
+  filter-only listing mode is `search(null, options)`. Every unit test mocked Pagefind and never
+  caught the distinction; found by testing hawk's own docs site against its real built index. Now
+  passes `null`, so the results pane actually lists matching pages on open/tab-switch as designed.
+
+### Changed
+
+- Docs site header: the top nav (`Overview`, `Get started`, `Guides`, ...) only renders on the
+  home page now — every interior page already carries the same tree in the sidebar, so repeating
+  it in the header was pure duplication. Even on the home page, the `Overview`/home entry itself
+  is dropped, since the brand logo already links there.
+- Docs site tabs (`Guides`/`Reference`/`Resources`) each get a `defaultPreviewUrl` computed at
+  build time: a same-named section's index page if one exists (`Guides` → `/guides/`), else the
+  earliest matching content page (`Reference` → `/api/`).
+- Bundle-size budget raised 9KB → 10KB gzip, tracking the reveal animations and per-tab defaults
+  above — see `scripts/check-bundle-size.mjs` for the itemized history.
+
+### Testing
+
+- Unit test count: 90 (0.3.0) → 115 (0.4.0).
+
 ## [0.3.0] - 2026-08-29
 
 Customization and reliability pass — see `plan-hawk-customization-prd.md` for the full design
