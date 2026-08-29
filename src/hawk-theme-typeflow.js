@@ -20,6 +20,10 @@ export const HawkThemeTypeflow = {
 
 if (typeof window !== 'undefined') {
   window.HawkThemeTypeflow = HawkThemeTypeflow;
+  // Self-registers when loaded after hawk.js (script-tag order: hawk.js, then this file) so
+  // `new Hawk({ index })` gets the typeflow theme with no explicit registerTheme call — see
+  // architecture/plugin-system.md's "Two ways to use a plugin".
+  window.Hawk?.registerTheme?.('typeflow', HawkThemeTypeflow);
 }
 
 export default HawkThemeTypeflow;

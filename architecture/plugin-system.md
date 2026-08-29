@@ -27,9 +27,12 @@ new HawkSearch({
 
 **Script-tag / global registration:** each plugin module self-attaches to `window.Hawk<Name>` when
 loaded, mirroring how `typeflow-metrics.js`/`typeflow-debug.js` attach `window.TypeFlowMetrics` /
-`window.TypeFlowDebug`. A theme registers itself directly; an animation module exposes a
-`.create(TypeFlow)` factory (it needs a live TypeFlow instance, so it can't self-register until
-one exists):
+`window.TypeFlowDebug`. In this load order, `hawk-theme-typeflow.js` and `hawk-animation-typeflow.js`
+also *self-register* — `hawk-theme-typeflow.js` sees `window.Hawk` already set (from `hawk.js`
+loading first) and calls `Hawk.registerTheme('typeflow', ...)` itself;
+`hawk-animation-typeflow.js` does the same for `registerAnimation` once it also sees
+`window.TypeFlow` (from `typeflow.js` loading before it). No manual registration calls needed for
+this pairing:
 
 ```html
 <script src=".../hawk.js"></script>
@@ -37,11 +40,14 @@ one exists):
 <script src="https://cdn.jsdelivr.net/npm/@staticcanvas/typeflow@latest/dist/typeflow.js"></script>
 <script src=".../hawk-animation-typeflow.js"></script>
 <script>
-  Hawk.registerTheme('typeflow', window.HawkThemeTypeflow);
-  Hawk.registerAnimation('typeflow', window.HawkAnimationTypeflow.create(window.TypeFlow));
-  new Hawk({ index: '/pagefind/', theme: 'typeflow', animation: 'typeflow' });
+  new Hawk({ index: '/pagefind/' }); // theme/animation already default to 'typeflow'
 </script>
 ```
+
+Self-registration is a script-tag-only convenience (each of those four files checks a `window`
+global that only exists once its predecessor has run) — it doesn't fire for ESM/bundler imports,
+where module evaluation order isn't guaranteed the way `<script>` tag order is. There, register
+explicitly — the "Direct pass-in" example above.
 
 ## Why this shape, not an event bus
 
