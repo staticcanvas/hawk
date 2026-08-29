@@ -1114,3 +1114,94 @@ describe('rich preview content', () => {
     hawk.destroy();
   });
 });
+
+describe('built-in trigger (config.trigger)', () => {
+  let host;
+  beforeEach(() => {
+    host = document.createElement('div');
+    host.id = 'trigger-host';
+    document.body.appendChild(host);
+  });
+  afterEach(() => {
+    host.remove();
+  });
+
+  it('renders nothing extra when config.trigger is omitted', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    expect(document.querySelector('.hawk-trigger')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('renders a default-kind trigger (icon + label + kbd hint) into a selector container', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: '#trigger-host' } });
+    const btn = host.querySelector('.hawk-trigger');
+    expect(btn).toBeTruthy();
+    expect(btn.classList.contains('hawk-trigger-default')).toBe(true);
+    expect(btn.hasAttribute('data-search-trigger')).toBe(true);
+    expect(btn.querySelector('.hawk-trigger-label').textContent).toBe('Search...');
+    expect(btn.querySelector('.hawk-trigger-kbd').textContent).toBe('Ctrl+K');
+    hawk.destroy();
+  });
+
+  it('accepts an element directly instead of a selector', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: host } });
+    expect(host.querySelector('.hawk-trigger')).toBeTruthy();
+    hawk.destroy();
+  });
+
+  it('minimal kind renders icon-only with an aria-label, no label/kbd', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { kind: 'minimal', container: host } });
+    const btn = host.querySelector('.hawk-trigger');
+    expect(btn.querySelector('.hawk-trigger-label')).toBeNull();
+    expect(btn.querySelector('.hawk-trigger-kbd')).toBeNull();
+    expect(btn.getAttribute('aria-label')).toBe('Search');
+    hawk.destroy();
+  });
+
+  it('compact kind renders icon + label, no kbd hint', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { kind: 'compact', container: host } });
+    const btn = host.querySelector('.hawk-trigger');
+    expect(btn.querySelector('.hawk-trigger-label').textContent).toBe('Search');
+    expect(btn.querySelector('.hawk-trigger-kbd')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('omits the kbd hint when hotkeys.open is disabled', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: host }, hotkeys: { open: false } });
+    expect(host.querySelector('.hawk-trigger-kbd')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('clicking the built-in trigger opens the modal (picked up by the existing triggerSelector wiring)', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: host } });
+    host.querySelector('.hawk-trigger').click();
+    expect(hawk.state.open).toBe(true);
+    hawk.destroy();
+  });
+
+  it('applies the theme to the trigger button too, since it renders outside #root', () => {
+    const theme = { name: 'custom', apply: vi.fn((el) => (el.dataset.hawkTheme = 'custom')), tokens: { '--hawk-accent': '#22d3ee' } };
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: host }, theme });
+    const btn = host.querySelector('.hawk-trigger');
+    expect(theme.apply).toHaveBeenCalledWith(btn);
+    expect(btn.dataset.hawkTheme).toBe('custom');
+    expect(btn.style.getPropertyValue('--hawk-accent')).toBe('#22d3ee');
+    hawk.destroy();
+  });
+
+  it('warns and renders nothing when the container selector matches nothing', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: '#does-not-exist' } });
+    expect(document.querySelector('.hawk-trigger')).toBeNull();
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('does-not-exist'));
+    warn.mockRestore();
+    hawk.destroy();
+  });
+
+  it('removes the trigger button on destroy()', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: host } });
+    expect(host.querySelector('.hawk-trigger')).toBeTruthy();
+    hawk.destroy();
+    expect(host.querySelector('.hawk-trigger')).toBeNull();
+  });
+});

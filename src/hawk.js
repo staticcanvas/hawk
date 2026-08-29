@@ -77,6 +77,9 @@ const DEFAULT_STRINGS = {
   pinnedTab: 'Pinned',
   pinAction: 'Pin',
   unpinAction: 'Unpin',
+  triggerLabel: 'Search',
+  triggerLabelLong: 'Search...',
+  triggerKbd: 'Ctrl+K',
 };
 
 let instanceCount = 0;
@@ -170,6 +173,12 @@ export class HawkSearch {
    *   filters object (merged over the active tab's own `filter`, inline wins on a dimension collision)
    *   and stripped from the text actually searched. Off by default: turning it on changes how a literal
    *   colon in a normal query behaves (e.g. `"ratio: 16:9"` would get `ratio:` parsed as a filter attempt).
+   * @param {object} [config.trigger] Renders hawk's own trigger button instead of requiring the consumer to
+   *   build one — omit entirely to keep today's behavior (`triggerSelector` pointing at hand-built markup).
+   * @param {'minimal'|'compact'|'default'} [config.trigger.kind='default'] `'minimal'`: icon only. `'compact'`:
+   *   icon + "Search". `'default'`: icon + "Search..." + a Ctrl/Cmd+K hint (omitted if `hotkeys.open` is off).
+   * @param {string|HTMLElement} config.trigger.container Required — selector or element the trigger button is
+   *   appended into. Always marked `[data-search-trigger]` regardless of a customized `triggerSelector`.
    * @param {Partial<typeof DEFAULT_STRINGS>} [config.strings] Overrides for any UI text (localization).
    *   See `DEFAULT_STRINGS` for the full key list; `noResults`/`matchingResults`/`entries` are
    *   functions, not plain strings, so a locale can supply its own pluralization.
@@ -207,6 +216,7 @@ export class HawkSearch {
     this.pinStorageKey = config.pinStorageKey || 'hawk:pins';
     this.maxPins = config.maxPins ?? 20;
     this.inlineFilters = config.inlineFilters || false;
+    this.triggerConfig = config.trigger || null;
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
@@ -247,6 +257,7 @@ export class HawkSearch {
   #matches;
   #pageCount;
   #pins;
+  #builtInTrigger;
   #tabs;
   #currentTabId;
   #tabsExplicit;
@@ -376,6 +387,7 @@ export class HawkSearch {
   }
 
   #mount() {
+    this.#mountTrigger();
     const root = document.createElement('div');
     root.innerHTML = this.#markup();
     this.#root = root.firstElementChild;
@@ -446,6 +458,60 @@ export class HawkSearch {
     // Always attached (not gated by `hotkeys`) — focus trapping is baseline modal accessibility,
     // not an opt-in hotkey. #handleGlobalKeydown checks `this.hotkeys.*` itself per hotkey.
     document.addEventListener('keydown', (event) => this.#handleGlobalKeydown(event));
+  }
+
+  /**
+   * Renders hawk's own trigger button into `triggerConfig.container` (config.trigger) — the
+   * default `[data-search-trigger]` marker means the existing triggerSelector-based click wiring
+   * later in #mount() picks it up automatically, no separate listener needed. A no-op when
+   * config.trigger wasn't given (today's only mode: triggerSelector points at hand-built markup).
+   */
+  #mountTrigger() {
+    if (!this.triggerConfig) {
+      return;
+    }
+    const target =
+      typeof this.triggerConfig.container === 'string'
+        ? document.querySelector(this.triggerConfig.container)
+        : this.triggerConfig.container;
+    if (!target) {
+      console.warn(`HawkSearch: config.trigger.container "${this.triggerConfig.container}" not found — no built-in trigger rendered.`);
+      return;
+    }
+    const kind = this.triggerConfig.kind || 'default';
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = `hawk-trigger hawk-trigger-${kind}`;
+    btn.setAttribute('data-search-trigger', '');
+    if (kind === 'minimal') {
+      btn.setAttribute('aria-label', this.strings.dialogLabel);
+    }
+    btn.innerHTML = this.#triggerMarkup(kind);
+    if (this.#theme) {
+      // The trigger button lives outside #root, so it doesn't inherit #root's scoped
+      // [data-hawk-theme='name'] custom properties from the theme's CSS file — stamping the
+      // same attribute here (attribute selectors match any element, not just #root) is what
+      // makes the theme's tokens actually reach it too, not just the modal.
+      this.#theme.apply(btn);
+      Object.entries(this.#theme.tokens || {}).forEach(([token, value]) => {
+        btn.style.setProperty(token, value);
+      });
+    }
+    target.appendChild(btn);
+    this.#builtInTrigger = btn;
+  }
+
+  #triggerMarkup(kind) {
+    const s = this.strings;
+    const icon = `<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    if (kind === 'minimal') {
+      return icon;
+    }
+    if (kind === 'compact') {
+      return `${icon}<span class="hawk-trigger-label">${s.triggerLabel}</span>`;
+    }
+    const kbd = this.hotkeys.open ? `<kbd class="hawk-trigger-kbd">${s.triggerKbd}</kbd>` : '';
+    return `${icon}<span class="hawk-trigger-label">${s.triggerLabelLong}</span>${kbd}`;
   }
 
   #markup() {
@@ -1239,6 +1305,7 @@ export class HawkSearch {
     }
     this.#mediaQuery?.removeEventListener?.('change', this.#onBreakpointChange);
     this.#root?.remove();
+    this.#builtInTrigger?.remove();
   }
 }
 

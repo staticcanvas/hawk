@@ -538,3 +538,42 @@
   opacity: 1;
   text-decoration: underline;
 }
+
+/*
+ * Built-in trigger button (config.trigger) — an alternative to the consumer hand-building their
+ * own [data-search-trigger] markup. Unscoped by [data-hawk-theme] since it renders outside
+ * hawk's own root element (into config.trigger.container, wherever the consumer's page puts it);
+ * a theme's CSS file still reaches it fine since --hawk-* custom properties inherit normally.
+ */
+.hawk-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 8px;
+  background: var(--hawk-bg-surface, #0f172a);
+  color: var(--hawk-text-muted, #64748b);
+  cursor: pointer;
+  font-family: var(--hawk-font-family, inherit);
+  font-size: 0.85rem;
+}
+.hawk-trigger:hover,
+.hawk-trigger:focus-visible {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.hawk-trigger-minimal {
+  padding: 0.45rem;
+}
+.hawk-trigger-icon {
+  flex-shrink: 0;
+}
+.hawk-trigger-kbd {
+  margin-left: 0.25rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 4px;
+  font-size: 0.72rem;
+  color: var(--hawk-text-muted, #64748b);
+}

@@ -79,11 +79,17 @@ export interface HawkStrings {
   unavailableCounter?: string;
 }
 
+export interface HawkTriggerConfig {
+  kind?: 'minimal' | 'compact' | 'default';
+  container: string | HTMLElement;
+}
+
 export interface HawkSearchConfig {
   index?: string;
   pagefind?: Record<string, unknown>;
   id?: string;
   triggerSelector?: string;
+  trigger?: HawkTriggerConfig;
   container?: HTMLElement;
   params?: HawkParams;
   theme?: string | HawkTheme;
