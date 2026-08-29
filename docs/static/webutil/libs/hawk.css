@@ -58,6 +58,8 @@
   color: var(--hawk-text-primary, #f1f5f9);
   box-shadow: var(--hawk-shadow, 0 24px 64px rgba(0, 0, 0, 0.45));
   overflow: hidden;
+  font-family: var(--hawk-font-family, inherit);
+  font-size: var(--hawk-font-size-base, 1rem);
 }
 
 /*
@@ -88,8 +90,14 @@
   border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
 }
 
-.hawk-modal-input {
+.hawk-input-wrap {
+  position: relative;
   flex: 1;
+  min-width: 0;
+}
+
+.hawk-modal-input {
+  width: 100%;
   background: transparent;
   border: none;
   outline: none;
@@ -99,6 +107,28 @@
 }
 .hawk-modal-input::placeholder {
   color: var(--hawk-text-muted, #64748b);
+}
+
+/*
+ * Rotating placeholder overlay (config.rotatingPlaceholders) — an <input>'s native `placeholder`
+ * attribute can't be typed character-by-character by an animation driver (it's browser-rendered,
+ * not a DOM node), so this sits visually where the placeholder would be instead. Only present in
+ * the DOM when rotatingPlaceholders is configured; hidden via [data-hawk-input-active] the
+ * instant the input has a value (see hawk.js's #updatePlaceholderVisibility).
+ */
+.hawk-input-ghost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  color: var(--hawk-text-muted, #64748b);
+  font-size: max(1rem, 16px);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hawk-input-wrap[data-hawk-input-active='true'] .hawk-input-ghost {
+  display: none;
 }
 
 .hawk-modal-esc {
@@ -139,6 +169,48 @@
   padding: 0.6rem 1rem;
   border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
   overflow-x: auto;
+}
+
+/*
+ * Themed scrollbars — results pane, preview pane, and the filter strip's horizontal overflow.
+ * Two layers, because no single CSS API covers both "themeable color" and "idle low-opacity,
+ * brightens on hover/scroll" across engines yet:
+ *   - scrollbar-color (Firefox, and any engine without the WebKit pseudo-elements below):
+ *     themeable, but the standard doesn't support a separate hover/active state.
+ *   - ::-webkit-scrollbar* (Blink/WebKit): does support per-state styling, so the idle-vs-active
+ *     opacity difference only actually happens in engines that implement these pseudo-elements.
+ */
+.hawk-results-pane,
+.hawk-preview-pane,
+.hawk-modal-filters {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hawk-scrollbar-thumb, rgba(148, 163, 184, 0.35)) transparent;
+}
+.hawk-results-pane::-webkit-scrollbar,
+.hawk-preview-pane::-webkit-scrollbar,
+.hawk-modal-filters::-webkit-scrollbar {
+  width: 8px;
+  height: 6px;
+}
+.hawk-results-pane::-webkit-scrollbar-track,
+.hawk-preview-pane::-webkit-scrollbar-track,
+.hawk-modal-filters::-webkit-scrollbar-track {
+  background: transparent;
+}
+.hawk-results-pane::-webkit-scrollbar-thumb,
+.hawk-preview-pane::-webkit-scrollbar-thumb,
+.hawk-modal-filters::-webkit-scrollbar-thumb {
+  background: var(--hawk-scrollbar-thumb, rgba(148, 163, 184, 0.35));
+  border-radius: 999px;
+  transition: background-color 0.15s ease;
+}
+.hawk-results-pane:hover::-webkit-scrollbar-thumb,
+.hawk-results-pane::-webkit-scrollbar-thumb:hover,
+.hawk-preview-pane:hover::-webkit-scrollbar-thumb,
+.hawk-preview-pane::-webkit-scrollbar-thumb:hover,
+.hawk-modal-filters:hover::-webkit-scrollbar-thumb,
+.hawk-modal-filters::-webkit-scrollbar-thumb:hover {
+  background: var(--hawk-scrollbar-thumb-active, rgba(148, 163, 184, 0.7));
 }
 
 .hawk-filter-pill {
@@ -236,8 +308,10 @@
   overflow: hidden;
 }
 .hawk-result-desc mark {
-  background: var(--hawk-accent-glow, rgba(56, 189, 248, 0.25));
-  color: inherit;
+  background: var(--hawk-mark-bg, var(--hawk-accent-glow, rgba(56, 189, 248, 0.25)));
+  color: var(--hawk-mark-color, inherit);
+  font-weight: var(--hawk-mark-weight, inherit);
+  font-style: var(--hawk-mark-style, inherit);
   border-radius: 3px;
 }
 
@@ -274,8 +348,10 @@
   line-height: 1.5;
 }
 .hawk-preview-content mark {
-  background: var(--hawk-accent-glow, rgba(56, 189, 248, 0.25));
-  color: inherit;
+  background: var(--hawk-mark-bg, var(--hawk-accent-glow, rgba(56, 189, 248, 0.25)));
+  color: var(--hawk-mark-color, inherit);
+  font-weight: var(--hawk-mark-weight, inherit);
+  font-style: var(--hawk-mark-style, inherit);
   border-radius: 3px;
 }
 .hawk-preview-loading {
@@ -288,98 +364,103 @@
  * Code block *coloring* comes for free from the site's own build (e.g. Hugo's chroma
  * highlighter with noClasses:true bakes token colors in as inline styles) — these rules only
  * handle layout: spacing, block chrome, and readable defaults for un-highlighted markup.
+ *
+ * Every selector below is scoped :not([data-hawk-markdown-styles="off"]) — set via
+ * config.disableDefaultMarkdownStyles, this attribute lets a consumer opt out of hawk's own
+ * prose opinions entirely and target .hawk-preview-content with their own CSS (e.g. an existing
+ * site-wide .prose class) instead of fighting these rules' specificity.
  */
-.hawk-preview-content :first-child {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :first-child {
   margin-top: 0;
 }
-.hawk-preview-content :last-child {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :last-child {
   margin-bottom: 0;
 }
-.hawk-preview-content h1,
-.hawk-preview-content h2,
-.hawk-preview-content h3,
-.hawk-preview-content h4,
-.hawk-preview-content h5,
-.hawk-preview-content h6 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h1,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h2,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h3,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h4,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h5,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h6 {
   color: var(--hawk-text-primary, #f1f5f9);
   line-height: 1.3;
   margin: 1.1em 0 0.4em;
 }
-.hawk-preview-content h1 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h1 {
   font-size: 1.15em;
 }
-.hawk-preview-content h2 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h2 {
   font-size: 1.08em;
 }
-.hawk-preview-content h3,
-.hawk-preview-content h4,
-.hawk-preview-content h5,
-.hawk-preview-content h6 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h3,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h4,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h5,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h6 {
   font-size: 1em;
 }
-.hawk-preview-content p,
-.hawk-preview-content ul,
-.hawk-preview-content ol,
-.hawk-preview-content blockquote,
-.hawk-preview-content table,
-.hawk-preview-content pre {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) p,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ul,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ol,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) blockquote,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) table,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre {
   margin: 0 0 0.85em;
 }
-.hawk-preview-content ul,
-.hawk-preview-content ol {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ul,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ol {
   padding-left: 1.3em;
 }
-.hawk-preview-content li {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) li {
   margin: 0.2em 0;
 }
-.hawk-preview-content a {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) a {
   color: var(--hawk-accent, #38bdf8);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.hawk-preview-content strong {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) strong {
   color: var(--hawk-text-primary, #f1f5f9);
 }
-.hawk-preview-content hr {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) hr {
   border: none;
   border-top: 1px solid var(--hawk-border-subtle, #1e293b);
   margin: 1.2em 0;
 }
-.hawk-preview-content img {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) img {
   max-width: 100%;
   border-radius: 6px;
 }
-.hawk-preview-content blockquote {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) blockquote {
   border-left: 3px solid var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
   padding: 0.1em 0 0.1em 0.9em;
   color: var(--hawk-text-muted, #64748b);
 }
-.hawk-preview-content table {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9em;
 }
-.hawk-preview-content th,
-.hawk-preview-content td {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) th,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) td {
   border: 1px solid var(--hawk-border-subtle, #1e293b);
   padding: 0.35em 0.55em;
   text-align: left;
 }
-.hawk-preview-content th {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) th {
   color: var(--hawk-text-primary, #f1f5f9);
 }
 
 /* Code: inline vs. block. `pre > code` is a highlighted block; bare `code` is inline. */
-.hawk-preview-content code {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.88em;
 }
-.hawk-preview-content :not(pre) > code {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :not(pre) > code {
   background: var(--hawk-bg-surface-elevated, #1e293b);
   border-radius: 4px;
   padding: 0.1em 0.4em;
 }
-.hawk-preview-content pre {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre {
   background: var(--hawk-bg-canvas, #090d16);
   border: 1px solid var(--hawk-border-subtle, #1e293b);
   border-radius: 8px;
@@ -387,16 +468,16 @@
   overflow-x: auto;
   line-height: 1.45;
 }
-.hawk-preview-content pre code {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre code {
   background: none;
   padding: 0;
   white-space: pre;
 }
 /* Hugo/chroma wraps highlighted blocks in .highlight > pre — flatten our chrome onto it too. */
-.hawk-preview-content .highlight {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) .highlight {
   margin: 0 0 0.85em;
 }
-.hawk-preview-content .highlight pre {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) .highlight pre {
   margin: 0;
 }
 

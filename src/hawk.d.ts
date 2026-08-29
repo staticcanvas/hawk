@@ -1,6 +1,7 @@
 export interface HawkTheme {
   name: string;
   apply(rootEl: HTMLElement): void;
+  tokens?: Record<string, string>;
 }
 
 export interface HawkAnimationDriver {
@@ -86,11 +87,13 @@ export interface HawkSearchConfig {
   categoryFilterName?: string;
   maxResults?: number;
   contentSelector?: string;
+  disableDefaultMarkdownStyles?: boolean;
   hotkeys?: { open?: boolean; slash?: boolean; escape?: boolean };
   strings?: HawkStrings;
   defaultPreviewUrl?: string;
   defaultPreviewTitle?: string;
   eagerResults?: boolean;
+  rotatingPlaceholders?: string[];
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;

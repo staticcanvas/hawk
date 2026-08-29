@@ -129,6 +129,9 @@ export class HawkSearch {
    * @param {string} [config.contentSelector='[data-pagefind-body]'] Selector used to extract the
    *   preview pane's content from a fetched result page (fetched from `item.url`, same-origin).
    *   Falls back to Pagefind's short excerpt if `fetch`/`DOMParser` are unavailable or the request fails.
+   * @param {boolean} [config.disableDefaultMarkdownStyles=false] Opts out of hawk.css's own preview-content
+   *   prose rules (headings/lists/tables/code/etc.) entirely, so a consumer can target `.hawk-preview-content`
+   *   with their own CSS (e.g. an existing site-wide `.prose` class) instead of overriding hawk's.
    * @param {string} [config.defaultPreviewUrl] Shows this page's content in the preview pane as soon as the
    *   modal mounts, before any result is selected — fetched/extracted via the same path a real selection
    *   uses. Replaced the instant real results exist (from a selection, or from `eagerResults`).
@@ -136,6 +139,10 @@ export class HawkSearch {
    * @param {boolean} [config.eagerResults=true] Runs an empty-query search as soon as Pagefind loads, so the
    *   results pane shows a default listing instead of "Type to search". Set `false` to keep the results pane
    *   empty until the visitor types.
+   * @param {string[]} [config.rotatingPlaceholders] Example queries cycled through the input's placeholder
+   *   via the animation driver's `rotatePlaceholder` (an overlay, since a native `<input>` placeholder can't
+   *   be typed character-by-character) — only while the modal is open and the input is empty. Falls back to
+   *   `strings.inputPlaceholder` (unchanged, static) if omitted.
    * @param {Partial<typeof DEFAULT_STRINGS>} [config.strings] Overrides for any UI text (localization).
    *   See `DEFAULT_STRINGS` for the full key list; `noResults`/`matchingResults`/`entries` are
    *   functions, not plain strings, so a locale can supply its own pluralization.
@@ -165,6 +172,8 @@ export class HawkSearch {
     this.pagefindOptions = config.pagefindOptions || {};
     this.maxResults = config.maxResults ?? 18;
     this.contentSelector = config.contentSelector || '[data-pagefind-body]';
+    this.disableDefaultMarkdownStyles = config.disableDefaultMarkdownStyles || false;
+    this.rotatingPlaceholders = config.rotatingPlaceholders || [];
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
@@ -214,6 +223,9 @@ export class HawkSearch {
   #injectedPagefind;
   #root;
   #input;
+  #inputWrap;
+  #placeholderGhostEl;
+  #placeholderController;
   #resultsEl;
   #previewEl;
   #filtersEl;
@@ -329,6 +341,14 @@ export class HawkSearch {
     this.container.appendChild(this.#root);
 
     this.#input = this.#root.querySelector('.hawk-modal-input');
+    this.#inputWrap = this.#root.querySelector('.hawk-input-wrap');
+    this.#placeholderGhostEl = this.#root.querySelector('.hawk-input-ghost');
+    if (this.#placeholderGhostEl) {
+      // Set synchronously so there's no blank gap before rotation starts on open() — the
+      // animation driver only takes over the cycling from here, not the initial paint.
+      this.#placeholderGhostEl.textContent = this.rotatingPlaceholders[0];
+      this.#updatePlaceholderVisibility();
+    }
     this.#resultsEl = this.#root.querySelector('.hawk-results-pane');
     this.#previewEl = this.#root.querySelector('.hawk-preview-pane');
     this.#filtersEl = this.#root.querySelector('.hawk-modal-filters');
@@ -336,6 +356,12 @@ export class HawkSearch {
 
     if (this.#theme) {
       this.#theme.apply(this.#root);
+      Object.entries(this.#theme.tokens || {}).forEach(([token, value]) => {
+        this.#root.style.setProperty(token, value);
+      });
+    }
+    if (this.disableDefaultMarkdownStyles) {
+      this.#root.dataset.hawkMarkdownStyles = 'off';
     }
     this.#applyParams();
     if (this.#tabsExplicit) {
@@ -358,7 +384,10 @@ export class HawkSearch {
       });
     });
 
-    this.#input.addEventListener('input', () => this.#executeSearch(this.#input.value));
+    this.#input.addEventListener('input', () => {
+      this.#executeSearch(this.#input.value);
+      this.#updatePlaceholderVisibility();
+    });
     this.#input.addEventListener('keydown', (event) => this.#handleListKeydown(event));
     this.#input.addEventListener('focus', () => this.#ensurePagefindLoaded(), { once: true });
 
@@ -385,8 +414,11 @@ export class HawkSearch {
         <div class="hawk-modal-backdrop" data-search-close tabindex="-1"></div>
         <div class="hawk-modal-dialog">
           <div class="hawk-modal-header">
-            <input class="hawk-modal-input" type="search" placeholder="${s.inputPlaceholder}" autocomplete="off" spellcheck="false"
-              aria-autocomplete="list" aria-controls="${this.id}-results" />
+            <div class="hawk-input-wrap">
+              <input class="hawk-modal-input" type="search" placeholder="${this.rotatingPlaceholders.length ? '' : s.inputPlaceholder}" autocomplete="off" spellcheck="false"
+                aria-autocomplete="list" aria-controls="${this.id}-results" />
+              ${this.rotatingPlaceholders.length ? `<span class="hawk-input-ghost" aria-hidden="true"></span>` : ''}
+            </div>
             ${
               this.params.allowDensityToggle
                 ? `<div class="hawk-density-toggle" role="group" aria-label="${s.densityGroupLabel}">
@@ -965,6 +997,7 @@ export class HawkSearch {
     document.body.style.overflow = 'hidden';
     this.#isOpen = true;
     this.#ensurePagefindLoaded();
+    this.#updatePlaceholderVisibility();
     setTimeout(() => {
       this.#input.focus();
       this.#input.select();
@@ -977,12 +1010,37 @@ export class HawkSearch {
     this.#root.hidden = true;
     document.body.style.overflow = '';
     this.#isOpen = false;
+    this.#updatePlaceholderVisibility();
     this.onClose?.();
+  }
+
+  /**
+   * Starts/stops the rotating-placeholder animation and toggles the ghost overlay's visibility.
+   * Runs only while the modal is open and the input is empty — never in the background while
+   * closed, and stops the instant there's real input value (deliberately not gated on focus:
+   * `open()` auto-focuses the input a beat later, so gating on focus would hide the rotation
+   * before it's ever seen).
+   */
+  #updatePlaceholderVisibility() {
+    if (!this.#placeholderGhostEl) {
+      return;
+    }
+    const active = this.#isOpen && !this.#input.value;
+    this.#inputWrap.dataset.hawkInputActive = String(!active);
+    if (active && !this.#placeholderController) {
+      this.#placeholderController = this.#animation.rotatePlaceholder(this.#placeholderGhostEl, this.rotatingPlaceholders);
+    } else if (!active && this.#placeholderController) {
+      this.#animation.stop(this.#placeholderController);
+      this.#placeholderController = null;
+    }
   }
 
   /** Removes the modal from the DOM and detaches listeners. */
   destroy() {
     this.#animation.stop(this.#previewController);
+    if (this.#placeholderController) {
+      this.#animation.stop(this.#placeholderController);
+    }
     this.#mediaQuery?.removeEventListener?.('change', this.#onBreakpointChange);
     this.#root?.remove();
   }

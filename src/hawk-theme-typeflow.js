@@ -8,7 +8,14 @@
  * @module hawk-theme-typeflow
  */
 
-/** @typedef {{name: string, apply: (rootEl: HTMLElement) => void}} HawkTheme */
+/**
+ * @typedef {object} HawkTheme
+ * @property {string} name
+ * @property {(rootEl: HTMLElement) => void} apply
+ * @property {Record<string, string>} [tokens] Optional `--hawk-*` custom property overrides,
+ *   applied inline on `apply()` — a JS-only theming path (a few color/font tweaks) alongside the
+ *   CSS-file path (a full redistributable theme like this one).
+ */
 
 /** @type {HawkTheme} */
 export const HawkThemeTypeflow = {

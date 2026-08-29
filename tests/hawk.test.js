@@ -72,6 +72,85 @@ describe('constructor validation', () => {
   });
 });
 
+describe('theme.tokens', () => {
+  it('applies token overrides as inline CSS custom properties on mount', () => {
+    const theme = { name: 'custom', apply: vi.fn(), tokens: { '--hawk-accent': '#22d3ee', '--hawk-font-family': 'Inter' } };
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), theme });
+    const root = document.getElementById(hawk.id);
+    expect(root.style.getPropertyValue('--hawk-accent')).toBe('#22d3ee');
+    expect(root.style.getPropertyValue('--hawk-font-family')).toBe('Inter');
+    hawk.destroy();
+  });
+
+  it('does not throw when a theme has no tokens', () => {
+    const theme = { name: 'custom', apply: vi.fn() };
+    expect(() => new HawkSearch({ pagefind: mockPagefind(), theme }).destroy()).not.toThrow();
+  });
+});
+
+describe('disableDefaultMarkdownStyles', () => {
+  it('stamps data-hawk-markdown-styles="off" on the root when enabled', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), disableDefaultMarkdownStyles: true });
+    expect(document.getElementById(hawk.id).dataset.hawkMarkdownStyles).toBe('off');
+    hawk.destroy();
+  });
+
+  it('is absent by default', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    expect(document.getElementById(hawk.id).dataset.hawkMarkdownStyles).toBeUndefined();
+    hawk.destroy();
+  });
+});
+
+describe('rotatingPlaceholders', () => {
+  it('renders no ghost element and a static placeholder when not configured', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    expect(document.querySelector('.hawk-input-ghost')).toBeNull();
+    expect(document.querySelector('.hawk-modal-input').placeholder).toBe('Search...');
+    hawk.destroy();
+  });
+
+  it('renders the ghost with the first string set synchronously, empty native placeholder', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), rotatingPlaceholders: ['Try "tabs"...', 'Try "density"...'] });
+    expect(document.querySelector('.hawk-input-ghost').textContent).toBe('Try "tabs"...');
+    expect(document.querySelector('.hawk-modal-input').placeholder).toBe('');
+    hawk.destroy();
+  });
+
+  it('starts rotation on open (instant driver) and stops it on close', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), rotatingPlaceholders: ['a', 'b'], animation: false });
+    const wrap = document.querySelector('.hawk-input-wrap');
+    // Closed: ghost stays hidden (data-hawk-input-active='true' suppresses it) — never rotates in the background.
+    expect(wrap.dataset.hawkInputActive).toBe('true');
+
+    hawk.open();
+    expect(wrap.dataset.hawkInputActive).toBe('false'); // open + empty input: ghost visible/rotating
+    expect(document.querySelector('.hawk-input-ghost').textContent).toBe('a');
+
+    hawk.close();
+    expect(wrap.dataset.hawkInputActive).toBe('true');
+    hawk.destroy();
+  });
+
+  it('hides the ghost the instant the input has a value, and restores it when cleared', async () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), rotatingPlaceholders: ['a'], animation: false });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    const wrap = document.querySelector('.hawk-input-wrap');
+
+    input.value = 'x';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(wrap.dataset.hawkInputActive).toBe('true'); // "active" here means "has input" (ghost hidden)
+
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(wrap.dataset.hawkInputActive).toBe('false');
+    hawk.destroy();
+  });
+});
+
 describe('layout params', () => {
   it('applies default params as CSS custom properties on mount', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });
