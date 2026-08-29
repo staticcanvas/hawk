@@ -41,11 +41,26 @@ interfaces.
   `breakpoint` (not a fixed CSS media query) that collapses to a single column and hides the
   preview pane below the configured width.
 - Theme plugin system: every color in `hawk.css` is a `--hawk-*` custom property with a neutral
-  fallback — a theme only needs to redefine tokens. Ships with `hawk-theme-typeflow`, the visual
-  identity ported from typeflow's docs search.
+  fallback — a theme only needs to redefine tokens (font, match-highlight, and scrollbar tokens
+  included). Ships with `hawk-theme-typeflow`, the visual identity ported from typeflow's docs
+  search. `theme.tokens` offers a JS-only alternative to a CSS file for a few color/font tweaks;
+  `disableDefaultMarkdownStyles` opts out of the built-in preview-content prose rules entirely.
 - Animation driver plugin system: `typeTitle` / `typeContent` / `rotatePlaceholder` / `stop`.
   Ships with `hawk-animation-instant` (default, zero dependencies) and `hawk-animation-typeflow`
-  (wraps `TypeFlow.type()`/`TypeFlow.rotate()`, including anchor-title scramble-decode).
+  (wraps `TypeFlow.type()`/`TypeFlow.rotate()`, including anchor-title scramble-decode and a
+  rotating example-query placeholder in the search input).
+- Structured inline filter syntax (`inlineFilters: true`): typing `category:Guides responsive`
+  parses out a Pagefind filter and searches only the remaining text.
+- Result/page metadata: every match carries Pagefind's full `meta` object; `meta.section` renders
+  as a badge; `state.pageCount` tracks distinct pages separately from the flattened row count.
+- Pin system: a pin toggle on every result, persisted to `localStorage`, surfaced as a synthetic
+  "Pinned" tab once at least one exists.
+- A built-in trigger element (`config.trigger`, `kind: 'minimal' | 'compact' | 'default'`) for
+  sites that don't want to hand-build trigger markup, plus a text-only "Search powered by
+  Pagefind" attribution (`showPoweredBy`).
+- Accessibility/reliability: a real modal focus trap (Tab/Shift+Tab never escape to the page
+  behind the backdrop), a "search unavailable" state instead of an unhandled rejection if
+  Pagefind fails to load or a search call rejects, and full i18n via `config.strings`.
 
 ## Installation
 
@@ -87,16 +102,23 @@ const search = new HawkSearch({
   ],
   defaultTab: 'guides',
   defaultPreviewUrl: '/getting-started/',
+  inlineFilters: true,
+  rotatingPlaceholders: ['Try "tabs"...', 'Try "theming"...'],
+  enablePins: true,
 });
 ```
 
 Any element matching `triggerSelector` opens the modal — hawk builds its own DOM, no other markup
-required. Call `search.setParams({...})` to change layout at runtime, `search.state` to read
-`{ open, query, selectedIndex, matches, activeTab }`, and `search.destroy()` to tear it down. See
-[docs/content/api.md](docs/content/api.md) for the full config reference and
-[docs/content/guides/pagefind-setup.md](docs/content/guides/pagefind-setup.md) /
-[docs/content/guides/density-and-navigation.md](docs/content/guides/density-and-navigation.md)
-for tabs, density, and keyboard-navigation guides.
+required (or skip building a trigger at all with `trigger: { container: '#search-slot' }`). Call
+`search.setParams({...})` to change layout at runtime, `search.state` to read
+`{ open, query, selectedIndex, matches, pageCount, pins, activeTab, error }`, and
+`search.destroy()` to tear it down. See [docs/content/api.md](docs/content/api.md) for the full
+config reference, and the guides for [tabs and inline filter
+syntax](docs/content/guides/pagefind-setup.md),
+[density, keyboard navigation, and scrollbars](docs/content/guides/density-and-navigation.md),
+[theming](docs/content/guides/theming.md),
+[animation plugins and the rotating placeholder](docs/content/guides/animation-plugins.md), and
+[pins, the built-in trigger, and attribution](docs/content/guides/pins-and-embedding.md).
 
 ## Theming
 

@@ -69,7 +69,8 @@ self-registers the same way once it sees both `window.Hawk` and `window.TypeFlow
 
 ## Next
 
-- [Pagefind setup]({{< relref "/guides/pagefind-setup" >}}) — index scoping, and dev-controlled tabs
+- [Pagefind setup]({{< relref "/guides/pagefind-setup" >}}) — index scoping, dev-controlled tabs, and inline filter syntax
 - [Density and keyboard navigation]({{< relref "/guides/density-and-navigation" >}})
 - [Theming]({{< relref "/guides/theming" >}})
 - [Animation plugins]({{< relref "/guides/animation-plugins" >}})
+- [Pins, the built-in trigger, and attribution]({{< relref "/guides/pins-and-embedding" >}})

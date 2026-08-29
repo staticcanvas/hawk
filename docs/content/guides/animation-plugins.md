@@ -41,6 +41,25 @@ new HawkSearch({ index: '/pagefind/', animation: 'typeflow' });
 Omit `animation` to prefer `'typeflow'` when it's registered, falling back to `'instant'`
 otherwise. Pass `animation: false` to force instant regardless.
 
+## Rotating placeholder text
+
+`rotatePlaceholder` sat in the contract unused by core until `config.rotatingPlaceholders` wired
+it up:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  rotatingPlaceholders: ['Try "getting started"...', 'Try "tabs"...', 'Try "theming"...'],
+});
+```
+
+Cycles through the list in a `.hawk-input-ghost` overlay positioned over the search input — a
+native `<input>` `placeholder` attribute can't be typed character-by-character by a driver, since
+it's browser-rendered, not a DOM node. Only runs while the modal is open and the input is empty;
+never in the background while closed, and stops the instant there's real input value. With the
+`instant` driver, "rotating" just shows the first string statically (no timers) — real cycling
+needs the `typeflow` driver.
+
 ## Writing your own
 
 Any object implementing the four methods works. A CSS-fade driver in a few lines:

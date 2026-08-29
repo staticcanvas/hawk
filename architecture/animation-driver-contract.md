@@ -23,6 +23,11 @@ interface HawkAnimationDriver {
 - `options.isAnchor` on `typeTitle` distinguishes a page-level result from an in-page section
   match (Pagefind's `sub_results`) — `hawk-animation-typeflow.js` uses this to pick
   scramble-decode vs. plain char-typing, but a driver is free to ignore it.
+- `rotatePlaceholder` is called by core (`#updatePlaceholderVisibility`) when `config.rotatingPlaceholders`
+  is set — targeting a `.hawk-input-ghost` overlay positioned over the search input, since a
+  native `<input>` `placeholder` attribute can't be typed character-by-character. Only while the
+  modal is open and the input is empty. See the API reference's
+  [Rotating placeholder](../docs/content/api.md#rotating-placeholder) section.
 
 ## Why this shape
 

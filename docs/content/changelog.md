@@ -8,5 +8,15 @@ noToc: true
 
 ## Changelog
 
-See [CHANGELOG.md](https://gitlab.com/staticcanvas/hawk/-/blob/main/CHANGELOG.md) in the
-repository — hawk is pre-1.0 and hasn't cut a tagged release yet.
+Full release history: [CHANGELOG.md](https://gitlab.com/staticcanvas/hawk/-/blob/main/CHANGELOG.md)
+in the repository, following [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Hawk is
+pre-1.0 and hasn't cut a tagged release yet — the versions there track `package.json`'s history,
+not published tags.
+
+- **0.3.0** — theming depth (fonts, JS-only `theme.tokens`, themed scrollbars, mark-highlight
+  tokens), a rotating placeholder, result/page metadata, powered-by attribution, the pin system,
+  structured inline filter syntax, a built-in trigger element, the modal focus trap, and
+  search/load error handling.
+- **0.2.0** — dev-controlled tabs, `pagefindOptions`, density modes, two-pane keyboard
+  navigation, and configurable initial popup state.
+- **0.1.0** — initial extraction from typeflow's docs site search.
