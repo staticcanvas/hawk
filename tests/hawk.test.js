@@ -121,6 +121,125 @@ describe('category derivation', () => {
   });
 });
 
+describe('explicit tabs config', () => {
+  it('renders tabs synchronously on mount, without calling filters()', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      tabs: [{ label: 'Guides', filter: { category: 'Guides' } }, { id: 'ref', label: 'Reference' }],
+    });
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    expect(pills).toEqual(['all', 'guides', 'ref']);
+    expect(pagefind.filters).not.toHaveBeenCalled();
+    hawk.destroy();
+  });
+
+  it('omits the "All" tab when includeAllTab is false', () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      tabs: [{ label: 'Guides' }],
+      includeAllTab: false,
+    });
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    expect(pills).toEqual(['guides']);
+    hawk.destroy();
+  });
+
+  it('activates defaultTab on mount and scopes the first search to it', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      tabs: [{ id: 'guides', label: 'Guides', filter: { category: 'Guides' } }],
+      defaultTab: 'guides',
+    });
+    expect(hawk.state.activeTab).toBe('guides');
+    const active = document.querySelector('.hawk-filter-pill.active');
+    expect(active.dataset.filter).toBe('guides');
+
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'x';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('x', expect.objectContaining({ filters: { category: 'Guides' } }));
+    hawk.destroy();
+  });
+
+  it('falls back to "all" and warns when defaultTab matches no configured tab', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      tabs: [{ label: 'Guides' }],
+      defaultTab: 'does-not-exist',
+    });
+    expect(hawk.state.activeTab).toBe('all');
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('does-not-exist'));
+    warn.mockRestore();
+    hawk.destroy();
+  });
+
+  it('a tab filter object is passed to Pagefind verbatim, including multi-dimension/multi-value filters', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      tabs: [{ id: 'multi', label: 'Multi', filter: { category: ['Guides', 'Reference'], version: '2.x' } }],
+      defaultTab: 'multi',
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'x';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'x',
+      expect.objectContaining({ filters: { category: ['Guides', 'Reference'], version: '2.x' } })
+    );
+    hawk.destroy();
+  });
+});
+
+describe('pagefindOptions passthrough', () => {
+  it('merges top-level pagefindOptions into every search call', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind, pagefindOptions: { sort: { date: 'desc' } } });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'x';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('x', expect.objectContaining({ sort: { date: 'desc' } }));
+    hawk.destroy();
+  });
+
+  it("a tab's own pagefindOptions overrides the top-level one for that tab", async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      pagefindOptions: { sort: { date: 'desc' } },
+      tabs: [{ id: 'guides', label: 'Guides', pagefindOptions: { sort: { title: 'asc' } } }],
+      defaultTab: 'guides',
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'x';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('x', expect.objectContaining({ sort: { title: 'asc' } }));
+    hawk.destroy();
+  });
+});
+
+describe('categories shorthand still expands to tabs', () => {
+  it('produces the same pills as before, filtering on categoryFilterName', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind, categories: ['Custom'] });
+    expect(pagefind.filters).not.toHaveBeenCalled();
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    expect(pills).toEqual(['all', 'Custom']);
+    hawk.destroy();
+  });
+});
+
 describe('search results and keyboard navigation', () => {
   /** @returns {Promise<HawkSearch>} */
   async function hawkWithResults() {
