@@ -71,8 +71,21 @@ export class HawkSearch {
    * @param {string|import('./hawk-animation-instant.js').HawkAnimationDriver|false} [config.animation] Registered
    *   animation name, a driver object, or `false` to force the instant driver. Defaults to `'typeflow'` if that
    *   name is registered (i.e. the consumer loaded hawk-animation-typeflow.js and registered it), else `'instant'`.
-   * @param {string[]} [config.categories] Overrides the category filter pills; by default derived from Pagefind's `filters()`.
-   * @param {string} [config.categoryFilterName='category'] The Pagefind filter dimension used for category pills (see `data-pagefind-filter`).
+   * @param {string[]} [config.categories] Shorthand for `config.tabs`: one tab per category name, each
+   *   filtering on `categoryFilterName`. Ignored if `config.tabs` is given.
+   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, pagefindOptions?: Record<string, unknown>}>} [config.tabs]
+   *   Explicit tab list. `filter` is a raw Pagefind `filters` object (passed to `search()`/`debouncedSearch()`
+   *   verbatim) — omit it for a filterless tab (e.g. "All"). Replaces auto-derivation from Pagefind's
+   *   `filters()` entirely and renders synchronously on mount instead of waiting for Pagefind to load.
+   * @param {boolean} [config.includeAllTab=true] Prepend a filterless "All" tab to `tabs`/`categories`/the
+   *   auto-derived list.
+   * @param {string} [config.defaultTab='all'] Tab id active on open. Falls back to `'all'` (with a console
+   *   warning) if it doesn't match any resolved tab.
+   * @param {Record<string, unknown>} [config.pagefindOptions] Raw options merged into every
+   *   `search()`/`debouncedSearch()` call (e.g. `sort`, `ranking`, `language`) — an escape hatch for Pagefind
+   *   tuning hawk doesn't otherwise wrap. A tab's own `pagefindOptions` merges over this per-tab.
+   * @param {string} [config.categoryFilterName='category'] The Pagefind filter dimension used for the
+   *   auto-derived tabs and the `categories` shorthand (see `data-pagefind-filter`).
    * @param {number} [config.maxResults=18] Maximum rendered result rows.
    * @param {string} [config.contentSelector='[data-pagefind-body]'] Selector used to extract the
    *   preview pane's content from a fetched result page (fetched from `item.url`, same-origin).
@@ -93,6 +106,8 @@ export class HawkSearch {
     this.container = config.container || (typeof document !== 'undefined' ? document.body : null);
     this.params = { ...DEFAULT_PARAMS, ...config.params, offset: { ...DEFAULT_PARAMS.offset, ...config.params?.offset } };
     this.categoryFilterName = config.categoryFilterName || 'category';
+    this.includeAllTab = config.includeAllTab !== false;
+    this.pagefindOptions = config.pagefindOptions || {};
     this.maxResults = config.maxResults ?? 18;
     this.contentSelector = config.contentSelector || '[data-pagefind-body]';
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
@@ -106,8 +121,9 @@ export class HawkSearch {
     this.#query = '';
     this.#selectedIndex = -1;
     this.#matches = [];
-    this.#currentCategory = 'all';
-    this.#categories = config.categories || null;
+    this.#currentTabId = config.defaultTab || 'all';
+    this.#tabs = this.#resolveExplicitTabs(config);
+    this.#tabsExplicit = this.#tabs !== null;
     this.#isOpen = false;
     this.#pagefind = null;
     this.#pagefindLoadPromise = null;
@@ -125,8 +141,9 @@ export class HawkSearch {
   #query;
   #selectedIndex;
   #matches;
-  #currentCategory;
-  #categories;
+  #tabs;
+  #currentTabId;
+  #tabsExplicit;
   #isOpen;
   #pagefind;
   #pagefindLoadPromise;
@@ -150,6 +167,7 @@ export class HawkSearch {
       query: this.#query,
       selectedIndex: this.#selectedIndex,
       matches: this.#matches,
+      activeTab: this.#currentTabId,
     };
   }
 
@@ -184,6 +202,64 @@ export class HawkSearch {
     return animation;
   }
 
+  /**
+   * Resolves `config.tabs`/`config.categories` into a normalized tab list, or `null` if neither
+   * is configured (meaning: derive tabs from Pagefind's `filters()` once the index loads).
+   */
+  #resolveExplicitTabs(config) {
+    if (config.tabs) {
+      return this.#normalizeTabs(config.tabs);
+    }
+    if (config.categories) {
+      return this.#normalizeTabs(config.categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } })));
+    }
+    return null;
+  }
+
+  /**
+   * Fills in `id` (slugified from `label` when omitted) and prepends a filterless "All" tab
+   * per `includeAllTab`.
+   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, pagefindOptions?: Record<string, unknown>}>} tabs
+   */
+  #normalizeTabs(tabs) {
+    const normalized = tabs.map((t) => ({
+      id: t.id || this.#slugify(t.label),
+      label: t.label,
+      filter: t.filter || null,
+      pagefindOptions: t.pagefindOptions || null,
+    }));
+    return this.includeAllTab
+      ? [{ id: 'all', label: 'All', filter: null, pagefindOptions: null }, ...normalized]
+      : normalized;
+  }
+
+  #slugify(label) {
+    return (
+      String(label)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '') || 'tab'
+    );
+  }
+
+  /**
+   * Sets the resolved tab list, validates `#currentTabId` against it (falling back to `'all'`,
+   * or the first tab if there's no `'all'`, with a console warning if a configured `defaultTab`
+   * didn't match), and re-renders the filter pills.
+   * @param {ReturnType<HawkSearch['#normalizeTabs']>} tabs
+   */
+  #applyDefaultTabAndRender(tabs) {
+    this.#tabs = tabs;
+    if (!tabs.some((t) => t.id === this.#currentTabId)) {
+      if (this.#currentTabId !== 'all') {
+        console.warn(`HawkSearch: no tab with id "${this.#currentTabId}" (defaultTab); falling back to "all".`);
+      }
+      this.#currentTabId = tabs.some((t) => t.id === 'all') ? 'all' : (tabs[0]?.id ?? 'all');
+    }
+    this.#renderFilters();
+  }
+
   #mount() {
     const root = document.createElement('div');
     root.innerHTML = this.#markup();
@@ -200,6 +276,9 @@ export class HawkSearch {
       this.#theme.apply(this.#root);
     }
     this.#applyParams();
+    if (this.#tabsExplicit) {
+      this.#applyDefaultTabAndRender(this.#tabs);
+    }
 
     document.querySelectorAll(this.triggerSelector).forEach((btn) => {
       btn.addEventListener('click', () => this.open());
@@ -286,42 +365,52 @@ export class HawkSearch {
     }
     if (this.#injectedPagefind) {
       this.#pagefind = this.#injectedPagefind;
-      await this.#deriveCategories();
+      await this.#deriveTabs();
       return this.#pagefind;
     }
     if (!this.#pagefindLoadPromise) {
       this.#pagefindLoadPromise = import(/* @vite-ignore */ `${this.indexBasePath}pagefind.js`).then(async (mod) => {
         await mod.options({ basePath: this.indexBasePath });
         this.#pagefind = mod;
-        await this.#deriveCategories();
+        await this.#deriveTabs();
         return mod;
       });
     }
     return this.#pagefindLoadPromise;
   }
 
-  async #deriveCategories() {
-    if (this.#categories || !this.#pagefind) {
-      this.#renderFilters();
+  /**
+   * Derives tabs from Pagefind's `filters()` for `categoryFilterName`, unless `tabs`/`categories`
+   * was explicitly configured — in which case this is a no-op, since `#mount()` already rendered
+   * them synchronously.
+   */
+  async #deriveTabs() {
+    if (this.#tabsExplicit) {
       return;
     }
+    if (!this.#pagefind) {
+      this.#applyDefaultTabAndRender(this.#normalizeTabs([]));
+      return;
+    }
+    let categories = [];
     try {
       const filters = await this.#pagefind.filters();
       const values = filters?.[this.categoryFilterName];
-      this.#categories = values ? Object.keys(values) : [];
+      categories = values ? Object.keys(values) : [];
     } catch {
-      this.#categories = [];
+      categories = [];
     }
-    this.#renderFilters();
+    this.#applyDefaultTabAndRender(
+      this.#normalizeTabs(categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } })))
+    );
   }
 
   #renderFilters() {
-    const categories = this.#categories || [];
-    const pills = ['all', ...categories];
-    this.#filtersEl.innerHTML = pills
-      .map((cat) => {
-        const isActive = cat === this.#currentCategory;
-        return `<button type="button" class="hawk-filter-pill${isActive ? ' active' : ''}" data-filter="${cat}" role="tab" aria-selected="${isActive}" aria-controls="${this.id}-results" tabindex="${isActive ? 0 : -1}">${cat === 'all' ? 'All' : cat}</button>`;
+    const tabs = this.#tabs || [];
+    this.#filtersEl.innerHTML = tabs
+      .map((tab) => {
+        const isActive = tab.id === this.#currentTabId;
+        return `<button type="button" class="hawk-filter-pill${isActive ? ' active' : ''}" data-filter="${tab.id}" role="tab" aria-selected="${isActive}" aria-controls="${this.id}-results" tabindex="${isActive ? 0 : -1}">${tab.label}</button>`;
       })
       .join('');
 
@@ -336,13 +425,13 @@ export class HawkSearch {
   }
 
   /**
-   * Activates a category tab: updates selection state/ARIA and re-runs the current search
-   * scoped to it. Flag a page for a tab with `data-pagefind-filter="<categoryFilterName>:<value>"`
+   * Activates a tab: updates selection state/ARIA and re-runs the current search scoped to it.
+   * For an auto-derived tab, flag a page with `data-pagefind-filter="<categoryFilterName>:<value>"`
    * — a page can carry more than one such marker to appear under multiple tabs.
    * @param {HTMLElement} pill
    */
   #activateFilter(pill) {
-    this.#currentCategory = pill.dataset.filter;
+    this.#currentTabId = pill.dataset.filter;
     this.#filtersEl.querySelectorAll('.hawk-filter-pill').forEach((p) => {
       const isActive = p === pill;
       p.classList.toggle('active', isActive);
@@ -381,10 +470,12 @@ export class HawkSearch {
       return;
     }
 
-    const options =
-      this.#currentCategory !== 'all'
-        ? { filters: { [this.categoryFilterName]: this.#currentCategory } }
-        : {};
+    const tab = (this.#tabs || []).find((t) => t.id === this.#currentTabId);
+    const options = {
+      ...this.pagefindOptions,
+      ...(tab?.pagefindOptions || {}),
+      ...(tab?.filter ? { filters: tab.filter } : {}),
+    };
     const { results } = query.trim()
       ? await this.#pagefind.debouncedSearch(query, options)
       : await this.#pagefind.search('', options);

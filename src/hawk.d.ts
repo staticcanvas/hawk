@@ -31,6 +31,14 @@ export interface HawkState {
   query: string;
   selectedIndex: number;
   matches: HawkMatch[];
+  activeTab: string;
+}
+
+export interface HawkTab {
+  id?: string;
+  label: string;
+  filter?: Record<string, string | string[]>;
+  pagefindOptions?: Record<string, unknown>;
 }
 
 export interface HawkSearchConfig {
@@ -43,6 +51,10 @@ export interface HawkSearchConfig {
   theme?: string | HawkTheme;
   animation?: string | HawkAnimationDriver | false;
   categories?: string[];
+  tabs?: HawkTab[];
+  includeAllTab?: boolean;
+  defaultTab?: string;
+  pagefindOptions?: Record<string, unknown>;
   categoryFilterName?: string;
   maxResults?: number;
   contentSelector?: string;
