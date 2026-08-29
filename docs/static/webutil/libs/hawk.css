@@ -62,6 +62,151 @@
   font-size: var(--hawk-font-size-base, 1rem);
 }
 
+/* ── Modal reveal animations ──────────────────────────────────────────────────────────────
+   config.revealAnimation picks one of the 5 named reveals below via [data-hawk-reveal], applied
+   to .hawk-modal-backdrop/.hawk-modal-dialog only while [data-hawk-anim-state] is 'opening' or
+   'closing' (see hawk.js's open()/close()) — the resting state both sides of that window is just
+   the plain rules above, unanimated. --hawk-reveal-duration is written inline by hawk.js from
+   config.revealDuration (or the built-in default for the chosen name), the single number the
+   CSS animation-duration and hawk.js's close()-then-hide timer both read, so the two can't drift
+   out of sync. A consumer can also pass a name of their own and define matching
+   [data-hawk-reveal="name"] rules — hawk.js only ever sets the attribute and the CSS variable. */
+.hawk-modal[data-hawk-anim-state='closing'] {
+  pointer-events: none;
+}
+
+@keyframes hawk-reveal-fade-in {
+  from { opacity: 0; }
+}
+@keyframes hawk-reveal-fade-out {
+  to { opacity: 0; }
+}
+@keyframes hawk-reveal-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes hawk-reveal-scale-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@keyframes hawk-reveal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+@keyframes hawk-reveal-slide-out {
+  to {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+@keyframes hawk-reveal-blur-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+}
+@keyframes hawk-reveal-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(1.045);
+  }
+}
+@keyframes hawk-reveal-spring-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+}
+
+/* fade — a plain crossfade on both layers, no motion. The simplest and steadiest of the 5. */
+[data-hawk-reveal='fade'][data-hawk-anim-state='opening'] .hawk-modal-backdrop,
+[data-hawk-reveal='fade'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 160ms) ease both;
+}
+[data-hawk-reveal='fade'][data-hawk-anim-state='closing'] .hawk-modal-backdrop,
+[data-hawk-reveal='fade'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 160ms) ease both;
+}
+
+/* scale-fade (default) — the command-palette standard (Linear/Raycast/VS Code Quick Open): the
+   backdrop fades in place, the dialog fades in while easing up from a slight scale-down. */
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 200ms) ease both;
+}
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-in var(--hawk-reveal-duration, 200ms) cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 200ms) ease both;
+}
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-out var(--hawk-reveal-duration, 200ms) ease both;
+}
+
+/* slide-down — the dialog drops in from just above its resting position (Alfred/Spotlight-top
+   style) while the backdrop plain-fades underneath it. */
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 220ms) ease both;
+}
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-slide-in var(--hawk-reveal-duration, 220ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 220ms) ease both;
+}
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-slide-out var(--hawk-reveal-duration, 220ms) ease both;
+}
+
+/* blur-zoom — the backdrop's blur ramps up from 0 alongside its fade (rather than starting at
+   full blur), while the dialog eases in from a slight zoomed-in scale. Reads as the search surface
+   "materializing" rather than simply appearing. */
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-blur-in var(--hawk-reveal-duration, 260ms) ease both;
+}
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-zoom-in var(--hawk-reveal-duration, 260ms) ease-out both;
+}
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 260ms) ease both;
+}
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-out var(--hawk-reveal-duration, 260ms) ease both;
+}
+
+/* spring — the bounciest and most "designed" of the 5 (the Arc-browser/macOS spring feel): a
+   single cubic-bezier with a > 1 mid-curve value carries the dialog's scale past 1 before settling
+   back, no multi-stage keyframe needed. Exits with a plain scale-fade, no bounce on the way out —
+   the bounce reads as intentional only on entry. */
+[data-hawk-reveal='spring'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 340ms) ease both;
+}
+[data-hawk-reveal='spring'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-spring-in var(--hawk-reveal-duration, 340ms) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+[data-hawk-reveal='spring'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 340ms) ease both;
+}
+[data-hawk-reveal='spring'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-out var(--hawk-reveal-duration, 340ms) ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt-and-suspenders: hawk.js already skips setting [data-hawk-anim-state] under reduced
+     motion, so these never actually match in practice — kept in case a consumer's own CSS sets
+     the attribute directly without going through open()/close(). */
+  [data-hawk-reveal][data-hawk-anim-state] .hawk-modal-backdrop,
+  [data-hawk-reveal][data-hawk-anim-state] .hawk-modal-dialog {
+    animation: none;
+  }
+}
+
 /*
  * Density presets — user/dev-selectable sizing on top of the numeric --hawk-scale multiplier.
  * 'medium' (the default) is the rule above, unchanged from before density existed.

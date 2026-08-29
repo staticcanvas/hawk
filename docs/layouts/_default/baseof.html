@@ -38,13 +38,20 @@
         <kbd>Ctrl+K</kbd>
       </button>
 
+      {{/* Interior pages already carry the full site.Menus.main tree in sidebar.html — repeating
+           it here (Overview, Get started, Guides, etc.) is pure duplication once that sidebar
+           exists. Only the home page (no sidebar) needs a header nav, and even there the
+           "Overview"/home entry itself is redundant with the brand link a few lines up. */}}
+      {{ if .IsHome }}
+      {{ $homeURL := "" | relURL }}
       <nav class="header-nav" aria-label="Main navigation">
         {{ range site.Menus.main }}
-        {{ if not .Parent }}
+        {{ if and (not .Parent) (ne (.URL | relURL) $homeURL) }}
         <a class="header-link" href="{{ .URL | relURL }}">{{ .Name }}</a>
         {{ end }}
         {{ end }}
       </nav>
+      {{ end }}
 
       <div class="header-actions">
         <a class="icon-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer" aria-label="Hawk on GitLab">
@@ -98,6 +105,33 @@
   {{ end }}
   {{ $categories = $categories | uniq | sort }}
 
+  {{/* One default landing page per tab (config.tabs[].defaultPreviewUrl) — shown in the preview
+       pane the moment a visitor switches to that tab with nothing typed yet, instead of the
+       generic "type to search" empty state. Two passes: first, the earliest RegularPage in each
+       category becomes the fallback (works for a category with no matching section, e.g.
+       "Reference" -> api.md, "Resources" -> whichever of downloads/changelog sorts first);
+       second, a category with a same-named section (e.g. "Guides" -> content/guides/_index.md)
+       overrides that fallback with the section's own index page, a better landing page than any
+       single guide. */}}
+  {{ $categoryDefaults := dict }}
+  {{ range site.RegularPages }}
+    {{ $page := . }}
+    {{ $pageCats := slice }}
+    {{ with .Params.category }}{{ $pageCats = $pageCats | append . }}{{ end }}
+    {{ range .Params.categories }}{{ $pageCats = $pageCats | append . }}{{ end }}
+    {{ range $pageCats }}
+      {{ if not (isset $categoryDefaults .) }}
+        {{ $categoryDefaults = merge $categoryDefaults (dict . (dict "url" $page.RelPermalink "title" $page.Title)) }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ range $categories }}
+    {{ $cat := . }}
+    {{ with site.GetPage (printf "/%s" (lower $cat)) }}
+      {{ $categoryDefaults = merge $categoryDefaults (dict $cat (dict "url" .RelPermalink "title" .Title)) }}
+    {{ end }}
+  {{ end }}
+
   <script type="module">
     import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
     import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
@@ -105,6 +139,7 @@
     HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
 
     const categories = {{ $categories | jsonify | safeJS }};
+    const categoryDefaults = {{ $categoryDefaults | jsonify | safeJS }};
 
     new HawkSearch({
       index: document.body.dataset.hawkIndex,
@@ -113,7 +148,15 @@
       // narrower than the default [data-pagefind-body], so the preview pane doesn't also
       // pull in the sibling .doc-toc/.doc-sidebar chrome.
       contentSelector: '.doc-article',
-      tabs: categories.map((name) => ({ id: name.toLowerCase(), label: name, filter: { category: name } })),
+      tabs: categories.map((name) => {
+        const fallback = categoryDefaults[name];
+        return {
+          id: name.toLowerCase(),
+          label: name,
+          filter: { category: name },
+          ...(fallback ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title } : {}),
+        };
+      }),
       // Every guide/reference page here has real H2/H3 structure — a section-row outline scans
       // faster than the full page dump for a page-level match (a real query match within one
       // section still shows that section in full, unaffected — see previewSections' own docs).
