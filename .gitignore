@@ -3,6 +3,7 @@
 .npmrc
 public/
 public-e2e/
+public-shot/
 docs/data/package.json
 docs/data/releases.json
 
