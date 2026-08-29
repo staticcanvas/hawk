@@ -104,9 +104,12 @@ Beyond the `--hawk-*` custom properties documented in `architecture/theme-contra
   }
   ```
 - `--hawk-scrollbar-thumb` / `-active` — the results pane, preview pane, and filter strip's
-  scrollbars (idle / hover-or-scrolling). Firefox and standards-track engines get the idle color
-  only (`scrollbar-color` has no separate hover state); Blink/WebKit get the full idle-to-active
-  transition via `::-webkit-scrollbar-thumb:hover`.
+  scrollbars (idle / hover-or-actively-scrolling). Firefox and standards-track engines get the
+  idle color only (`scrollbar-color` has no separate hover/active state); Blink/WebKit get the
+  full idle-to-active transition, triggered by both `::-webkit-scrollbar-thumb:hover` and a
+  `scroll` event (`[data-hawk-scrolling]`, fading back to idle ~500ms after the last one) — so
+  keyboard-driven scrolling (the preview pane's arrow-key handler) lights it up too, not only a
+  mouse sitting over the pane.
 - `--hawk-powered-by-color` / `-opacity` — the powered-by attribution link.
 
 ### `theme.tokens`: a JS-only theming path

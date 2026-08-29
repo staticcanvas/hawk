@@ -209,7 +209,13 @@
 .hawk-preview-pane:hover::-webkit-scrollbar-thumb,
 .hawk-preview-pane::-webkit-scrollbar-thumb:hover,
 .hawk-modal-filters:hover::-webkit-scrollbar-thumb,
-.hawk-modal-filters::-webkit-scrollbar-thumb:hover {
+.hawk-modal-filters::-webkit-scrollbar-thumb:hover,
+.hawk-results-pane[data-hawk-scrolling='true']::-webkit-scrollbar-thumb,
+.hawk-preview-pane[data-hawk-scrolling='true']::-webkit-scrollbar-thumb,
+.hawk-modal-filters[data-hawk-scrolling='true']::-webkit-scrollbar-thumb {
+  /* [data-hawk-scrolling] (see hawk.js's #wireScrollBrighten) brightens on any scroll activity,
+     not just a mouse sitting over the pane — this is what makes keyboard-driven scrolling (the
+     preview pane's arrow-key handler) light the scrollbar up too. */
   background: var(--hawk-scrollbar-thumb-active, rgba(148, 163, 184, 0.7));
 }
 

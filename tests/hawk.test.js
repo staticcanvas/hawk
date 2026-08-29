@@ -828,6 +828,80 @@ describe('two-pane keyboard navigation', () => {
   });
 });
 
+describe('scroll-triggered scrollbar brighten', () => {
+  async function hawkWithResults() {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'match';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return hawk;
+  }
+
+  // Fake timers are only enabled after setup (hawkWithResults() awaits real setTimeout(0) ticks
+  // internally — enabling fake timers first would hang those awaits) and disabled again before
+  // teardown, so each test controls its own window rather than a shared beforeEach/afterEach.
+
+  it('marks a pane as scrolling on a scroll event, and clears it ~500ms after the last one', async () => {
+    const hawk = await hawkWithResults();
+    const resultsPane = document.querySelector('.hawk-results-pane');
+    expect(resultsPane.dataset.hawkScrolling).toBeUndefined();
+
+    vi.useFakeTimers();
+    resultsPane.dispatchEvent(new Event('scroll'));
+    expect(resultsPane.dataset.hawkScrolling).toBe('true');
+
+    vi.advanceTimersByTime(499);
+    expect(resultsPane.dataset.hawkScrolling).toBe('true');
+    vi.advanceTimersByTime(1);
+    expect(resultsPane.dataset.hawkScrolling).toBe('false');
+
+    vi.useRealTimers();
+    hawk.destroy();
+  });
+
+  it('a fresh scroll event resets the fade-out timer instead of stacking', async () => {
+    const hawk = await hawkWithResults();
+    const previewPane = document.querySelector('.hawk-preview-pane');
+
+    vi.useFakeTimers();
+    previewPane.dispatchEvent(new Event('scroll'));
+    vi.advanceTimersByTime(400);
+    previewPane.dispatchEvent(new Event('scroll')); // resets the clock
+    vi.advanceTimersByTime(400);
+    expect(previewPane.dataset.hawkScrolling).toBe('true'); // 800ms of activity, but never 500ms idle
+    vi.advanceTimersByTime(100);
+    expect(previewPane.dataset.hawkScrolling).toBe('false');
+
+    vi.useRealTimers();
+    hawk.destroy();
+  });
+
+  it('keyboard-driven preview scrolling (scrollTop set programmatically) fires the same scroll event', async () => {
+    const hawk = await hawkWithResults();
+    const previewPane = document.querySelector('.hawk-preview-pane');
+    previewPane.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    // jsdom doesn't dispatch a native 'scroll' event from a programmatic scrollTop write (no real
+    // layout/scrolling engine) — dispatch it explicitly here to exercise the same listener a real
+    // browser's native scroll-from-scrollTop behavior would trigger.
+    previewPane.dispatchEvent(new Event('scroll'));
+    expect(previewPane.dataset.hawkScrolling).toBe('true');
+    hawk.destroy();
+  });
+
+  it('clears pending fade-out timers on destroy without throwing', async () => {
+    const hawk = await hawkWithResults();
+    document.querySelector('.hawk-results-pane').dispatchEvent(new Event('scroll'));
+    expect(() => hawk.destroy()).not.toThrow();
+  });
+});
+
 describe('focus trap', () => {
   async function hawkWithResults(config = {}) {
     const pagefind = mockPagefind({

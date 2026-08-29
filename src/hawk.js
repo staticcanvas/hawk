@@ -244,6 +244,7 @@ export class HawkSearch {
     this.#previewController = null;
     this.#previewKey = null;
     this.#fragmentCache = new Map();
+    this.#scrollBrightenTimers = new Map();
 
     if (this.container) {
       this.#mount();
@@ -278,6 +279,7 @@ export class HawkSearch {
   #previewEl;
   #filtersEl;
   #counterEl;
+  #scrollBrightenTimers;
   #mediaQuery;
   #onBreakpointChange;
 
@@ -406,6 +408,7 @@ export class HawkSearch {
     this.#previewEl = this.#root.querySelector('.hawk-preview-pane');
     this.#filtersEl = this.#root.querySelector('.hawk-modal-filters');
     this.#counterEl = this.#root.querySelector('.hawk-modal-counter');
+    [this.#resultsEl, this.#previewEl, this.#filtersEl].forEach((el) => this.#wireScrollBrighten(el));
 
     if (this.#theme) {
       this.#theme.apply(this.#root);
@@ -1277,6 +1280,30 @@ export class HawkSearch {
   }
 
   /**
+   * Brightens a pane's scrollbar thumb (`[data-hawk-scrolling='true']`, see hawk.css) for as long
+   * as it's actively scrolling, fading back to idle opacity ~500ms after the last scroll event —
+   * not just on `:hover`, so keyboard-driven scrolling (the preview pane's arrow-key handler sets
+   * `scrollTop` directly, which fires a native `scroll` event) lights it up too, not only a mouse
+   * sitting over the pane.
+   */
+  #wireScrollBrighten(el) {
+    el.addEventListener(
+      'scroll',
+      () => {
+        el.dataset.hawkScrolling = 'true';
+        clearTimeout(this.#scrollBrightenTimers.get(el));
+        this.#scrollBrightenTimers.set(
+          el,
+          setTimeout(() => {
+            el.dataset.hawkScrolling = 'false';
+          }, 500)
+        );
+      },
+      { passive: true }
+    );
+  }
+
+  /**
    * Starts/stops the rotating-placeholder animation and toggles the ghost overlay's visibility.
    * Runs only while the modal is open and the input is empty — never in the background while
    * closed, and stops the instant there's real input value (deliberately not gated on focus:
@@ -1304,6 +1331,7 @@ export class HawkSearch {
       this.#animation.stop(this.#placeholderController);
     }
     this.#mediaQuery?.removeEventListener?.('change', this.#onBreakpointChange);
+    this.#scrollBrightenTimers.forEach((id) => clearTimeout(id));
     this.#root?.remove();
     this.#builtInTrigger?.remove();
   }
