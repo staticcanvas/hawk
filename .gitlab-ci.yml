@@ -68,6 +68,27 @@ test:
     - npm test
   allow_failure: false
 
+# Real-browser coverage (tests/e2e/) against a real built docs site + Pagefind index — see
+# playwright.config.mjs. Chromium is baked into the phellams-automator image; the install step is
+# a fast no-op if that matches the @playwright/test version pinned in package.json, and a safety
+# net (small chromium-only download, no --with-deps/apt) if it doesn't.
+# allow_failure: true until this has run green in real CI a few times — flip to false once proven.
+test:e2e:
+  stage: test
+  needs: []
+  script:
+    - echo "🌐 Running Playwright e2e tests..."
+    - npm ci
+    - npx playwright install chromium
+    - npm run test:e2e
+  artifacts:
+    when: on_failure
+    paths:
+      - test-results/
+      - playwright-report/
+    expire_in: 3 days
+  allow_failure: true
+
 # ------------------------------------------------------
 # Coverage stage
 # ------------------------------------------------------
