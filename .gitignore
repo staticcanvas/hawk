@@ -2,6 +2,7 @@
 /dist
 .npmrc
 public/
+public-e2e/
 docs/data/package.json
 docs/data/releases.json
 
