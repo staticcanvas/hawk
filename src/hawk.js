@@ -72,6 +72,7 @@ const DEFAULT_STRINGS = {
   },
   unavailable: 'Search is unavailable right now. Try again later.',
   unavailableCounter: 'Search unavailable',
+  poweredBy: 'Search powered by Pagefind',
 };
 
 let instanceCount = 0;
@@ -152,6 +153,9 @@ export class HawkSearch {
    *   via the animation driver's `rotatePlaceholder` (an overlay, since a native `<input>` placeholder can't
    *   be typed character-by-character) — only while the modal is open and the input is empty. Falls back to
    *   `strings.inputPlaceholder` (unchanged, static) if omitted.
+   * @param {boolean} [config.showPoweredBy=true] Shows a small "Search powered by Pagefind" link in the
+   *   modal footer. Text-only (no logo asset vendored).
+   * @param {string} [config.poweredByHref='https://pagefind.app/'] Link target for the powered-by attribution.
    * @param {Partial<typeof DEFAULT_STRINGS>} [config.strings] Overrides for any UI text (localization).
    *   See `DEFAULT_STRINGS` for the full key list; `noResults`/`matchingResults`/`entries` are
    *   functions, not plain strings, so a locale can supply its own pluralization.
@@ -183,6 +187,8 @@ export class HawkSearch {
     this.contentSelector = config.contentSelector || '[data-pagefind-body]';
     this.disableDefaultMarkdownStyles = config.disableDefaultMarkdownStyles || false;
     this.rotatingPlaceholders = config.rotatingPlaceholders || [];
+    this.showPoweredBy = config.showPoweredBy !== false;
+    this.poweredByHref = config.poweredByHref || 'https://pagefind.app/';
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
@@ -454,6 +460,11 @@ export class HawkSearch {
             <span class="hawk-hint">&crarr; ${s.hintSelect}</span>
             <span class="hawk-hint">${s.escKey} ${s.hintClose}</span>
             <div class="hawk-modal-counter">${s.typeToSearch}</div>
+            ${
+              this.showPoweredBy
+                ? `<a class="hawk-powered-by" href="${this.poweredByHref}" target="_blank" rel="noreferrer">${s.poweredBy}</a>`
+                : ''
+            }
           </div>
         </div>
       </div>

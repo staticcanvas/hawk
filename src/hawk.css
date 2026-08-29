@@ -507,3 +507,14 @@
 .hawk-modal-counter {
   margin-left: auto;
 }
+.hawk-powered-by {
+  color: var(--hawk-powered-by-color, var(--hawk-text-muted, #64748b));
+  opacity: var(--hawk-powered-by-opacity, 0.7);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hawk-powered-by:hover,
+.hawk-powered-by:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+}

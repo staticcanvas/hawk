@@ -151,6 +151,28 @@ describe('rotatingPlaceholders', () => {
   });
 });
 
+describe('powered-by attribution', () => {
+  it('renders by default, linking to pagefind.app', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    const link = document.querySelector('.hawk-powered-by');
+    expect(link.textContent).toBe('Search powered by Pagefind');
+    expect(link.getAttribute('href')).toBe('https://pagefind.app/');
+    hawk.destroy();
+  });
+
+  it('is omitted when showPoweredBy is false', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), showPoweredBy: false });
+    expect(document.querySelector('.hawk-powered-by')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('respects a custom poweredByHref', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), poweredByHref: 'https://example.com/search' });
+    expect(document.querySelector('.hawk-powered-by').getAttribute('href')).toBe('https://example.com/search');
+    hawk.destroy();
+  });
+});
+
 describe('layout params', () => {
   it('applies default params as CSS custom properties on mount', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });

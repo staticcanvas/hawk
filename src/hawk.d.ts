@@ -96,6 +96,8 @@ export interface HawkSearchConfig {
   defaultPreviewTitle?: string;
   eagerResults?: boolean;
   rotatingPlaceholders?: string[];
+  showPoweredBy?: boolean;
+  poweredByHref?: string;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;
