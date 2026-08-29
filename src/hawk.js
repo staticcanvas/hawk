@@ -309,8 +309,19 @@ export class HawkSearch {
     });
 
     this.#input.addEventListener('input', () => this.#executeSearch(this.#input.value));
-    this.#input.addEventListener('keydown', (event) => this.#handleInputKeydown(event));
+    this.#input.addEventListener('keydown', (event) => this.#handleListKeydown(event));
     this.#input.addEventListener('focus', () => this.#ensurePagefindLoaded(), { once: true });
+
+    this.#resultsEl.addEventListener('keydown', (event) => this.#handleResultsPaneKeydown(event));
+    this.#previewEl.addEventListener('keydown', (event) => this.#handlePreviewKeydown(event));
+    // Reveals the preview pane in place of the results pane in single-column (compact/narrow)
+    // layouts — see the [data-hawk-show-preview] rules in hawk.css.
+    this.#previewEl.addEventListener('focus', () => {
+      this.#root.dataset.hawkShowPreview = 'true';
+    });
+    this.#previewEl.addEventListener('blur', () => {
+      this.#root.dataset.hawkShowPreview = 'false';
+    });
 
     if (this.hotkeys.open || this.hotkeys.slash || this.hotkeys.escape) {
       document.addEventListener('keydown', (event) => this.#handleGlobalKeydown(event));
@@ -338,8 +349,8 @@ export class HawkSearch {
           </div>
           <div class="hawk-modal-filters" role="tablist" aria-label="Filter by category"></div>
           <div class="hawk-modal-body" data-hawk-alignment="${this.params.alignment}">
-            <div class="hawk-results-pane" id="${this.id}-results" role="listbox" aria-live="polite"></div>
-            <aside class="hawk-preview-pane" aria-live="polite">
+            <div class="hawk-results-pane" id="${this.id}-results" role="listbox" aria-live="polite" tabindex="0"></div>
+            <aside class="hawk-preview-pane" aria-live="polite" aria-label="Preview" tabindex="0">
               <div class="hawk-preview-empty">Type to search, or select a result to preview it here.</div>
             </aside>
           </div>
@@ -552,6 +563,7 @@ export class HawkSearch {
   #renderResults() {
     if (!this.#matches.length) {
       this.#resultsEl.innerHTML = `<div class="hawk-empty">No results${this.#query ? ` for "${this.#query}"` : ''}.</div>`;
+      this.#resultsEl.removeAttribute('aria-activedescendant');
       this.#counterEl.textContent = this.#query ? '0 matching results' : 'Type to search';
       this.#renderPreview();
       return;
@@ -564,7 +576,7 @@ export class HawkSearch {
     this.#resultsEl.innerHTML = this.#matches
       .map(
         (item, idx) => `
-        <a href="${item.url}" class="hawk-result-item${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" aria-selected="${idx === this.#selectedIndex}">
+        <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}">
           <div class="hawk-result-header">
             <span class="hawk-result-title">${item.isAnchor ? '&sect; ' : ''}${item.title}</span>
           </div>
@@ -572,6 +584,7 @@ export class HawkSearch {
         </a>`
       )
       .join('');
+    this.#resultsEl.setAttribute('aria-activedescendant', `${this.id}-result-${this.#selectedIndex}`);
 
     this.#resultsEl.querySelectorAll('.hawk-result-item').forEach((el) => {
       el.addEventListener('mouseenter', () => this.#setSelection(Number(el.dataset.index), false));
@@ -583,6 +596,7 @@ export class HawkSearch {
 
   #setSelection(index, scrollIntoView) {
     this.#selectedIndex = index;
+    this.#resultsEl.setAttribute('aria-activedescendant', `${this.id}-result-${index}`);
     this.#resultsEl.querySelectorAll('.hawk-result-item').forEach((el) => {
       const isSelected = Number(el.dataset.index) === index;
       el.classList.toggle('is-selected', isSelected);
@@ -695,7 +709,12 @@ export class HawkSearch {
     return parts.join('');
   }
 
-  #handleInputKeydown(event) {
+  /**
+   * ArrowUp/ArrowDown (wraparound selection) + Enter (select and navigate). Shared between the
+   * search input and the results pane — both are valid places for the current selection to
+   * change from, and neither branch reads `event.target`.
+   */
+  #handleListKeydown(event) {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       if (this.#matches.length) {
@@ -712,6 +731,52 @@ export class HawkSearch {
         this.onSelect?.(item);
         window.location.href = item.url;
       }
+    }
+  }
+
+  /**
+   * Handles a keydown that landed on the results pane itself (reached via Tab, not the input):
+   * a printable character refocuses the input and forwards the keystroke, so a user who tabbed
+   * away can resume typing without an extra click; everything else falls through to the shared
+   * selection/navigation handling.
+   */
+  #handleResultsPaneKeydown(event) {
+    if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      event.preventDefault();
+      this.#input.focus();
+      this.#input.value += event.key;
+      this.#input.dispatchEvent(new Event('input'));
+      return;
+    }
+    this.#handleListKeydown(event);
+  }
+
+  /**
+   * ArrowUp/ArrowDown/PageUp/PageDown/Home/End scroll the preview pane when it has focus,
+   * instead of changing the result selection. Implemented as explicit `scrollTop` math rather
+   * than relying on native focused-scroll-container behavior, which isn't consistent across
+   * browsers and doesn't exist in jsdom at all.
+   */
+  #handlePreviewKeydown(event) {
+    const step = 48;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.#previewEl.scrollTop += step;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.#previewEl.scrollTop -= step;
+    } else if (event.key === 'PageDown') {
+      event.preventDefault();
+      this.#previewEl.scrollTop += this.#previewEl.clientHeight;
+    } else if (event.key === 'PageUp') {
+      event.preventDefault();
+      this.#previewEl.scrollTop -= this.#previewEl.clientHeight;
+    } else if (event.key === 'Home') {
+      event.preventDefault();
+      this.#previewEl.scrollTop = 0;
+    } else if (event.key === 'End') {
+      event.preventDefault();
+      this.#previewEl.scrollTop = this.#previewEl.scrollHeight;
     }
   }
 

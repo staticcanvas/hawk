@@ -186,12 +186,16 @@
 [data-hawk-density='compact'] .hawk-preview-pane {
   display: none;
 }
-/* Focus-zone navigation (see hawk.js #handleGlobalKeydown/#focusPreviewPane) reveals the
-   preview pane in place of the results pane in single-column layouts. */
-[data-hawk-show-preview='true'] .hawk-results-pane {
+/* Tabbing focus into the preview pane (see hawk.js's 'focus'/'blur' listeners on
+   .hawk-preview-pane) reveals it in place of the results pane in single-column layouts, where
+   it's otherwise hidden — the only way to reach it is via this focus-zone navigation. Scoped to
+   single-column contexts only: in 2-column layouts both panes are already visible. */
+[data-hawk-compact='true'][data-hawk-show-preview='true'] .hawk-results-pane,
+[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-results-pane {
   display: none;
 }
-[data-hawk-show-preview='true'] .hawk-preview-pane {
+[data-hawk-compact='true'][data-hawk-show-preview='true'] .hawk-preview-pane,
+[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-preview-pane {
   display: block;
 }
 
@@ -199,6 +203,11 @@
   overflow-y: auto;
   border-right: 1px solid var(--hawk-border-subtle, #1e293b);
   padding: 0.5rem;
+}
+.hawk-results-pane:focus-visible,
+.hawk-preview-pane:focus-visible {
+  outline: 2px solid var(--hawk-accent, #38bdf8);
+  outline-offset: -2px;
 }
 
 .hawk-result-item {

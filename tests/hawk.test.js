@@ -333,6 +333,82 @@ describe('search results and keyboard navigation', () => {
   });
 });
 
+describe('two-pane keyboard navigation', () => {
+  async function hawkWithResults() {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] }),
+          resultFor({ meta: { title: 'Page Two' }, url: '/two/', excerpt: 'second match', sub_results: [] }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'match';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return hawk;
+  }
+
+  it('results pane and preview pane are focusable, and results/preview are not individually tabbable', async () => {
+    const hawk = await hawkWithResults();
+    expect(document.querySelector('.hawk-results-pane').tabIndex).toBe(0);
+    expect(document.querySelector('.hawk-preview-pane').tabIndex).toBe(0);
+    document.querySelectorAll('.hawk-result-item').forEach((el) => expect(el.tabIndex).toBe(-1));
+    hawk.destroy();
+  });
+
+  it('exposes the selected result via aria-activedescendant on the results pane', async () => {
+    const hawk = await hawkWithResults();
+    const resultsPane = document.querySelector('.hawk-results-pane');
+    expect(resultsPane.getAttribute('aria-activedescendant')).toBe(`${hawk.id}-result-0`);
+
+    resultsPane.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(resultsPane.getAttribute('aria-activedescendant')).toBe(`${hawk.id}-result-1`);
+    hawk.destroy();
+  });
+
+  it('a printable keydown on the results pane forwards to the input and re-runs the search', async () => {
+    const hawk = await hawkWithResults();
+    const resultsPane = document.querySelector('.hawk-results-pane');
+    const input = document.querySelector('.hawk-modal-input');
+    resultsPane.dispatchEvent(new KeyboardEvent('keydown', { key: 'x', bubbles: true }));
+    expect(document.activeElement).toBe(input);
+    expect(input.value).toBe('matchx');
+    hawk.destroy();
+  });
+
+  it('ArrowUp/ArrowDown/Home/End on the preview pane scroll it instead of changing selection', async () => {
+    const hawk = await hawkWithResults();
+    const previewPane = document.querySelector('.hawk-preview-pane');
+    Object.defineProperty(previewPane, 'scrollHeight', { value: 1000, configurable: true });
+
+    previewPane.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+    expect(previewPane.scrollTop).toBe(48);
+    previewPane.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowUp', bubbles: true }));
+    expect(previewPane.scrollTop).toBe(0);
+    previewPane.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+    expect(previewPane.scrollTop).toBe(1000);
+    previewPane.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    expect(previewPane.scrollTop).toBe(0);
+    expect(hawk.state.selectedIndex).toBe(0);
+    hawk.destroy();
+  });
+
+  it('focusing the preview pane sets data-hawk-show-preview, blur clears it', async () => {
+    const hawk = await hawkWithResults();
+    const root = document.getElementById(hawk.id);
+    const previewPane = document.querySelector('.hawk-preview-pane');
+    previewPane.dispatchEvent(new FocusEvent('focus'));
+    expect(root.dataset.hawkShowPreview).toBe('true');
+    previewPane.dispatchEvent(new FocusEvent('blur'));
+    expect(root.dataset.hawkShowPreview).toBe('false');
+    hawk.destroy();
+  });
+});
+
 describe('category tabs (keyboard + ARIA)', () => {
   it('renders a roving tabindex, with aria-controls pointing at the results listbox', async () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });
