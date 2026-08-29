@@ -39,10 +39,19 @@ const server = createServer(async (req, res) => {
   }
 
   try {
-    const stats = await stat(filePath);
-    if (stats.isDirectory()) throw new Error('directory');
-    const body = await readFile(filePath);
-    res.writeHead(200, { 'Content-Type': CONTENT_TYPES[extname(filePath)] ?? 'application/octet-stream' });
+    let servedPath = filePath;
+    let stats = await stat(servedPath);
+    if (stats.isDirectory()) {
+      // Directory-index resolution — every real static host (GitLab Pages, Netlify, nginx,
+      // Hugo's own dev server) does this automatically; without it, a directory-style URL
+      // (Pagefind's own item.url values are directory-style, no trailing /index.html) 404s here
+      // even though it's a completely normal URL everywhere else, silently masking real
+      // fetch-path bugs behind hawk's excerpt fallback instead of actually exercising the fetch.
+      servedPath = join(servedPath, 'index.html');
+      stats = await stat(servedPath);
+    }
+    const body = await readFile(servedPath);
+    res.writeHead(200, { 'Content-Type': CONTENT_TYPES[extname(servedPath)] ?? 'application/octet-stream' });
     res.end(body);
   } catch {
     res.writeHead(404);
