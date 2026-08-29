@@ -99,6 +99,13 @@ export class HawkSearch {
    * @param {string} [config.contentSelector='[data-pagefind-body]'] Selector used to extract the
    *   preview pane's content from a fetched result page (fetched from `item.url`, same-origin).
    *   Falls back to Pagefind's short excerpt if `fetch`/`DOMParser` are unavailable or the request fails.
+   * @param {string} [config.defaultPreviewUrl] Shows this page's content in the preview pane as soon as the
+   *   modal mounts, before any result is selected — fetched/extracted via the same path a real selection
+   *   uses. Replaced the instant real results exist (from a selection, or from `eagerResults`).
+   * @param {string} [config.defaultPreviewTitle=''] Title shown above `defaultPreviewUrl`'s content.
+   * @param {boolean} [config.eagerResults=true] Runs an empty-query search as soon as Pagefind loads, so the
+   *   results pane shows a default listing instead of "Type to search". Set `false` to keep the results pane
+   *   empty until the visitor types.
    * @param {(query: string) => void} [config.onOpen]
    * @param {() => void} [config.onClose]
    * @param {(item: object) => void} [config.onSelect]
@@ -126,6 +133,9 @@ export class HawkSearch {
     this.maxResults = config.maxResults ?? 18;
     this.contentSelector = config.contentSelector || '[data-pagefind-body]';
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
+    this.defaultPreviewUrl = config.defaultPreviewUrl || null;
+    this.defaultPreviewTitle = config.defaultPreviewTitle || '';
+    this.eagerResults = config.eagerResults !== false;
     this.onOpen = config.onOpen;
     this.onClose = config.onClose;
     this.onSelect = config.onSelect;
@@ -294,6 +304,9 @@ export class HawkSearch {
     if (this.#tabsExplicit) {
       this.#applyDefaultTabAndRender(this.#tabs);
     }
+    if (this.defaultPreviewUrl) {
+      this.#renderDefaultPreview();
+    }
 
     document.querySelectorAll(this.triggerSelector).forEach((btn) => {
       btn.addEventListener('click', () => this.open());
@@ -432,6 +445,7 @@ export class HawkSearch {
     if (this.#injectedPagefind) {
       this.#pagefind = this.#injectedPagefind;
       await this.#deriveTabs();
+      await this.#afterPagefindReady();
       return this.#pagefind;
     }
     if (!this.#pagefindLoadPromise) {
@@ -439,10 +453,41 @@ export class HawkSearch {
         await mod.options({ basePath: this.indexBasePath });
         this.#pagefind = mod;
         await this.#deriveTabs();
+        await this.#afterPagefindReady();
         return mod;
       });
     }
     return this.#pagefindLoadPromise;
+  }
+
+  /**
+   * Runs once, right after Pagefind first loads and tabs are resolved: populates a default
+   * results listing (`eagerResults`) if the visitor hasn't typed anything yet.
+   */
+  async #afterPagefindReady() {
+    if (this.eagerResults && !this.#query) {
+      await this.#executeSearch('');
+    }
+  }
+
+  /**
+   * Renders `defaultPreviewUrl`'s content into the preview pane on mount, before any result is
+   * selected — reuses the same fetch/extract path `#loadPreviewContent` uses for a real match, so
+   * it's real rendered page content, not a special-cased fixture. A real selection (or an
+   * `eagerResults` listing) replaces it the moment `#matches` is non-empty.
+   */
+  #renderDefaultPreview() {
+    const key = this.defaultPreviewUrl;
+    this.#previewKey = key;
+    this.#previewEl.innerHTML = `
+      <div class="hawk-preview-header"></div>
+      <h3 class="hawk-preview-title"></h3>
+      <div class="hawk-preview-content"><div class="hawk-preview-loading">Loading&hellip;</div></div>
+    `;
+    const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
+    const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
+    this.#animation.typeTitle(titleEl, this.defaultPreviewTitle, { isAnchor: false });
+    this.#loadPreviewContent({ url: this.defaultPreviewUrl, excerpt: '', isAnchor: false }, key, contentEl);
   }
 
   /**

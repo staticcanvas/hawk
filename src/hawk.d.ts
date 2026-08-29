@@ -61,6 +61,9 @@ export interface HawkSearchConfig {
   maxResults?: number;
   contentSelector?: string;
   hotkeys?: { open?: boolean; slash?: boolean; escape?: boolean };
+  defaultPreviewUrl?: string;
+  defaultPreviewTitle?: string;
+  eagerResults?: boolean;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;

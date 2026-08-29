@@ -284,6 +284,70 @@ describe('categories shorthand still expands to tabs', () => {
   });
 });
 
+describe('initial popup state', () => {
+  const htmlPage = (bodyInner) => `<!doctype html><html><body>${bodyInner}</body></html>`;
+
+  it('eagerResults (default true) populates the results pane as soon as Pagefind loads, with no query typed', async () => {
+    const pagefind = mockPagefind({
+      search: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Landing' }, url: '/landing/', excerpt: 'landing excerpt', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.search).toHaveBeenCalledWith('', expect.any(Object));
+    expect(hawk.state.matches).toHaveLength(1);
+    expect(document.querySelector('.hawk-modal-input').value).toBe('');
+    hawk.destroy();
+  });
+
+  it('eagerResults: false leaves the results pane on "Type to search"', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind, eagerResults: false });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.search).not.toHaveBeenCalled();
+    expect(document.querySelector('.hawk-modal-counter').textContent).toBe('Type to search');
+    hawk.destroy();
+  });
+
+  it('defaultPreviewUrl renders on mount, before Pagefind loads or any selection exists', async () => {
+    fetch.mockResolvedValue({
+      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><h2>Welcome</h2><p>overview text</p></main>')),
+    });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      eagerResults: false,
+      defaultPreviewUrl: '/getting-started/',
+      defaultPreviewTitle: 'Getting started',
+    });
+    // Rendered synchronously on mount — no hawk.open()/pagefind load needed to see it queued.
+    expect(document.querySelector('.hawk-preview-title')).toBeTruthy();
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.innerHTML).toContain('overview text'));
+    expect(fetch).toHaveBeenCalledWith('/getting-started/');
+    hawk.destroy();
+  });
+
+  it('a real result replaces the default preview once eagerResults populates matches', async () => {
+    fetch.mockResolvedValue({
+      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>real result content</p></main>')),
+    });
+    const pagefind = mockPagefind({
+      search: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Real' }, url: '/real/', excerpt: 'real excerpt', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, defaultPreviewUrl: '/default/', defaultPreviewTitle: 'Default' });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.innerHTML).toContain('real result content'));
+    hawk.destroy();
+  });
+});
+
 describe('search results and keyboard navigation', () => {
   /** @returns {Promise<HawkSearch>} */
   async function hawkWithResults() {
