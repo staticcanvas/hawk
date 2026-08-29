@@ -108,6 +108,7 @@ export interface HawkSearchConfig {
   enablePins?: boolean;
   pinStorageKey?: string;
   maxPins?: number;
+  inlineFilters?: boolean;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;

@@ -165,6 +165,11 @@ export class HawkSearch {
    * @param {string} [config.pinStorageKey='hawk:pins'] `localStorage` key pins persist to (an array of
    *   `{url, title, isAnchor}`).
    * @param {number} [config.maxPins=20] Caps the number of pins; pinning past the cap is a silent no-op.
+   * @param {boolean} [config.inlineFilters=false] Lets a visitor type `dimension:value` tokens (e.g.
+   *   `category:Guides`, `tag:"multi word"`) directly into the search box — parsed out as a Pagefind
+   *   filters object (merged over the active tab's own `filter`, inline wins on a dimension collision)
+   *   and stripped from the text actually searched. Off by default: turning it on changes how a literal
+   *   colon in a normal query behaves (e.g. `"ratio: 16:9"` would get `ratio:` parsed as a filter attempt).
    * @param {Partial<typeof DEFAULT_STRINGS>} [config.strings] Overrides for any UI text (localization).
    *   See `DEFAULT_STRINGS` for the full key list; `noResults`/`matchingResults`/`entries` are
    *   functions, not plain strings, so a locale can supply its own pluralization.
@@ -201,6 +206,7 @@ export class HawkSearch {
     this.enablePins = config.enablePins !== false;
     this.pinStorageKey = config.pinStorageKey || 'hawk:pins';
     this.maxPins = config.maxPins ?? 20;
+    this.inlineFilters = config.inlineFilters || false;
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
@@ -793,6 +799,37 @@ export class HawkSearch {
     }
   }
 
+  /**
+   * Parses `dimension:value` tokens out of a raw query (config.inlineFilters), e.g.
+   * `category:Guides responsive nav` -> `{ filters: { category: 'Guides' }, remainingQuery: 'responsive nav' }`.
+   * A quoted value (`tag:"multi word"`) keeps its spaces; repeating a dimension collects an array
+   * (OR, matching Pagefind's own multi-value filter shape). A no-op (returns `query` unchanged,
+   * `filters: null`) when `inlineFilters` isn't enabled.
+   * @param {string} query
+   * @returns {{filters: Record<string, string|string[]>|null, remainingQuery: string}}
+   */
+  #parseInlineFilters(query) {
+    if (!this.inlineFilters) {
+      return { filters: null, remainingQuery: query };
+    }
+    const filters = {};
+    const remainingQuery = query
+      .replace(/(\w+):("[^"]*"|\S+)/g, (_match, dimension, rawValue) => {
+        const value = rawValue.startsWith('"') && rawValue.endsWith('"') ? rawValue.slice(1, -1) : rawValue;
+        if (filters[dimension] === undefined) {
+          filters[dimension] = value;
+        } else if (Array.isArray(filters[dimension])) {
+          filters[dimension].push(value);
+        } else {
+          filters[dimension] = [filters[dimension], value];
+        }
+        return '';
+      })
+      .replace(/\s+/g, ' ')
+      .trim();
+    return { filters: Object.keys(filters).length ? filters : null, remainingQuery };
+  }
+
   async #executeSearch(query) {
     this.#query = query;
     await this.#ensurePagefindLoaded();
@@ -801,15 +838,19 @@ export class HawkSearch {
     }
 
     const tab = (this.#tabs || []).find((t) => t.id === this.#currentTabId);
+    const { filters: inlineFilters, remainingQuery } = this.#parseInlineFilters(query);
+    const mergedFilters =
+      tab?.filter || inlineFilters ? { ...(tab?.filter || {}), ...(inlineFilters || {}) } : null;
     const options = {
       ...this.pagefindOptions,
       ...(tab?.pagefindOptions || {}),
-      ...(tab?.filter ? { filters: tab.filter } : {}),
+      ...(mergedFilters ? { filters: mergedFilters } : {}),
     };
+    const searchTerm = this.inlineFilters ? remainingQuery : query;
     let results;
     try {
-      ({ results } = query.trim()
-        ? await this.#pagefind.debouncedSearch(query, options)
+      ({ results } = searchTerm.trim()
+        ? await this.#pagefind.debouncedSearch(searchTerm, options)
         : await this.#pagefind.search('', options));
     } catch (err) {
       // Covers every search call, not just the initial load — a transient failure on a later

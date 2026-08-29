@@ -374,6 +374,67 @@ describe('pagefindOptions passthrough', () => {
   });
 });
 
+describe('inlineFilters', () => {
+  it('is a no-op when not enabled — a literal colon stays part of the search term', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'category:Guides responsive';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('category:Guides responsive', expect.not.objectContaining({ filters: expect.anything() }));
+    hawk.destroy();
+  });
+
+  it('parses a dimension:value token out, filters on it, and searches only the remaining text', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind, inlineFilters: true });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'category:Guides responsive nav';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'responsive nav',
+      expect.objectContaining({ filters: { category: 'Guides' } })
+    );
+    hawk.destroy();
+  });
+
+  it('keeps spaces in a quoted value and collects repeated dimensions into an array', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind, inlineFilters: true });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'tag:api tag:"multi word" auth';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('auth', expect.objectContaining({ filters: { tag: ['api', 'multi word'] } }));
+    hawk.destroy();
+  });
+
+  it("merges with the active tab's own filter, inline winning on a dimension collision", async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      inlineFilters: true,
+      tabs: [{ id: 'guides', label: 'Guides', filter: { category: 'Guides', lang: 'en' } }],
+      defaultTab: 'guides',
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'category:Reference nav';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'nav',
+      expect.objectContaining({ filters: { category: 'Reference', lang: 'en' } })
+    );
+    hawk.destroy();
+  });
+});
+
 describe('categories shorthand still expands to tabs', () => {
   it('produces the same pills as before, filtering on categoryFilterName', async () => {
     const pagefind = mockPagefind();
