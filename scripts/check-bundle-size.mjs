@@ -10,7 +10,10 @@ import { resolve } from 'node:path';
 const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'));
 const packageName = pkg.name.split('/').pop();
 const bundlePath = `dist/${packageName}/dist/${packageName}.min.js`;
-const maxGzipBytes = 6 * 1024;
+// Raised from 6KB: i18n (config.strings + English defaults), the modal focus trap, and
+// search/load error handling added real, requested functionality that doesn't compress away.
+// 7KB still leaves headroom above the current ~6.4KB build.
+const maxGzipBytes = 7 * 1024;
 const bundle = readFileSync(bundlePath);
 const gzipBytes = gzipSync(bundle).byteLength;
 
