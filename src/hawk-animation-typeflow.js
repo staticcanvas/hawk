@@ -18,7 +18,7 @@ const DEFAULT_TITLE_CONFIG = {
   speed: 2,
   cursor: '|',
   cursorBlink: false,
-  respectReducedMotion: false,
+  respectReducedMotion: true,
 };
 
 const DEFAULT_ANCHOR_TITLE_CONFIG = {
@@ -36,13 +36,13 @@ const DEFAULT_CONTENT_CONFIG = {
   ],
   speed: 2,
   cursor: '',
-  respectReducedMotion: false,
+  respectReducedMotion: true,
 };
 
 const DEFAULT_ROTATE_CONFIG = {
   holdDuration: 3000,
   pauseBetween: 200,
-  respectReducedMotion: false,
+  respectReducedMotion: true,
   typeConfig: { speed: 2, cursor: '|', cursorBlink: true },
   eraseConfig: { speed: 2, eraseStyle: 'end' },
 };
