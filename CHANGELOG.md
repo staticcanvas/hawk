@@ -4,6 +4,25 @@ All notable changes to this project are documented in this file. The format is b
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Hawk is pre-1.0 and hasn't cut a
 tagged release yet — the versions below track `package.json`'s history, not published tags.
 
+## [0.5.0] - 2026-08-30
+
+### Added
+
+- **Curated/sorted tabs**: `HawkTab.sort` (sugar for `pagefindOptions.sort`) turns a tab into a
+  listing ordered by a Pagefind-indexed field instead of relevance — e.g. `{ sort: { date: 'desc'
+  } }` for a "Recently updated" tab, given pages marked with `data-pagefind-sort="date"`. Wired
+  into hawk's own docs site as a working example (every content page now carries a
+  `data-pagefind-sort="date"` marker from its Hugo `.Lastmod`).
+- **Loading tabs from JSON**: `config.tabsUrl` fetches a JSON file (the same shape as
+  `config.tabs`) once Pagefind loads, instead of requiring the tab list to live in the mount
+  script — lets a non-JS site maintainer, or a separate build step, edit tabs directly. Falls back
+  to auto-derived tabs (with a console warning) on a fetch failure, invalid JSON, or a
+  non-array response. Ignored if `config.tabs`/`config.categories` is also given.
+
+### Testing
+
+- Unit test count: 115 (0.4.0) → 120 (0.5.0).
+
 ## [0.4.0] - 2026-08-30
 
 ### Added
