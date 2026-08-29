@@ -114,6 +114,10 @@
       // pull in the sibling .doc-toc/.doc-sidebar chrome.
       contentSelector: '.doc-article',
       tabs: categories.map((name) => ({ id: name.toLowerCase(), label: name, filter: { category: name } })),
+      // Every guide/reference page here has real H2/H3 structure — a section-row outline scans
+      // faster than the full page dump for a page-level match (a real query match within one
+      // section still shows that section in full, unaffected — see previewSections' own docs).
+      previewSections: true,
     });
 
     // ── Theme toggle ──────────────────────────────────────────────────────────────────────

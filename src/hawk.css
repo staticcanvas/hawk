@@ -537,6 +537,43 @@
   margin: 0;
 }
 
+/* config.previewSections — a page-level match's content broken into clickable heading+excerpt
+   rows instead of the full page dump (see hawk.js's #renderPreviewSections). .hawk-preview-section-row
+   is an <a> inside .hawk-preview-content, which the markdown-styling block above already targets
+   with ".hawk-preview-content:not([data-hawk-markdown-styles='off']) a { text-decoration: underline }"
+   at specificity (0,2,1) — ".hawk-preview-section-row" alone is only (0,1,0) and can never outrank
+   that regardless of source order, so the selector below repeats ".hawk-preview-content" to reach
+   the same (0,2,1) and let source position (this comes later) actually decide the tie. */
+.hawk-preview-content a.hawk-preview-section-row {
+  display: block;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
+  text-decoration: none;
+  color: inherit;
+}
+.hawk-preview-section-row:first-child {
+  padding-top: 0;
+}
+.hawk-preview-section-row:last-child {
+  border-bottom: none;
+}
+.hawk-preview-section-row:hover .hawk-preview-section-title {
+  color: var(--hawk-accent, #38bdf8);
+}
+.hawk-preview-section-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.hawk-preview-section-excerpt {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--hawk-text-secondary, #94a3b8);
+  line-height: 1.5;
+}
+
 .hawk-modal-footer {
   display: flex;
   align-items: center;

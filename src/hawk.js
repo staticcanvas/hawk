@@ -173,6 +173,16 @@ export class HawkSearch {
    *   filters object (merged over the active tab's own `filter`, inline wins on a dimension collision)
    *   and stripped from the text actually searched. Off by default: turning it on changes how a literal
    *   colon in a normal query behaves (e.g. `"ratio: 16:9"` would get `ratio:` parsed as a filter attempt).
+   * @param {boolean} [config.previewSections=false] For a page-level match (not an anchor/sub_result — those
+   *   already show their one matched section in full), breaks the preview into clickable rows — one per
+   *   heading matching `previewSectionSelector`, each with the heading text and a short plain-text excerpt
+   *   of the content up to the next heading — instead of dumping the whole page. Falls back to the full
+   *   content view if the page has no matching headings. Reuses the same fetched/cached page content the
+   *   full view uses — no extra network request.
+   * @param {string} [config.previewSectionSelector='h2, h3'] Which headings count as a "section" for
+   *   `previewSections`.
+   * @param {number} [config.previewSectionExcerptLength=140] Max characters of a `previewSections` row's
+   *   excerpt before truncating with an ellipsis.
    * @param {object} [config.trigger] Renders hawk's own trigger button instead of requiring the consumer to
    *   build one — omit entirely to keep today's behavior (`triggerSelector` pointing at hand-built markup).
    * @param {'minimal'|'compact'|'default'} [config.trigger.kind='default'] `'minimal'`: icon only. `'compact'`:
@@ -216,6 +226,9 @@ export class HawkSearch {
     this.pinStorageKey = config.pinStorageKey || 'hawk:pins';
     this.maxPins = config.maxPins ?? 20;
     this.inlineFilters = config.inlineFilters || false;
+    this.previewSections = config.previewSections || false;
+    this.previewSectionSelector = config.previewSectionSelector || 'h2, h3';
+    this.previewSectionExcerptLength = config.previewSectionExcerptLength ?? 140;
     this.triggerConfig = config.trigger || null;
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
@@ -1058,11 +1071,21 @@ export class HawkSearch {
    */
   async #loadPreviewContent(item, key, contentEl) {
     let html = item.excerpt || '';
+    let sections = null;
     if (typeof fetch === 'function' && typeof DOMParser !== 'undefined') {
       try {
         const [pagePath, anchor] = item.url.split('#');
         const root = await this.#fetchFragment(pagePath);
-        html = item.isAnchor && anchor ? this.#extractSection(root, anchor) : root.innerHTML;
+        if (item.isAnchor && anchor) {
+          html = this.#extractSection(root, anchor);
+        } else if (this.previewSections) {
+          sections = this.#extractSections(root);
+          if (!sections.length) {
+            html = root.innerHTML; // no matching headings — fall back to the full content view
+          }
+        } else {
+          html = root.innerHTML;
+        }
       } catch {
         html = item.excerpt || '';
       }
@@ -1070,7 +1093,69 @@ export class HawkSearch {
     if (this.#previewKey !== key) {
       return; // selection moved on while the fetch was in flight
     }
-    this.#previewController = this.#animation.typeContent(contentEl, html);
+    if (sections && sections.length) {
+      // A structured list of rows, not prose — rendered directly rather than through the
+      // animation driver's typeContent, which is built for typing out text/HTML, not populating
+      // a list of links.
+      this.#renderPreviewSections(sections, item, contentEl);
+    } else {
+      this.#previewController = this.#animation.typeContent(contentEl, html);
+    }
+  }
+
+  /**
+   * Breaks a page's content root into `{title, slug, excerpt}` rows, one per heading matching
+   * `previewSectionSelector` — the heading's own text, its id, and a short plain-text excerpt of
+   * the content between it and the next heading of *any* level (so a subsection's text doesn't
+   * leak into its parent's excerpt). Pure DOM traversal over content hawk already fetched and
+   * parsed for the full-content view — no extra network request, and cheap even for a long page
+   * (a few dozen headings at most in practice).
+   * @param {Element} root
+   * @returns {{title: string, slug: string, excerpt: string}[]}
+   */
+  #extractSections(root) {
+    return Array.from(root.querySelectorAll(this.previewSectionSelector))
+      .filter((heading) => heading.id)
+      .map((heading) => {
+        const parts = [];
+        let el = heading.nextElementSibling;
+        while (el && !/^H[1-6]$/.test(el.tagName)) {
+          const text = el.textContent.trim();
+          if (text) {
+            parts.push(text);
+          }
+          el = el.nextElementSibling;
+        }
+        let excerpt = parts.join(' ').replace(/\s+/g, ' ').trim();
+        if (excerpt.length > this.previewSectionExcerptLength) {
+          excerpt = `${excerpt.slice(0, this.previewSectionExcerptLength).trimEnd()}…`;
+        }
+        return { title: heading.textContent.trim(), slug: heading.id, excerpt };
+      });
+  }
+
+  /**
+   * Renders `previewSections`' rows — each a real link to that heading on the actual page (same
+   * click-to-navigate semantics as a normal result), reporting through `onSelect` like any other
+   * selection.
+   */
+  #renderPreviewSections(sections, item, contentEl) {
+    const basePath = item.url.split('#')[0];
+    contentEl.innerHTML = sections
+      .map(
+        (s) => `
+        <a class="hawk-preview-section-row" href="${basePath}#${s.slug}">
+          <span class="hawk-preview-section-title">${s.title}</span>
+          ${s.excerpt ? `<span class="hawk-preview-section-excerpt">${s.excerpt}</span>` : ''}
+        </a>`
+      )
+      .join('');
+    contentEl.querySelectorAll('.hawk-preview-section-row').forEach((el, idx) => {
+      el.addEventListener('click', () => {
+        const s = sections[idx];
+        this.onSelect?.({ title: s.title, url: `${basePath}#${s.slug}`, excerpt: s.excerpt, isAnchor: true, meta: item.meta || {} });
+      });
+    });
   }
 
   /**

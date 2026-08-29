@@ -28,6 +28,9 @@ category: Reference
 | `maxResults` | `number` | `18` | Maximum rendered result rows. |
 | `contentSelector` | `string` | `'[data-pagefind-body]'` | Selects the preview pane's content from a fetched result page. See [Rich preview content](#rich-preview-content). |
 | `disableDefaultMarkdownStyles` | `boolean` | `false` | Opts out of hawk.css's own preview-content prose rules. See [Theming](#theming). |
+| `previewSections` | `boolean` | `false` | Renders a page-level match's preview as clickable heading+excerpt rows instead of the full page dump. See [Section-outline previews](#section-outline-previews). |
+| `previewSectionSelector` | `string` | `'h2, h3'` | Heading elements collected into rows when `previewSections` is on. Headings without an `id` are skipped (no anchor to link to). |
+| `previewSectionExcerptLength` | `number` | `140` | Max characters of a row's excerpt before truncating with `…`. |
 | `hotkeys` | `object` | `{ open: true, slash: true, escape: true }` | Enables/disables Ctrl/Cmd+K, `/`, and Escape. |
 | `strings` | `object` | see [Strings and localization](#strings-and-localization) | Overrides for any UI text. |
 | `defaultPreviewUrl` | `string` | — | Shows this page's content in the preview pane on mount, before any result is selected. Replaced the instant real results exist. |
@@ -166,6 +169,35 @@ your `data-pagefind-body` region can contain unsanitized user-generated content 
 wiki, forum posts), that content reaches the preview pane and result list unsanitized too — treat
 it the same way you'd treat rendering that content anywhere else on the page, and sanitize it at
 your own build/render step if it isn't already.
+
+### Section-outline previews
+
+`previewSections: true` changes what a **page-level** match's preview shows: instead of the full
+fetched page, hawk collects every heading matching `previewSectionSelector` (default `'h2, h3'`)
+that has an `id`, and renders one clickable row per heading — the heading text as a title, plus a
+short excerpt built from that heading's own content (siblings up to the next heading of the same
+or higher level, truncated to `previewSectionExcerptLength` characters). Clicking a row navigates
+to that heading's anchor, the same as clicking an anchor/sub-result match in the results list.
+
+This only changes page-level matches. A match that's already an anchor/sub-result (the query hit a
+specific heading, not just the page) is unaffected — it still shows that one section's content in
+full, exactly as without `previewSections`. If no heading in the fetched page matches
+`previewSectionSelector`, hawk falls back to the full page dump rather than rendering an empty
+list.
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  contentSelector: '.doc-article',
+  previewSections: true,
+  previewSectionSelector: 'h2, h3',
+  previewSectionExcerptLength: 140,
+});
+```
+
+Pick `previewSectionSelector` based on how granular your own content's heading structure is — a
+docs site with real `h2`/`h3` sections benefits from the scannable outline; a page that's mostly
+prose under a single heading is better served leaving `previewSections` off.
 
 ## Metadata
 

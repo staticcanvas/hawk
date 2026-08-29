@@ -1279,3 +1279,157 @@ describe('built-in trigger (config.trigger)', () => {
     expect(host.querySelector('.hawk-trigger')).toBeNull();
   });
 });
+
+describe('previewSections', () => {
+  const htmlPage = (bodyInner) => `<!doctype html><html><body>${bodyInner}</body></html>`;
+
+  async function selectFirstResult(config = {}) {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Theming' }, url: '/guides/theming/', excerpt: 'excerpt', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, ...config });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'theming';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return hawk;
+  }
+
+  it('is off by default — a page-level match still shows the full content view', async () => {
+    fetch.mockResolvedValue({
+      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><h2 id="contract">The contract</h2><p>A theme is two things.</p></main>')),
+    });
+    const hawk = await selectFirstResult();
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.innerHTML).toContain('A theme is two things'));
+    expect(document.querySelector('.hawk-preview-section-row')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('renders one row per matching heading, with title and a plain-text excerpt', async () => {
+    fetch.mockResolvedValue({
+      text: () =>
+        Promise.resolve(
+          htmlPage(`
+            <main data-pagefind-body>
+              <h2 id="contract">The contract</h2>
+              <p>A theme is <strong>two</strong> things: a CSS file and a plugin object.</p>
+              <h2 id="tokens">Token list</h2>
+              <p>hawk.css reads every color through a token.</p>
+            </main>
+          `)
+        ),
+    });
+    const hawk = await selectFirstResult({ previewSections: true });
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.querySelectorAll('.hawk-preview-section-row')).toHaveLength(2));
+
+    const rows = content.querySelectorAll('.hawk-preview-section-row');
+    expect(rows[0].querySelector('.hawk-preview-section-title').textContent).toBe('The contract');
+    expect(rows[0].querySelector('.hawk-preview-section-excerpt').textContent).toBe(
+      'A theme is two things: a CSS file and a plugin object.'
+    );
+    expect(rows[0].getAttribute('href')).toBe('/guides/theming/#contract');
+    expect(rows[1].querySelector('.hawk-preview-section-title').textContent).toBe('Token list');
+    hawk.destroy();
+  });
+
+  it('truncates a long excerpt to previewSectionExcerptLength with an ellipsis', async () => {
+    const longText = 'word '.repeat(60).trim();
+    fetch.mockResolvedValue({
+      text: () => Promise.resolve(htmlPage(`<main data-pagefind-body><h2 id="a">A</h2><p>${longText}</p></main>`)),
+    });
+    const hawk = await selectFirstResult({ previewSections: true, previewSectionExcerptLength: 20 });
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.querySelector('.hawk-preview-section-row')).toBeTruthy());
+    const excerpt = content.querySelector('.hawk-preview-section-excerpt').textContent;
+    expect(excerpt.length).toBeLessThanOrEqual(21); // 20 chars + the ellipsis character
+    expect(excerpt.endsWith('…')).toBe(true);
+    hawk.destroy();
+  });
+
+  it('falls back to the full content view when the page has no matching headings', async () => {
+    fetch.mockResolvedValue({
+      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>No headings on this page at all.</p></main>')),
+    });
+    const hawk = await selectFirstResult({ previewSections: true });
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.textContent).toContain('No headings on this page at all.'));
+    expect(document.querySelector('.hawk-preview-section-row')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('respects a custom previewSectionSelector', async () => {
+    fetch.mockResolvedValue({
+      text: () =>
+        Promise.resolve(
+          htmlPage('<main data-pagefind-body><h2 id="skip">Skip me</h2><p>x</p><h4 id="keep">Keep me</h4><p>y</p></main>')
+        ),
+    });
+    const hawk = await selectFirstResult({ previewSections: true, previewSectionSelector: 'h4' });
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.querySelectorAll('.hawk-preview-section-row')).toHaveLength(1));
+    expect(content.querySelector('.hawk-preview-section-title').textContent).toBe('Keep me');
+    hawk.destroy();
+  });
+
+  it('clicking a section row reports through onSelect with an anchor-shaped match', async () => {
+    fetch.mockResolvedValue({
+      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><h2 id="contract">The contract</h2><p>Body text.</p></main>')),
+    });
+    const onSelect = vi.fn();
+    const hawk = await selectFirstResult({ previewSections: true, onSelect });
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.querySelector('.hawk-preview-section-row')).toBeTruthy());
+
+    content.querySelector('.hawk-preview-section-row').click();
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ title: 'The contract', url: '/guides/theming/#contract', isAnchor: true })
+    );
+    hawk.destroy();
+  });
+
+  it('does not affect an anchor/sub_result match — that still shows its one section in full', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'Theming' },
+            url: '/guides/theming/',
+            excerpt: 'excerpt',
+            sub_results: [{ title: 'Token list', url: '/guides/theming/#tokens', excerpt: 'sub excerpt' }],
+          }),
+        ],
+      }),
+    });
+    fetch.mockResolvedValue({
+      text: () =>
+        Promise.resolve(
+          htmlPage(`
+            <main data-pagefind-body>
+              <h2 id="contract">The contract</h2><p>x</p>
+              <h2 id="tokens">Token list</h2><p>hawk.css reads every color through a token.</p>
+            </main>
+          `)
+        ),
+    });
+    const hawk = new HawkSearch({ pagefind, previewSections: true });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'theming';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Row 1 is the "Token list" sub_result (row 0 is the page itself).
+    document.querySelectorAll('.hawk-result-item')[1].dispatchEvent(new Event('mouseenter', { bubbles: true }));
+    const content = document.querySelector('.hawk-preview-content');
+    await vi.waitFor(() => expect(content.innerHTML).toContain('hawk.css reads every color through a token.'));
+    expect(document.querySelector('.hawk-preview-section-row')).toBeNull();
+    hawk.destroy();
+  });
+});

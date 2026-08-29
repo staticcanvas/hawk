@@ -115,6 +115,9 @@ export interface HawkSearchConfig {
   pinStorageKey?: string;
   maxPins?: number;
   inlineFilters?: boolean;
+  previewSections?: boolean;
+  previewSectionSelector?: string;
+  previewSectionExcerptLength?: number;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;
