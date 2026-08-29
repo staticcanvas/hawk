@@ -1,0 +1,88 @@
+---
+title: Density and keyboard navigation
+description: Fit/medium/compact density modes, two-pane keyboard navigation, and initial popup state.
+eyebrow: Guide
+category: Guides
+---
+
+## Density modes
+
+`params.density` picks between three sizing presets:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  params: { density: 'fit' }, // 'fit' | 'medium' (default) | 'compact'
+});
+```
+
+- `medium` — the default sizing (unchanged from before density existed): a fixed-size dialog,
+  2 columns.
+- `fit` — a near-viewport dialog (`96vw` / `92vh`), for a dedicated "search page" feel.
+- `compact` — a smaller dialog, forced to a single column with the preview pane hidden by
+  default — see [Reaching the preview pane in compact layouts](#reaching-the-preview-pane-in-compact-layouts).
+
+Density composes with the existing `breakpoint`: whichever forces single-column wins, so a
+`fit`/`medium` dialog still degrades gracefully on narrow viewports even without `compact`.
+
+### The in-modal switcher
+
+By default (`params.allowDensityToggle: true`) hawk renders a Fit/Medium/Compact button group in
+the modal header, calling `search.setParams({ density })` internally. The visitor's last choice
+persists to `localStorage` (`hawk:density`) and is read back on the next construction — unless
+`config.params.density` is set explicitly, which always wins over a stored preference. Set
+`allowDensityToggle: false` to fix density via config only and hide the switcher.
+
+## Two-pane keyboard navigation
+
+The modal's Tab order is: search input → filter tabs → results pane → preview pane → close. Both
+panes are real focus stops (`tabindex="0"`), so this is reachable from a plain keyboard, not just
+the mouse:
+
+- **Input focused (default):** ArrowUp/ArrowDown move the selection, wrapping around; Enter
+  navigates to the selected result.
+- **Results pane focused:** identical ArrowUp/ArrowDown/Enter behavior. Typing any printable
+  character refocuses the input and forwards the keystroke, so you can resume typing without an
+  extra click.
+- **Preview pane focused:** ArrowUp/ArrowDown/PageUp/PageDown/Home/End scroll its content instead
+  of changing selection.
+
+The results pane exposes the current selection via `aria-activedescendant` rather than making
+every result individually tabbable (the correct pattern for its `role="listbox"`), so pressing
+Tab moves from "the list" to "the preview" in one step regardless of how many results are
+showing.
+
+### Reaching the preview pane in compact layouts
+
+In `compact` density (or below `breakpoint`), only one column is shown and the preview pane is
+hidden by default — there's nowhere to put it next to the results. Tabbing into the preview pane
+reveals it in place of the results pane (`[data-hawk-show-preview]`); tabbing or clicking away
+hides it again. This is the only way to reach the preview in a single-column layout — there's no
+separate "view result" button.
+
+## Initial popup state
+
+Three config keys shape what the modal shows the instant it opens, before the visitor has typed
+or clicked anything:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  defaultTab: 'guides', // active tab on open — see the API reference's Tabs section
+  defaultPreviewUrl: '/getting-started/',
+  defaultPreviewTitle: 'Getting started',
+  eagerResults: true, // default — set false to keep the results pane empty until the visitor types
+});
+```
+
+- **`defaultPreviewUrl`** shows a specific page's content in the preview pane as soon as the
+  modal mounts — before Pagefind even loads, let alone before anything is selected. It uses the
+  same fetch/extract path a real selection uses ([Rich preview content]({{< relref "/api" >}}#rich-preview-content)),
+  so it's real rendered page content. A real result — from a click, a keyboard selection, or an
+  `eagerResults` listing — replaces it automatically.
+- **`eagerResults`** (default `true`) runs an empty-query search as soon as Pagefind loads, so
+  the results pane shows a default listing instead of "Type to search". This is a behavior
+  change from hawk's very first releases, where the results pane stayed empty until the first
+  keystroke — set `eagerResults: false` to keep that behavior.
+- **`defaultTab`** is documented in [API reference — Tabs]({{< relref "/api" >}}#tabs); it also
+  determines which tab's `filter` scopes the `eagerResults` listing.

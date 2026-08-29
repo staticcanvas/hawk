@@ -66,3 +66,28 @@ generated from frontmatter — `category: Guides` for one tab, or
 
 Hawk reads the `category` filter dimension by default (`categoryFilterName` in the config to use
 a different one), and falls back to a single "All" pill with no filtering if nothing is marked.
+
+### Taking manual control with `tabs`
+
+Auto-derivation covers the common case — one `category` frontmatter field, one filter dimension.
+For anything more (multiple filter dimensions per tab, a fixed tab order independent of what's
+in the index yet, per-tab search tuning), pass `tabs` explicitly:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  tabs: [
+    { label: 'Guides', filter: { category: 'Guides' } },
+    { id: 'ref', label: 'Reference', filter: { category: ['Reference', 'API'] } },
+    { label: 'v2 only', filter: { category: 'Guides', version: '2.x' } },
+  ],
+  defaultTab: 'ref',
+});
+```
+
+`filter` is a raw Pagefind `filters` object, passed straight into `search()`/`debouncedSearch()`
+— an array of values within one dimension is an OR (`category: ['Reference', 'API']` matches
+either), multiple dimensions are ANDed together. When `tabs` is given, `filters()` is never
+called and the pills render synchronously on mount instead of waiting for Pagefind to load. See
+[API reference — Tabs]({{< relref "/api" >}}#tabs) for the full shape, including per-tab
+`pagefindOptions`.

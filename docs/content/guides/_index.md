@@ -1,6 +1,6 @@
 ---
 title: Guides
-description: Theming, animation plugins, and Pagefind indexing.
+description: Theming, animation plugins, Pagefind indexing and tabs, density, and keyboard navigation.
 category: Guides
 ---
 

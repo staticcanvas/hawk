@@ -1,14 +1,18 @@
 # Hawk
 
-Themeable, pluggable command-palette search for static sites.
+Themeable, pluggable command-palette search widget for static sites.
 
 ## Overview
 
-Hawk is a search modal extracted from typeflow's docs site search. It owns the DOM, keyboard
+Hawk is a JS-embeddable search widget: `npm install` + a constructor call (or a `<script>` tag +
+a constructor call), no host markup beyond a trigger element required. It owns the DOM, keyboard
 navigation, and result rendering; [Pagefind](https://pagefind.app/) owns indexing, ranking, and
-typo-tolerant matching; visual theme and reveal animation are swappable plugins rather than
-hardcoded choices. A TypeFlow-typewriter animation driver ships alongside a zero-dependency
-instant driver, so TypeFlow is never a hard dependency of the core bundle.
+typo-tolerant matching — hawk is Pagefind's own front end, exposing Pagefind's filtering and
+search-tuning options directly rather than hiding them behind a narrower API. Visual theme and
+reveal animation are swappable plugins rather than hardcoded choices. A TypeFlow-typewriter
+animation driver ships alongside a zero-dependency instant driver, so TypeFlow is never a hard
+dependency of the core bundle. (Hawk started as an extraction of typeflow's own docs site search
+— typeflow is one theme/animation pairing it ships with today, not what it's limited to.)
 
 See `architecture/README.md` for the design rationale, and `architecture/plugin-system.md` /
 `architecture/theme-contract.md` / `architecture/animation-driver-contract.md` for the plugin
@@ -18,9 +22,21 @@ interfaces.
 
 - Pagefind-backed search — chunked, lazily-loaded index; scales past a hand-rolled
   substring-scored in-browser index.
-- Dynamic category filter pills, derived from Pagefind's `filters()` API by default.
-- Keyboard navigation (arrow keys, wraparound selection, Enter to navigate, Escape to close,
-  Ctrl/Cmd+K and `/` to open).
+- Dev-controlled tabs: auto-derived category filter pills by default (from Pagefind's
+  `filters()`), or an explicit `tabs` config where each tab's `filter` is a raw Pagefind filters
+  object (multi-dimension AND, multi-value OR — full Pagefind filtering power, no translation
+  layer) with its own optional `pagefindOptions` override. A top-level `pagefindOptions` escape
+  hatch merges into every search call for `sort`/`ranking`/`language` tuning hawk doesn't
+  otherwise wrap.
+- Fit / medium / compact density modes (`params.density`), switchable via config or an in-modal
+  toggle whose choice persists to `localStorage`.
+- Two-pane keyboard navigation: Tab moves between the search input, filter tabs, results pane,
+  and preview pane; arrow keys change selection in the results pane and scroll the preview pane,
+  depending on which has focus (plus the underlying arrow-key wraparound selection, Enter to
+  navigate, Escape to close, Ctrl/Cmd+K and `/` to open).
+- Configurable initial state: `defaultTab`, `defaultPreviewUrl` (shows a specific page's content
+  on mount, before any selection), and `eagerResults` (an empty-query listing on open instead of
+  an empty "Type to search" state, on by default).
 - Configurable layout: `scale`, `position`, `offset`, `alignment`, `columns`, and a JS-driven
   `breakpoint` (not a fixed CSS media query) that collapses to a single column and hides the
   preview pane below the configured width.
@@ -62,13 +78,23 @@ const search = new HawkSearch({
   index: '/pagefind/',
   triggerSelector: '[data-search-trigger]',
   theme: 'typeflow',
-  params: { scale: 1, position: 'top-center', columns: 2, breakpoint: 768 },
+  params: { scale: 1, position: 'top-center', columns: 2, breakpoint: 768, density: 'medium' },
+  tabs: [
+    { label: 'Guides', filter: { category: 'Guides' } },
+    { id: 'ref', label: 'Reference', filter: { category: ['Reference', 'API'] } },
+  ],
+  defaultTab: 'guides',
+  defaultPreviewUrl: '/getting-started/',
 });
 ```
 
 Any element matching `triggerSelector` opens the modal — hawk builds its own DOM, no other markup
 required. Call `search.setParams({...})` to change layout at runtime, `search.state` to read
-`{ open, query, selectedIndex, matches }`, and `search.destroy()` to tear it down.
+`{ open, query, selectedIndex, matches, activeTab }`, and `search.destroy()` to tear it down. See
+[docs/content/api.md](docs/content/api.md) for the full config reference and
+[docs/content/guides/pagefind-setup.md](docs/content/guides/pagefind-setup.md) /
+[docs/content/guides/density-and-navigation.md](docs/content/guides/density-and-navigation.md)
+for tabs, density, and keyboard-navigation guides.
 
 ## Theming
 
