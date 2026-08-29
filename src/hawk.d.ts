@@ -30,12 +30,19 @@ export interface HawkMatch {
   meta: Record<string, string>;
 }
 
+export interface HawkPin {
+  url: string;
+  title: string;
+  isAnchor: boolean;
+}
+
 export interface HawkState {
   open: boolean;
   query: string;
   selectedIndex: number;
   matches: HawkMatch[];
   pageCount: number;
+  pins: HawkPin[];
   activeTab: string;
   error: Error | null;
 }
@@ -98,6 +105,9 @@ export interface HawkSearchConfig {
   rotatingPlaceholders?: string[];
   showPoweredBy?: boolean;
   poweredByHref?: string;
+  enablePins?: boolean;
+  pinStorageKey?: string;
+  maxPins?: number;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;

@@ -498,6 +498,142 @@ describe('search results and keyboard navigation', () => {
   });
 });
 
+describe('pin system', () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  async function hawkWithResults(config = {}) {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] }),
+          resultFor({ meta: { title: 'Page Two' }, url: '/two/', excerpt: 'second match', sub_results: [] }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, ...config });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'match';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return hawk;
+  }
+
+  it('renders a pin toggle on every row when enablePins (default true)', async () => {
+    const hawk = await hawkWithResults();
+    expect(document.querySelectorAll('.hawk-pin-btn')).toHaveLength(2);
+    expect(document.querySelector('.hawk-pin-btn').textContent).toBe('Pin');
+    hawk.destroy();
+  });
+
+  it('omits the pin toggle when enablePins is false', async () => {
+    const hawk = await hawkWithResults({ enablePins: false });
+    expect(document.querySelectorAll('.hawk-pin-btn')).toHaveLength(0);
+    hawk.destroy();
+  });
+
+  it('clicking the pin toggle pins without navigating or triggering onSelect', async () => {
+    const onSelect = vi.fn();
+    const hawk = await hawkWithResults({ onSelect });
+    const firstPinBtn = document.querySelectorAll('.hawk-pin-btn')[0];
+
+    firstPinBtn.click();
+    expect(onSelect).not.toHaveBeenCalled();
+    expect(hawk.state.pins).toEqual([{ url: '/one/', title: 'Page One', isAnchor: false }]);
+    expect(JSON.parse(localStorage.getItem('hawk:pins'))).toEqual([{ url: '/one/', title: 'Page One', isAnchor: false }]);
+    expect(document.querySelectorAll('.hawk-pin-btn')[0].textContent).toBe('Unpin');
+    expect(document.querySelectorAll('.hawk-pin-btn')[0].classList.contains('is-pinned')).toBe(true);
+
+    hawk.destroy();
+  });
+
+  it('a "Pinned" tab appears once a pin exists and disappears once the last one is removed', async () => {
+    const hawk = await hawkWithResults();
+    // Baseline pills come from mockPagefind()'s default filters() — category derivation, not pins.
+    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
+      'all',
+      'Guides',
+      'Reference',
+    ]);
+
+    document.querySelectorAll('.hawk-pin-btn')[0].click();
+    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
+      'pinned',
+      'all',
+      'Guides',
+      'Reference',
+    ]);
+
+    document.querySelectorAll('.hawk-pin-btn')[0].click(); // unpin the only pin
+    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
+      'all',
+      'Guides',
+      'Reference',
+    ]);
+    hawk.destroy();
+  });
+
+  it('the Pinned tab lists pins directly (no Pagefind call) and clears any typed query', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'match';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-pin-btn').click();
+    expect(pagefind.debouncedSearch).toHaveBeenCalledTimes(1);
+
+    document.querySelector('.hawk-filter-pill[data-filter="pinned"]').click();
+    expect(pagefind.debouncedSearch).toHaveBeenCalledTimes(1); // still just the one call — pinned view didn't search
+    expect(hawk.state.matches).toEqual([{ title: 'Page One', url: '/one/', excerpt: '', isAnchor: false, meta: {} }]);
+    expect(input.value).toBe('');
+    hawk.destroy();
+  });
+
+  it('unpinning the last item while viewing the Pinned tab falls back to "all" and resumes a real search', async () => {
+    const hawk = await hawkWithResults();
+    document.querySelectorAll('.hawk-pin-btn')[0].click();
+    document.querySelector('.hawk-filter-pill[data-filter="pinned"]').click();
+    expect(hawk.state.activeTab).toBe('pinned');
+
+    document.querySelector('.hawk-pin-btn').click(); // unpin the only item while viewing it
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(hawk.state.activeTab).toBe('all');
+    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
+      'all',
+      'Guides',
+      'Reference',
+    ]);
+    hawk.destroy();
+  });
+
+  it('persists pins across a fresh instance (localStorage) and shows the Pinned tab once tabs resolve', async () => {
+    localStorage.setItem('hawk:pins', JSON.stringify([{ url: '/one/', title: 'Page One', isAnchor: false }]));
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    expect(hawk.state.pins).toEqual([{ url: '/one/', title: 'Page One', isAnchor: false }]);
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.querySelector('.hawk-filter-pill[data-filter="pinned"]')).toBeTruthy();
+    hawk.destroy();
+  });
+
+  it('caps pins at maxPins as a silent no-op past the limit', async () => {
+    const hawk = await hawkWithResults({ maxPins: 1 });
+    document.querySelectorAll('.hawk-pin-btn')[0].click();
+    document.querySelectorAll('.hawk-pin-btn')[1].click(); // second pin attempt, already at the cap
+    expect(hawk.state.pins).toHaveLength(1);
+    hawk.destroy();
+  });
+});
+
 describe('result/page metadata', () => {
   async function hawkWithResults(config = {}) {
     const pagefind = mockPagefind({

@@ -32,6 +32,7 @@ const DEFAULT_PARAMS = {
 
 const DENSITY_VALUES = new Set(['fit', 'medium', 'compact']);
 const DENSITY_STORAGE_KEY = 'hawk:density';
+const PINNED_TAB_ID = 'pinned';
 
 const DEFAULT_HOTKEYS = { open: true, slash: true, escape: true };
 
@@ -73,6 +74,9 @@ const DEFAULT_STRINGS = {
   unavailable: 'Search is unavailable right now. Try again later.',
   unavailableCounter: 'Search unavailable',
   poweredBy: 'Search powered by Pagefind',
+  pinnedTab: 'Pinned',
+  pinAction: 'Pin',
+  unpinAction: 'Unpin',
 };
 
 let instanceCount = 0;
@@ -156,6 +160,11 @@ export class HawkSearch {
    * @param {boolean} [config.showPoweredBy=true] Shows a small "Search powered by Pagefind" link in the
    *   modal footer. Text-only (no logo asset vendored).
    * @param {string} [config.poweredByHref='https://pagefind.app/'] Link target for the powered-by attribution.
+   * @param {boolean} [config.enablePins=true] Lets a visitor pin a result from within the results list — a
+   *   pin toggle renders on every row, and a synthetic "Pinned" tab is prepended once at least one exists.
+   * @param {string} [config.pinStorageKey='hawk:pins'] `localStorage` key pins persist to (an array of
+   *   `{url, title, isAnchor}`).
+   * @param {number} [config.maxPins=20] Caps the number of pins; pinning past the cap is a silent no-op.
    * @param {Partial<typeof DEFAULT_STRINGS>} [config.strings] Overrides for any UI text (localization).
    *   See `DEFAULT_STRINGS` for the full key list; `noResults`/`matchingResults`/`entries` are
    *   functions, not plain strings, so a locale can supply its own pluralization.
@@ -189,6 +198,9 @@ export class HawkSearch {
     this.rotatingPlaceholders = config.rotatingPlaceholders || [];
     this.showPoweredBy = config.showPoweredBy !== false;
     this.poweredByHref = config.poweredByHref || 'https://pagefind.app/';
+    this.enablePins = config.enablePins !== false;
+    this.pinStorageKey = config.pinStorageKey || 'hawk:pins';
+    this.maxPins = config.maxPins ?? 20;
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
@@ -205,6 +217,7 @@ export class HawkSearch {
     this.#selectedIndex = -1;
     this.#matches = [];
     this.#pageCount = 0;
+    this.#pins = this.enablePins ? this.#readPins() : [];
     this.#currentTabId = config.defaultTab || 'all';
     this.#tabs = this.#resolveExplicitTabs(config);
     this.#tabsExplicit = this.#tabs !== null;
@@ -227,6 +240,7 @@ export class HawkSearch {
   #selectedIndex;
   #matches;
   #pageCount;
+  #pins;
   #tabs;
   #currentTabId;
   #tabsExplicit;
@@ -258,6 +272,7 @@ export class HawkSearch {
       selectedIndex: this.#selectedIndex,
       matches: this.#matches,
       pageCount: this.#pageCount,
+      pins: this.#pins,
       activeTab: this.#currentTabId,
       error: this.#pagefindError,
     };
@@ -344,7 +359,9 @@ export class HawkSearch {
   #applyDefaultTabAndRender(tabs) {
     this.#tabs = tabs;
     if (!tabs.some((t) => t.id === this.#currentTabId)) {
-      if (this.#currentTabId !== 'all') {
+      // Not a misconfiguration warning when it's the Pinned tab dynamically appearing/disappearing
+      // as pins are added/removed (#togglePin) — only for a genuinely unmatched defaultTab.
+      if (this.#currentTabId !== 'all' && this.#currentTabId !== PINNED_TAB_ID) {
         console.warn(`HawkSearch: no tab with id "${this.#currentTabId}" (defaultTab); falling back to "all".`);
       }
       this.#currentTabId = tabs.some((t) => t.id === 'all') ? 'all' : (tabs[0]?.id ?? 'all');
@@ -383,7 +400,7 @@ export class HawkSearch {
     }
     this.#applyParams();
     if (this.#tabsExplicit) {
-      this.#applyDefaultTabAndRender(this.#tabs);
+      this.#applyDefaultTabAndRender(this.#withPinnedTab(this.#tabs));
     }
     if (this.defaultPreviewUrl) {
       this.#renderDefaultPreview();
@@ -522,6 +539,78 @@ export class HawkSearch {
     }
   }
 
+  /** Reads persisted pins. Never throws (private browsing, SSR, corrupt JSON, etc.). */
+  #readPins() {
+    try {
+      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(this.pinStorageKey) : null;
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /** Persists the current pin list. Never throws — pins still work in-memory this session either way. */
+  #writePins(pins) {
+    try {
+      localStorage?.setItem(this.pinStorageKey, JSON.stringify(pins));
+    } catch {
+      // private browsing / storage disabled / no localStorage (SSR) — pins don't persist this session.
+    }
+  }
+
+  #isPinned(url) {
+    return this.#pins.some((p) => p.url === url);
+  }
+
+  /**
+   * Returns `tabs` with a synthetic "Pinned" tab prepended, if pins are enabled and at least one
+   * exists — filterless, sourced from `#pins` instead of a Pagefind search (see #activateFilter/
+   * #renderPinnedResults). Absent entirely when there's nothing pinned, same as `includeAllTab`'s
+   * "All" pill only ever being one thing, not a toggle.
+   */
+  #withPinnedTab(tabs) {
+    if (!this.enablePins || !this.#pins.length) {
+      return tabs;
+    }
+    return [{ id: PINNED_TAB_ID, label: this.strings.pinnedTab, filter: null, pagefindOptions: null }, ...tabs];
+  }
+
+  /**
+   * Toggles `item`'s pin state, persists it, and updates the tab list (the "Pinned" tab
+   * appears/disappears as pins go from/to zero) — then refreshes whatever's currently showing:
+   * re-renders the pinned list if that tab is active, re-runs the last search if the tab just
+   * disappeared out from under an active Pinned view, or just re-renders the current matches
+   * (no new Pagefind call needed) to flip the toggled row's pressed-state everywhere else.
+   */
+  #togglePin(item) {
+    const wasOnPinnedTab = this.#currentTabId === PINNED_TAB_ID;
+    if (this.#isPinned(item.url)) {
+      this.#pins = this.#pins.filter((p) => p.url !== item.url);
+    } else if (this.#pins.length < this.maxPins) {
+      this.#pins = [...this.#pins, { url: item.url, title: item.title, isAnchor: item.isAnchor }];
+    } else {
+      return;
+    }
+    this.#writePins(this.#pins);
+    this.#applyDefaultTabAndRender(this.#withPinnedTab((this.#tabs || []).filter((t) => t.id !== PINNED_TAB_ID)));
+    if (this.#currentTabId === PINNED_TAB_ID) {
+      this.#renderPinnedResults();
+    } else if (wasOnPinnedTab) {
+      this.#executeSearch(this.#query);
+    } else {
+      this.#renderResults();
+    }
+  }
+
+  /** Lists pinned items directly — no Pagefind call, they already carry title/url/isAnchor. */
+  #renderPinnedResults() {
+    this.#matches = this.#pins.map((p) => ({ title: p.title, url: p.url, excerpt: '', isAnchor: p.isAnchor, meta: {} }));
+    this.#pageCount = new Set(this.#matches.map((m) => m.url.split('#')[0])).size;
+    this.#selectedIndex = this.#matches.length ? 0 : -1;
+    this.#renderResults();
+  }
+
   /**
    * Updates layout params after construction (scale/position/offset/alignment/columns/breakpoint).
    * @param {Partial<typeof DEFAULT_PARAMS>} params
@@ -570,6 +659,12 @@ export class HawkSearch {
    * results listing (`eagerResults`) if the visitor hasn't typed anything yet.
    */
   async #afterPagefindReady() {
+    // defaultTab: 'pinned' with pins already present from a previous session — show them
+    // directly rather than letting eagerResults run an unfiltered Pagefind search underneath.
+    if (this.#currentTabId === PINNED_TAB_ID) {
+      this.#renderPinnedResults();
+      return;
+    }
     if (this.eagerResults && !this.#query) {
       await this.#executeSearch('');
     }
@@ -616,7 +711,7 @@ export class HawkSearch {
       return;
     }
     if (!this.#pagefind) {
-      this.#applyDefaultTabAndRender(this.#normalizeTabs([]));
+      this.#applyDefaultTabAndRender(this.#withPinnedTab(this.#normalizeTabs([])));
       return;
     }
     let categories = [];
@@ -628,7 +723,7 @@ export class HawkSearch {
       categories = [];
     }
     this.#applyDefaultTabAndRender(
-      this.#normalizeTabs(categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } })))
+      this.#withPinnedTab(this.#normalizeTabs(categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } }))))
     );
   }
 
@@ -665,7 +760,15 @@ export class HawkSearch {
       p.setAttribute('aria-selected', String(isActive));
       p.tabIndex = isActive ? 0 : -1;
     });
-    this.#executeSearch(this.#query);
+    if (this.#currentTabId === PINNED_TAB_ID) {
+      // The Pinned tab isn't a search scope — it's a fixed list, so a leftover typed query from
+      // another tab shouldn't silently (and confusingly) carry over.
+      this.#query = '';
+      this.#input.value = '';
+      this.#renderPinnedResults();
+    } else {
+      this.#executeSearch(this.#query);
+    }
   }
 
   /**
@@ -754,22 +857,40 @@ export class HawkSearch {
       : this.strings.entries(this.#matches.length, this.#pageCount);
 
     this.#resultsEl.innerHTML = this.#matches
-      .map(
-        (item, idx) => `
+      .map((item, idx) => {
+        const pinned = this.enablePins && this.#isPinned(item.url);
+        return `
         <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}">
           <div class="hawk-result-header">
             <span class="hawk-result-title">${item.isAnchor ? '&sect; ' : ''}${item.title}</span>
             ${item.meta?.section ? `<span class="hawk-meta-badge">${item.meta.section}</span>` : ''}
+            ${
+              this.enablePins
+                ? `<span class="hawk-pin-btn${pinned ? ' is-pinned' : ''}" role="button" aria-pressed="${pinned}" data-index="${idx}">${pinned ? this.strings.unpinAction : this.strings.pinAction}</span>`
+                : ''
+            }
           </div>
           <div class="hawk-result-desc">${item.excerpt || ''}</div>
-        </a>`
-      )
+        </a>`;
+      })
       .join('');
     this.#resultsEl.setAttribute('aria-activedescendant', `${this.id}-result-${this.#selectedIndex}`);
 
     this.#resultsEl.querySelectorAll('.hawk-result-item').forEach((el) => {
       el.addEventListener('mouseenter', () => this.#setSelection(Number(el.dataset.index), false));
-      el.addEventListener('click', () => this.onSelect?.(this.#matches[Number(el.dataset.index)]));
+      el.addEventListener('click', (event) => {
+        const idx = Number(el.dataset.index);
+        if (event.target.closest('.hawk-pin-btn')) {
+          // .hawk-pin-btn is a <span>, not a nested <button>/<a>, specifically so it can sit
+          // inside this row's own <a> without invalid interactive-content nesting — this click
+          // check is what keeps it from also triggering the row's navigation/onSelect.
+          event.preventDefault();
+          event.stopPropagation();
+          this.#togglePin(this.#matches[idx]);
+          return;
+        }
+        this.onSelect?.(this.#matches[idx]);
+      });
     });
 
     this.#renderPreview();

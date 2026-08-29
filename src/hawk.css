@@ -312,6 +312,26 @@
   color: var(--hawk-text-muted, #64748b);
   white-space: nowrap;
 }
+.hawk-pin-btn {
+  display: inline-block;
+  margin-left: auto;
+  font-size: 0.68rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--hawk-border-default, #253347);
+  color: var(--hawk-text-muted, #64748b);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hawk-pin-btn:hover {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-accent, #38bdf8);
+}
+.hawk-pin-btn.is-pinned {
+  border-color: var(--hawk-accent-alt, #fb923c);
+  color: var(--hawk-accent-alt, #fb923c);
+  background: var(--hawk-accent-alt-dim, rgba(251, 146, 60, 0.12));
+}
 .hawk-result-desc {
   margin-top: 0.2rem;
   font-size: 0.8rem;
