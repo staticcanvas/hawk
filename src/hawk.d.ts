@@ -34,6 +34,7 @@ export interface HawkState {
   selectedIndex: number;
   matches: HawkMatch[];
   activeTab: string;
+  error: Error | null;
 }
 
 export interface HawkTab {
@@ -41,6 +42,31 @@ export interface HawkTab {
   label: string;
   filter?: Record<string, string | string[]>;
   pagefindOptions?: Record<string, unknown>;
+}
+
+export interface HawkStrings {
+  dialogLabel?: string;
+  inputPlaceholder?: string;
+  densityGroupLabel?: string;
+  densityFit?: string;
+  densityMedium?: string;
+  densityCompact?: string;
+  escKey?: string;
+  filtersLabel?: string;
+  previewLabel?: string;
+  hintNavigate?: string;
+  hintSelect?: string;
+  hintClose?: string;
+  previewEmpty?: string;
+  previewLoading?: string;
+  sectionBadge?: string;
+  untitled?: string;
+  typeToSearch?: string;
+  noResults?: (query: string) => string;
+  matchingResults?: (count: number) => string;
+  entries?: (count: number) => string;
+  unavailable?: string;
+  unavailableCounter?: string;
 }
 
 export interface HawkSearchConfig {
@@ -61,6 +87,7 @@ export interface HawkSearchConfig {
   maxResults?: number;
   contentSelector?: string;
   hotkeys?: { open?: boolean; slash?: boolean; escape?: boolean };
+  strings?: HawkStrings;
   defaultPreviewUrl?: string;
   defaultPreviewTitle?: string;
   eagerResults?: boolean;

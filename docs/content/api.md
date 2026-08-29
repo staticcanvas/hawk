@@ -80,6 +80,16 @@ request fails, or `contentSelector` matches nothing on the fetched page. Fetched
 cached per session (by URL, not per anchor) so re-selecting a section you've already viewed, or a
 different section of the same page, doesn't re-fetch.
 
+**Trust boundary:** this HTML — and Pagefind's `<mark>`-highlighted excerpts — is injected via
+`innerHTML` with no sanitization pass. That's deliberate: hawk assumes the content is your own
+site's already-built, already-trusted output (the same trust level as the page itself), and
+stripping/escaping markup would break the "renders exactly as your build produced it" guarantee
+above (syntax-highlighted code blocks, tables, etc. rely on real markup surviving intact). If
+your `data-pagefind-body` region can contain unsanitized user-generated content (comments, a
+wiki, forum posts), that content reaches the preview pane and result list unsanitized too — treat
+it the same way you'd treat rendering that content anywhere else on the page, and sanitize it at
+your own build/render step if it isn't already.
+
 ## Instance methods
 
 - `search.open()` / `search.close()` — open/close the modal.

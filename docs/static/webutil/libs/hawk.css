@@ -93,7 +93,8 @@
   background: transparent;
   border: none;
   outline: none;
-  font-size: 0.95rem;
+  /* 16px minimum — below this, iOS Safari auto-zooms the viewport on focus. */
+  font-size: max(1rem, 16px);
   color: var(--hawk-text-primary, #f1f5f9);
 }
 .hawk-modal-input::placeholder {

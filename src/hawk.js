@@ -35,6 +35,36 @@ const DENSITY_STORAGE_KEY = 'hawk:density';
 
 const DEFAULT_HOTKEYS = { open: true, slash: true, escape: true };
 
+/**
+ * Every piece of UI text hawk renders, overridable via `config.strings` for localization.
+ * `matchingResults`/`entries`/`noResults` are functions (not plain strings) so a consumer can
+ * supply real pluralization/interpolation logic for their locale instead of hawk guessing at it.
+ */
+const DEFAULT_STRINGS = {
+  dialogLabel: 'Search',
+  inputPlaceholder: 'Search...',
+  densityGroupLabel: 'Result density',
+  densityFit: 'Fit',
+  densityMedium: 'Medium',
+  densityCompact: 'Compact',
+  escKey: 'ESC',
+  filtersLabel: 'Filter by category',
+  previewLabel: 'Preview',
+  hintNavigate: 'Navigate',
+  hintSelect: 'Select',
+  hintClose: 'Close',
+  previewEmpty: 'Type to search, or select a result to preview it here.',
+  previewLoading: 'Loading…',
+  sectionBadge: 'Section',
+  untitled: 'Untitled',
+  typeToSearch: 'Type to search',
+  noResults: (query) => `No results${query ? ` for "${query}"` : ''}.`,
+  matchingResults: (count) => `${count} matching result${count === 1 ? '' : 's'}`,
+  entries: (count) => `${count} entries`,
+  unavailable: 'Search is unavailable right now. Try again later.',
+  unavailableCounter: 'Search unavailable',
+};
+
 let instanceCount = 0;
 
 /**
@@ -106,6 +136,9 @@ export class HawkSearch {
    * @param {boolean} [config.eagerResults=true] Runs an empty-query search as soon as Pagefind loads, so the
    *   results pane shows a default listing instead of "Type to search". Set `false` to keep the results pane
    *   empty until the visitor types.
+   * @param {Partial<typeof DEFAULT_STRINGS>} [config.strings] Overrides for any UI text (localization).
+   *   See `DEFAULT_STRINGS` for the full key list; `noResults`/`matchingResults`/`entries` are
+   *   functions, not plain strings, so a locale can supply its own pluralization.
    * @param {(query: string) => void} [config.onOpen]
    * @param {() => void} [config.onClose]
    * @param {(item: object) => void} [config.onSelect]
@@ -133,6 +166,7 @@ export class HawkSearch {
     this.maxResults = config.maxResults ?? 18;
     this.contentSelector = config.contentSelector || '[data-pagefind-body]';
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
+    this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
     this.defaultPreviewTitle = config.defaultPreviewTitle || '';
     this.eagerResults = config.eagerResults !== false;
@@ -152,6 +186,7 @@ export class HawkSearch {
     this.#isOpen = false;
     this.#pagefind = null;
     this.#pagefindLoadPromise = null;
+    this.#pagefindError = null;
     this.#previewController = null;
     this.#previewKey = null;
     this.#fragmentCache = new Map();
@@ -172,6 +207,7 @@ export class HawkSearch {
   #isOpen;
   #pagefind;
   #pagefindLoadPromise;
+  #pagefindError;
   #previewController;
   #previewKey;
   #fragmentCache;
@@ -193,6 +229,7 @@ export class HawkSearch {
       selectedIndex: this.#selectedIndex,
       matches: this.#matches,
       activeTab: this.#currentTabId,
+      error: this.#pagefindError,
     };
   }
 
@@ -336,42 +373,43 @@ export class HawkSearch {
       this.#root.dataset.hawkShowPreview = 'false';
     });
 
-    if (this.hotkeys.open || this.hotkeys.slash || this.hotkeys.escape) {
-      document.addEventListener('keydown', (event) => this.#handleGlobalKeydown(event));
-    }
+    // Always attached (not gated by `hotkeys`) — focus trapping is baseline modal accessibility,
+    // not an opt-in hotkey. #handleGlobalKeydown checks `this.hotkeys.*` itself per hotkey.
+    document.addEventListener('keydown', (event) => this.#handleGlobalKeydown(event));
   }
 
   #markup() {
+    const s = this.strings;
     return `
-      <div id="${this.id}" class="hawk-modal" role="dialog" aria-modal="true" aria-label="Search" hidden>
+      <div id="${this.id}" class="hawk-modal" role="dialog" aria-modal="true" aria-label="${s.dialogLabel}" hidden>
         <div class="hawk-modal-backdrop" data-search-close tabindex="-1"></div>
         <div class="hawk-modal-dialog">
           <div class="hawk-modal-header">
-            <input class="hawk-modal-input" type="search" placeholder="Search..." autocomplete="off" spellcheck="false"
+            <input class="hawk-modal-input" type="search" placeholder="${s.inputPlaceholder}" autocomplete="off" spellcheck="false"
               aria-autocomplete="list" aria-controls="${this.id}-results" />
             ${
               this.params.allowDensityToggle
-                ? `<div class="hawk-density-toggle" role="group" aria-label="Result density">
-              <button type="button" class="hawk-density-btn" data-density="fit">Fit</button>
-              <button type="button" class="hawk-density-btn" data-density="medium">Medium</button>
-              <button type="button" class="hawk-density-btn" data-density="compact">Compact</button>
+                ? `<div class="hawk-density-toggle" role="group" aria-label="${s.densityGroupLabel}">
+              <button type="button" class="hawk-density-btn" data-density="fit">${s.densityFit}</button>
+              <button type="button" class="hawk-density-btn" data-density="medium">${s.densityMedium}</button>
+              <button type="button" class="hawk-density-btn" data-density="compact">${s.densityCompact}</button>
             </div>`
                 : ''
             }
-            <button class="hawk-modal-esc" data-search-close type="button"><kbd>ESC</kbd></button>
+            <button class="hawk-modal-esc" data-search-close type="button"><kbd>${s.escKey}</kbd></button>
           </div>
-          <div class="hawk-modal-filters" role="tablist" aria-label="Filter by category"></div>
+          <div class="hawk-modal-filters" role="tablist" aria-label="${s.filtersLabel}"></div>
           <div class="hawk-modal-body" data-hawk-alignment="${this.params.alignment}">
             <div class="hawk-results-pane" id="${this.id}-results" role="listbox" aria-live="polite" tabindex="0"></div>
-            <aside class="hawk-preview-pane" aria-live="polite" aria-label="Preview" tabindex="0">
-              <div class="hawk-preview-empty">Type to search, or select a result to preview it here.</div>
+            <aside class="hawk-preview-pane" aria-live="polite" aria-label="${s.previewLabel}" tabindex="0">
+              <div class="hawk-preview-empty">${s.previewEmpty}</div>
             </aside>
           </div>
           <div class="hawk-modal-footer">
-            <span class="hawk-hint">&uarr;&darr; Navigate</span>
-            <span class="hawk-hint">&crarr; Select</span>
-            <span class="hawk-hint">ESC Close</span>
-            <div class="hawk-modal-counter">Type to search</div>
+            <span class="hawk-hint">&uarr;&darr; ${s.hintNavigate}</span>
+            <span class="hawk-hint">&crarr; ${s.hintSelect}</span>
+            <span class="hawk-hint">${s.escKey} ${s.hintClose}</span>
+            <div class="hawk-modal-counter">${s.typeToSearch}</div>
           </div>
         </div>
       </div>
@@ -449,13 +487,25 @@ export class HawkSearch {
       return this.#pagefind;
     }
     if (!this.#pagefindLoadPromise) {
-      this.#pagefindLoadPromise = import(/* @vite-ignore */ `${this.indexBasePath}pagefind.js`).then(async (mod) => {
-        await mod.options({ basePath: this.indexBasePath });
-        this.#pagefind = mod;
-        await this.#deriveTabs();
-        await this.#afterPagefindReady();
-        return mod;
-      });
+      this.#pagefindLoadPromise = import(/* @vite-ignore */ `${this.indexBasePath}pagefind.js`)
+        .then(async (mod) => {
+          await mod.options({ basePath: this.indexBasePath });
+          this.#pagefind = mod;
+          await this.#deriveTabs();
+          await this.#afterPagefindReady();
+          return mod;
+        })
+        .catch((err) => {
+          // A 404/network failure loading Pagefind's own runtime — `this.#pagefind` stays null,
+          // so callers' existing `if (!this.#pagefind) return;` guards already no-op correctly.
+          // This promise resolving (not rejecting) to null is what keeps that guard sufficient —
+          // without it, every `await this.#ensurePagefindLoaded()` call site would need its own
+          // try/catch instead of one shared one here. Cached like a success, so a failed load
+          // isn't retried on every keystroke.
+          this.#pagefindError = err;
+          this.#renderLoadError();
+          return null;
+        });
     }
     return this.#pagefindLoadPromise;
   }
@@ -471,6 +521,17 @@ export class HawkSearch {
   }
 
   /**
+   * Renders a "search unavailable" state in place of results — used when Pagefind's runtime
+   * fails to load, or a search call itself rejects, instead of leaving the modal on a stale
+   * "Type to search" state or throwing an unhandled rejection out of an event listener.
+   */
+  #renderLoadError() {
+    this.#resultsEl.innerHTML = `<div class="hawk-empty hawk-load-error" role="alert">${this.strings.unavailable}</div>`;
+    this.#resultsEl.removeAttribute('aria-activedescendant');
+    this.#counterEl.textContent = this.strings.unavailableCounter;
+  }
+
+  /**
    * Renders `defaultPreviewUrl`'s content into the preview pane on mount, before any result is
    * selected — reuses the same fetch/extract path `#loadPreviewContent` uses for a real match, so
    * it's real rendered page content, not a special-cased fixture. A real selection (or an
@@ -482,7 +543,7 @@ export class HawkSearch {
     this.#previewEl.innerHTML = `
       <div class="hawk-preview-header"></div>
       <h3 class="hawk-preview-title"></h3>
-      <div class="hawk-preview-content"><div class="hawk-preview-loading">Loading&hellip;</div></div>
+      <div class="hawk-preview-content"><div class="hawk-preview-loading">${this.strings.previewLoading}</div></div>
     `;
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
@@ -587,14 +648,24 @@ export class HawkSearch {
       ...(tab?.pagefindOptions || {}),
       ...(tab?.filter ? { filters: tab.filter } : {}),
     };
-    const { results } = query.trim()
-      ? await this.#pagefind.debouncedSearch(query, options)
-      : await this.#pagefind.search('', options);
+    let results;
+    try {
+      ({ results } = query.trim()
+        ? await this.#pagefind.debouncedSearch(query, options)
+        : await this.#pagefind.search('', options));
+    } catch (err) {
+      // Covers every search call, not just the initial load — a transient failure on a later
+      // keystroke (not just Pagefind's runtime failing to load in the first place) shouldn't
+      // throw out of the `input` listener as an unhandled rejection either.
+      this.#pagefindError = err;
+      this.#renderLoadError();
+      return;
+    }
 
     const flattened = [];
     for (const result of (results || []).slice(0, this.maxResults)) {
       const data = await result.data();
-      flattened.push({ title: data.meta?.title || 'Untitled', url: data.url, excerpt: data.excerpt, isAnchor: false });
+      flattened.push({ title: data.meta?.title || this.strings.untitled, url: data.url, excerpt: data.excerpt, isAnchor: false });
       for (const sub of data.sub_results || []) {
         if (sub.url === data.url) continue;
         flattened.push({ title: sub.title, url: sub.url, excerpt: sub.excerpt, isAnchor: true });
@@ -607,16 +678,16 @@ export class HawkSearch {
 
   #renderResults() {
     if (!this.#matches.length) {
-      this.#resultsEl.innerHTML = `<div class="hawk-empty">No results${this.#query ? ` for "${this.#query}"` : ''}.</div>`;
+      this.#resultsEl.innerHTML = `<div class="hawk-empty">${this.strings.noResults(this.#query)}</div>`;
       this.#resultsEl.removeAttribute('aria-activedescendant');
-      this.#counterEl.textContent = this.#query ? '0 matching results' : 'Type to search';
+      this.#counterEl.textContent = this.#query ? this.strings.matchingResults(0) : this.strings.typeToSearch;
       this.#renderPreview();
       return;
     }
 
     this.#counterEl.textContent = this.#query
-      ? `${this.#matches.length} matching result${this.#matches.length === 1 ? '' : 's'}`
-      : `${this.#matches.length} entries`;
+      ? this.strings.matchingResults(this.#matches.length)
+      : this.strings.entries(this.#matches.length);
 
     this.#resultsEl.innerHTML = this.#matches
       .map(
@@ -656,7 +727,7 @@ export class HawkSearch {
   #renderPreview() {
     const item = this.#matches[this.#selectedIndex];
     if (!item) {
-      this.#previewEl.innerHTML = `<div class="hawk-preview-empty">Type to search, or select a result to preview it here.</div>`;
+      this.#previewEl.innerHTML = `<div class="hawk-preview-empty">${this.strings.previewEmpty}</div>`;
       return;
     }
 
@@ -669,10 +740,10 @@ export class HawkSearch {
 
     this.#previewEl.innerHTML = `
       <div class="hawk-preview-header">
-        ${item.isAnchor ? `<span class="hawk-anchor-badge">Section</span>` : ''}
+        ${item.isAnchor ? `<span class="hawk-anchor-badge">${this.strings.sectionBadge}</span>` : ''}
       </div>
       <h3 class="hawk-preview-title"></h3>
-      <div class="hawk-preview-content"><div class="hawk-preview-loading">Loading&hellip;</div></div>
+      <div class="hawk-preview-content"><div class="hawk-preview-loading">${this.strings.previewLoading}</div></div>
     `;
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
@@ -826,6 +897,10 @@ export class HawkSearch {
   }
 
   #handleGlobalKeydown(event) {
+    if (this.#isOpen && event.key === 'Tab') {
+      this.#trapFocus(event);
+    }
+
     const target = event.target;
     const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 
@@ -837,6 +912,50 @@ export class HawkSearch {
       this.open();
     } else if (this.hotkeys.escape && event.key === 'Escape' && this.#isOpen) {
       this.close();
+    }
+  }
+
+  /**
+   * True when the preview pane is actually reachable given the current layout — mirrors the
+   * CSS conditions in hawk.css's [data-hawk-compact]/[data-hawk-density='compact'] rules (hidden
+   * in single-column layouts unless focus has already revealed it). Checked in JS, not via
+   * layout/computed-style, so the focus trap stays correct without depending on real rendering
+   * (and is testable under jsdom, which never renders).
+   */
+  #isPreviewPaneReachable() {
+    const singleColumn = this.#root.dataset.hawkCompact === 'true' || this.params.density === 'compact';
+    return !singleColumn || this.#root.dataset.hawkShowPreview === 'true';
+  }
+
+  /** The modal's Tab stops, in DOM/tab order, given the current layout and config. */
+  #getFocusableElements() {
+    return [
+      this.#input,
+      ...(this.params.allowDensityToggle ? Array.from(this.#root.querySelectorAll('.hawk-density-btn')) : []),
+      this.#root.querySelector('.hawk-modal-esc'),
+      this.#filtersEl.querySelector('.hawk-filter-pill[tabindex="0"]'),
+      this.#resultsEl,
+      ...(this.#isPreviewPaneReachable() ? [this.#previewEl] : []),
+    ].filter(Boolean);
+  }
+
+  /**
+   * Keeps Tab/Shift+Tab cycling within the modal instead of escaping to the page behind the
+   * backdrop — required modal-dialog behavior (WAI-ARIA APG), not previously implemented.
+   */
+  #trapFocus(event) {
+    const focusable = this.#getFocusableElements();
+    if (!focusable.length) {
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
     }
   }
 

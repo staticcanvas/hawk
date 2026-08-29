@@ -473,6 +473,138 @@ describe('two-pane keyboard navigation', () => {
   });
 });
 
+describe('focus trap', () => {
+  async function hawkWithResults(config = {}) {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'match', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, ...config });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'match';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return hawk;
+  }
+
+  it('Tab on the last focusable element wraps to the input (first)', async () => {
+    const hawk = await hawkWithResults();
+    const input = document.querySelector('.hawk-modal-input');
+    const previewPane = document.querySelector('.hawk-preview-pane'); // last stop: medium density, a result is selected
+    previewPane.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    expect(document.activeElement).toBe(input);
+    hawk.destroy();
+  });
+
+  it('Shift+Tab on the input (first) wraps to the last focusable element', async () => {
+    const hawk = await hawkWithResults();
+    const input = document.querySelector('.hawk-modal-input');
+    const previewPane = document.querySelector('.hawk-preview-pane');
+    input.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    expect(document.activeElement).toBe(previewPane);
+    hawk.destroy();
+  });
+
+  it('does not trap focus while the modal is closed', async () => {
+    const hawk = await hawkWithResults();
+    hawk.close();
+    const outside = document.createElement('button');
+    document.body.appendChild(outside);
+    outside.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    expect(document.activeElement).toBe(outside);
+    outside.remove();
+    hawk.destroy();
+  });
+
+  it('excludes the preview pane from the trap in compact density when it is not the revealed pane', async () => {
+    const hawk = await hawkWithResults({ params: { density: 'compact' } });
+    const input = document.querySelector('.hawk-modal-input');
+    const resultsPane = document.querySelector('.hawk-results-pane');
+    // Last reachable stop is the results pane (preview pane hidden/unreached in compact density).
+    resultsPane.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    expect(document.activeElement).toBe(input);
+
+    input.focus();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    expect(document.activeElement).toBe(resultsPane);
+    hawk.destroy();
+  });
+});
+
+describe('pagefind load errors', () => {
+  it('a rejecting search call renders an unavailable state instead of throwing', async () => {
+    const pagefind = mockPagefind({
+      search: vi.fn().mockRejectedValue(new Error('index fetch failed')),
+      debouncedSearch: vi.fn().mockRejectedValue(new Error('index fetch failed')),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    expect(() => hawk.open()).not.toThrow();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.querySelector('.hawk-load-error')).toBeTruthy();
+    expect(document.querySelector('.hawk-modal-counter').textContent).toBe('Search unavailable');
+    expect(hawk.state.error).toBeInstanceOf(Error);
+    hawk.destroy();
+  });
+
+  it('a later keystroke search failure also renders the unavailable state, not an unhandled rejection', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockRejectedValue(new Error('boom')),
+    });
+    const hawk = new HawkSearch({ pagefind, eagerResults: false });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'x';
+    expect(() => input.dispatchEvent(new Event('input'))).not.toThrow();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(document.querySelector('.hawk-load-error')).toBeTruthy();
+    hawk.destroy();
+  });
+});
+
+describe('i18n / strings overrides', () => {
+  it('overrides render in the markup and result/counter text', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      eagerResults: false,
+      strings: {
+        dialogLabel: 'Recherche',
+        inputPlaceholder: 'Rechercher...',
+        typeToSearch: 'Tapez pour rechercher',
+        noResults: (query) => `Aucun résultat${query ? ` pour "${query}"` : ''}.`,
+      },
+    });
+    const root = document.getElementById(hawk.id);
+    expect(root.getAttribute('aria-label')).toBe('Recherche');
+    expect(document.querySelector('.hawk-modal-input').placeholder).toBe('Rechercher...');
+    expect(document.querySelector('.hawk-modal-counter').textContent).toBe('Tapez pour rechercher');
+
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'zzz';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(document.querySelector('.hawk-empty').textContent).toBe('Aucun résultat pour "zzz".');
+    hawk.destroy();
+  });
+
+  it('defaults are unchanged when strings is not configured', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    expect(document.getElementById(hawk.id).getAttribute('aria-label')).toBe('Search');
+    expect(document.querySelector('.hawk-modal-input').placeholder).toBe('Search...');
+    hawk.destroy();
+  });
+});
+
 describe('category tabs (keyboard + ARIA)', () => {
   it('renders a roving tabindex, with aria-controls pointing at the results listbox', async () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });
