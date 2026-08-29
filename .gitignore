@@ -11,6 +11,11 @@ docs/data/releases.json
 coverage/
 *.tmp
 
+# Playwright e2e test output
+test-results/
+playwright-report/
+blob-report/
+
 # Pagefind indexes generated for local prototyping/preview
 pagefind-preview/
 
