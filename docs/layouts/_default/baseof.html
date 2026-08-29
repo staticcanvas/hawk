@@ -148,15 +148,21 @@
       // narrower than the default [data-pagefind-body], so the preview pane doesn't also
       // pull in the sibling .doc-toc/.doc-sidebar chrome.
       contentSelector: '.doc-article',
-      tabs: categories.map((name) => {
-        const fallback = categoryDefaults[name];
-        return {
-          id: name.toLowerCase(),
-          label: name,
-          filter: { category: name },
-          ...(fallback ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title } : {}),
-        };
-      }),
+      tabs: [
+        ...categories.map((name) => {
+          const fallback = categoryDefaults[name];
+          return {
+            id: name.toLowerCase(),
+            label: name,
+            filter: { category: name },
+            ...(fallback ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title } : {}),
+          };
+        }),
+        // A curated/sorted tab, not a category filter — every page carries a data-pagefind-sort
+        // ="date" marker (single.html/list.html) this reads via the sort shorthand. A working
+        // example of HawkTab.sort, documented in api.md's "A curated/sorted tab".
+        { id: 'recent', label: 'Recently updated', sort: { date: 'desc' } },
+      ],
       // Every guide/reference page here has real H2/H3 structure — a section-row outline scans
       // faster than the full page dump for a page-level match (a real query match within one
       // section still shows that section in full, unaffected — see previewSections' own docs).

@@ -19,6 +19,9 @@
   {{/* ── Left: article column ───────────────────────────────── */}}
   <article class="doc-article">
     {{ range $categories }}<span hidden data-pagefind-filter="category:{{ . }}"></span>{{ end }}
+    {{/* Powers the docs site's own "Recently updated" tab (see baseof.html) — a working example
+         of HawkTab.sort, documented in api.md's "A curated/sorted tab". */}}
+    <span hidden data-pagefind-sort="date">{{ .Lastmod.Format "2006-01-02" }}</span>
     <header class="doc-header">
       {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
       <h1>{{ .Title }}</h1>
