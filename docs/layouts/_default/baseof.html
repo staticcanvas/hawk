@@ -33,7 +33,7 @@
     </div>
   </header>
 
-  <div class="shell page-shell" data-pagefind-body>
+  <div class="{{ if not .IsHome }}shell {{ end }}page-shell{{ if .IsHome }} page-shell--home{{ end }}" data-pagefind-body>
     {{ block "main" . }}{{ end }}
   </div>
 

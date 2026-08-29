@@ -1,0 +1,62 @@
+{{ define "main" }}
+{{/*
+  index.html — the homepage's own template (Hugo's lookup picks this over _default/list.html
+  for the home page specifically). Full-bleed hero, unlike every other page's .shell-constrained
+  single column — see baseof.html's .IsHome check on the wrapping div.
+*/}}
+<section class="hero">
+  <div class="shell hero-inner">
+    <img class="hero-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="56" height="56">
+    {{ with .Params.hero.eyebrow }}<span class="hero-eyebrow">{{ . }}</span>{{ end }}
+    <h1 class="hero-title">{{ .Title }}</h1>
+    <p class="hero-tagline">{{ .Params.hero.tagline | default .Description }}</p>
+
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ "getting-started/" | relURL }}">Get started</a>
+      <button class="btn btn-secondary" type="button" data-search-trigger>
+        <span>Try the search</span>
+        <kbd>Ctrl+K</kbd>
+      </button>
+      <a class="btn btn-ghost" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">View source</a>
+    </div>
+
+    {{ with .Params.hero.install }}
+    <div class="hero-install">
+      <span class="hero-install-prompt" aria-hidden="true">$</span>
+      <code>{{ . }}</code>
+    </div>
+    {{ end }}
+  </div>
+</section>
+
+{{ if .Params.features }}
+<section class="shell feature-section">
+  <div class="feature-grid">
+    {{ range .Params.features }}
+    <article class="feature-card">
+      <h3>{{ .title }}</h3>
+      <p>{{ .body }}</p>
+    </article>
+    {{ end }}
+  </div>
+</section>
+{{ end }}
+
+<section class="shell guides-section">
+  <h2>Guides</h2>
+  <div class="card-grid">
+    {{ range where site.RegularPages "Section" "guides" }}
+    <a class="guide-card" href="{{ .Permalink }}">
+      <h3>{{ .Title }}</h3>
+      {{ with .Description }}<p>{{ . }}</p>{{ end }}
+    </a>
+    {{ end }}
+  </div>
+</section>
+
+{{ if .Content }}
+<section class="shell home-note">
+  {{ .Content }}
+</section>
+{{ end }}
+{{ end }}
