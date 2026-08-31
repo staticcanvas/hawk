@@ -4,6 +4,56 @@ All notable changes to this project are documented in this file. The format is b
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Hawk is pre-1.0 and hasn't cut a
 tagged release yet — the versions below track `package.json`'s history, not published tags.
 
+## [0.5.1] - 2026-08-31
+
+### Fixed
+
+- **Out-of-order search results.** `#executeSearch` could apply a stale, earlier-started call's
+  results after a newer one had already committed, if the earlier call happened to resolve
+  second (e.g. `eagerResults`' own empty-query listing racing a query typed right after `open()`
+  — both await the same in-flight Pagefind load, with no guarantee `debouncedSearch()`/`search()`
+  settle in call order). Added `#searchGeneration`, a monotonic counter captured before any
+  `await` and checked before committing — the same staleness-guard pattern `#loadPreviewContent`
+  already used for `#previewKey`. Also the source of real (not just theoretical) e2e flakiness:
+  `tests/e2e/hawk.spec.mjs`'s wait conditions now wait for query-specific content (the "N matching
+  results" counter text) instead of "any result exists", which the transient eager listing could
+  satisfy on its own.
+- **Modal chrome (header/filter-tabs/footer) could compress vertically at a narrow width.**
+  `.hawk-modal-dialog`'s column-flex layout had no `flex-shrink: 0` on any row but
+  `.hawk-modal-body` — if the footer's hint text ever wrapped onto a second line (nothing in it
+  was `nowrap`-protected either), the resulting height deficit got redistributed across every
+  row once the body hit its own `min-height` floor, squeezing filter-pill padding down to ~10px
+  (from 24px) at some width/height combinations. Fixed with `flex-shrink: 0` on the header,
+  filter-tabs, and footer rows, plus `overflow-x: auto` + `white-space: nowrap` on the footer's
+  hints so they scroll instead of wrapping in the first place.
+- **A markdown table could overflow its column and run past the page's TOC.** `table { width:
+  100% }` is only ever a *preferred* width under the default `table-layout: auto` — a cell with a
+  long unbroken token (e.g. a `code`-spanned union type) still forces the table to its content's
+  real minimum width. `api.md`'s config-option table rendered ~920px wide inside a ~570px column.
+  Fixed with `display: block; overflow-x: auto` directly on `.doc-content table` (a Hugo
+  render-hook wrapper div would be the more conventional fix, but table render hooks aren't
+  supported until Hugo v0.134 — this project's Hugo build is v0.131).
+- **A long unbroken word in prose could overflow the article column** (e.g. a real sentence in
+  the density-and-navigation guide: `ArrowUp/ArrowDown/PageUp/PageDown/Home/End`, where `/` isn't
+  a CSS line-break opportunity) — on a narrow viewport this took the whole page past its own
+  width. Fixed with `overflow-wrap: break-word` on `.doc-content`.
+- **The header's icon-link row overflowed the viewport by a few px on every page at ~375px
+  width** — `.header-inner`'s content needed more room than a phone-width viewport has, and
+  nothing in the row shrank to compensate. Fixed by hiding the "Ctrl+K" hint (genuinely
+  meaningless on a touch device with no physical keyboard) below 480px, which reclaims more than
+  the row was short by.
+- **The homepage hero's content column didn't align with the feature/guides sections below it.**
+  `.hero-inner` added its own `max-width: 720px` on top of `.shell`'s shared 1100px container,
+  re-centering a narrower box and pulling its left edge inward relative to everything below it.
+  Removed; the tagline's own `max-width: 56ch` already handles readable line length locally.
+
+### Changed
+
+- Homepage feature grid refreshed from 6 to 9 cards for parity with hawk's actual feature surface
+  — added modal reveal animations, real (fetched, not excerpt) page previews with section
+  outlines, density modes, and curated/JSON-driven tabs, none of which were mentioned before.
+  Added a "Features" heading above the grid, matching the existing "Guides" section's own pattern.
+
 ## [0.5.0] - 2026-08-30
 
 ### Added
