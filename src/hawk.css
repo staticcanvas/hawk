@@ -228,6 +228,19 @@
 }
 
 .hawk-modal-header {
+  /* .hawk-modal-dialog is a column flex container with a fixed max-height — without
+     flex-shrink:0 here (and on .hawk-modal-filters/.hawk-modal-footer below), this row has the
+     same default flex-shrink:1 as every other row, including .hawk-modal-body's own flex:1. If
+     the footer's hint text ever wraps onto a second line at a narrow width (nothing in it is
+     nowrap-protected either — see .hawk-hint below) and that pushes total content past
+     max-height, the shrink deficit gets redistributed across every row once .hawk-modal-body
+     hits its own min-height floor — compressing this header's and the filter pills' padding
+     instead of leaving them alone, since the flex algorithm has no notion of "this row is
+     chrome, don't touch it" on its own. Confirmed via Playwright at 375x700: filter pills
+     compressed from 24px to ~10px tall before this fix. flex-shrink:0 opts every fixed-height
+     chrome row out of that redistribution entirely, leaving .hawk-modal-body (still flex:1) as
+     the only row allowed to actually shrink. */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -309,6 +322,8 @@
 }
 
 .hawk-modal-filters {
+  /* See .hawk-modal-header's comment — same column-flex shrink-redistribution risk. */
+  flex-shrink: 0;
   display: flex;
   gap: 0.4rem;
   padding: 0.6rem 1rem;
@@ -365,6 +380,10 @@
 }
 
 .hawk-filter-pill {
+  /* This row scrolls horizontally (.hawk-modal-filters' overflow-x:auto) rather than wrapping or
+     compressing pills — flex-shrink:0 makes that the only possible outcome under width pressure,
+     matching white-space:nowrap's role for text. */
+  flex-shrink: 0;
   background: transparent;
   border: 1px solid var(--hawk-border-default, #253347);
   border-radius: 999px;
@@ -720,6 +739,14 @@
 }
 
 .hawk-modal-footer {
+  /* See .hawk-modal-header's comment — same column-flex shrink-redistribution risk. Also
+     overflow-x:auto (not wrap): none of .hawk-hint/.hawk-modal-counter/.hawk-powered-by below
+     had white-space:nowrap, so at a narrow width the hint text used to wrap onto a second line
+     instead of the row scrolling — growing this row's own height, which is exactly what fed the
+     header/filters squish above (a taller footer pushes the dialog past max-height, and once
+     .hawk-modal-body hits its min-height floor, the deficit lands on every other row). Matches
+     .hawk-modal-filters' own scroll-not-wrap pattern. */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -727,11 +754,19 @@
   border-top: 1px solid var(--hawk-border-subtle, #1e293b);
   font-size: 0.75rem;
   color: var(--hawk-text-muted, #64748b);
+  overflow-x: auto;
+}
+.hawk-hint {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .hawk-modal-counter {
+  flex-shrink: 0;
+  white-space: nowrap;
   margin-left: auto;
 }
 .hawk-powered-by {
+  flex-shrink: 0;
   color: var(--hawk-powered-by-color, var(--hawk-text-muted, #64748b));
   opacity: var(--hawk-powered-by-opacity, 0.7);
   text-decoration: none;

@@ -288,6 +288,7 @@ export class HawkSearch {
     this.#animation = this.#resolveAnimation(config.animation);
 
     this.#query = '';
+    this.#searchGeneration = 0;
     this.#selectedIndex = -1;
     this.#matches = [];
     this.#pageCount = 0;
@@ -312,6 +313,7 @@ export class HawkSearch {
   #theme;
   #animation;
   #query;
+  #searchGeneration;
   #selectedIndex;
   #matches;
   #pageCount;
@@ -1025,6 +1027,14 @@ export class HawkSearch {
 
   async #executeSearch(query) {
     this.#query = query;
+    // A search call resolving out of the order it started in is a real race, not a hypothetical
+    // one: eagerResults' own empty-query listing (#afterPagefindReady, below) and a query typed
+    // right after open() both call this before Pagefind's dynamic import has necessarily
+    // resolved, so either one can end up awaiting the *same* in-flight load and have its
+    // debouncedSearch()/search() settle after the other's. Captured before any await, so it
+    // reflects call order, not resolution order — mirrors #loadPreviewContent's #previewKey
+    // staleness guard for the same reason.
+    const generation = ++this.#searchGeneration;
     await this.#ensurePagefindLoaded();
     if (!this.#pagefind) {
       return;
@@ -1058,6 +1068,9 @@ export class HawkSearch {
       this.#pagefindError = err;
       this.#renderLoadError();
       return;
+    }
+    if (generation !== this.#searchGeneration) {
+      return; // a newer #executeSearch call started while this one was awaiting Pagefind
     }
 
     const flattened = [];

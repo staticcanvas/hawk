@@ -724,6 +724,49 @@ describe('search results and keyboard navigation', () => {
   });
 });
 
+describe('search race safety (#searchGeneration)', () => {
+  // A real race, not a hypothetical one: eagerResults' own empty-query listing and a query typed
+  // right after open() both go through #executeSearch, and both can be awaiting the same
+  // in-flight Pagefind load — nothing guarantees debouncedSearch()/search() calls resolve in the
+  // order they were made. A stale, later-resolving-but-earlier-started call must not clobber a
+  // newer one's results once it does resolve.
+  it('discards an earlier search call that resolves after a newer one already committed its results', async () => {
+    let resolveFirst;
+    let resolveSecond;
+    const pagefind = mockPagefind({
+      debouncedSearch: vi
+        .fn()
+        .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve; }))
+        .mockImplementationOnce(() => new Promise((resolve) => { resolveSecond = resolve; })),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'first-query';
+    input.dispatchEvent(new Event('input'));
+    input.value = 'second-query';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    // Resolve out of call order: the second (newer) call settles first, then the first (older,
+    // now-stale) call settles after it — the reverse of a well-behaved network round trip.
+    resolveSecond({
+      results: [resultFor({ meta: { title: 'Second' }, url: '/second/', excerpt: 'second', sub_results: [] })],
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    resolveFirst({
+      results: [resultFor({ meta: { title: 'First' }, url: '/first/', excerpt: 'first', sub_results: [] })],
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(hawk.state.matches).toHaveLength(1);
+    expect(hawk.state.matches[0].title).toBe('Second');
+    hawk.destroy();
+  });
+});
+
 describe('pin system', () => {
   afterEach(() => {
     localStorage.clear();
