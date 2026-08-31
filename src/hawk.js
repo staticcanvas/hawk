@@ -435,6 +435,18 @@ export class HawkSearch {
   }
 
   /**
+   * Escapes `str` for safe interpolation into an `innerHTML` template literal. Unlike the
+   * fetched-page-content trust boundary documented for the preview pane (that content is the
+   * site's own already-built output, deliberately not sanitized) — a typed query is visitor
+   * input, always untrusted, and `strings.noResults(query)` is the one place it reaches
+   * `innerHTML`. Escaping the argument here (not the string `noResults` returns) protects any
+   * `config.strings.noResults` override too, not just the default.
+   */
+  #escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+  }
+
+  /**
    * Sets the resolved tab list, validates `#currentTabId` against it (falling back to `'all'`,
    * or the first tab if there's no `'all'`, with a console warning if a configured `defaultTab`
    * didn't match), and re-renders the filter pills.
@@ -1098,7 +1110,7 @@ export class HawkSearch {
 
   #renderResults() {
     if (!this.#matches.length) {
-      this.#resultsEl.innerHTML = `<div class="hawk-empty">${this.strings.noResults(this.#query)}</div>`;
+      this.#resultsEl.innerHTML = `<div class="hawk-empty">${this.strings.noResults(this.#escapeHtml(this.#query))}</div>`;
       this.#resultsEl.removeAttribute('aria-activedescendant');
       this.#counterEl.textContent = this.#query ? this.strings.matchingResults(0, 0) : this.strings.typeToSearch;
       this.#renderPreview();

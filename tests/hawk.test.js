@@ -1240,6 +1240,37 @@ describe('i18n / strings overrides', () => {
     expect(document.querySelector('.hawk-modal-input').placeholder).toBe('Search...');
     hawk.destroy();
   });
+
+  it('escapes a typed query before it reaches noResults()/innerHTML — regression test for a real reflected-XSS finding', async () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = '<img src=x onerror="window.__hawkXssProbe = true">';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(window.__hawkXssProbe).toBeUndefined();
+    const empty = document.querySelector('.hawk-empty');
+    expect(empty.querySelector('img')).toBeNull();
+    expect(empty.textContent).toContain('<img src=x onerror="window.__hawkXssProbe = true">');
+    hawk.destroy();
+  });
+
+  it('a custom noResults override also receives an escaped query (the escape happens at the call site, not inside the default string)', async () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      strings: { noResults: (query) => `Nothing for ${query}` },
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = '<script>window.__hawkXssProbe = true</script>';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(window.__hawkXssProbe).toBeUndefined();
+    expect(document.querySelector('.hawk-empty').innerHTML).toContain('&lt;script&gt;');
+    hawk.destroy();
+  });
 });
 
 describe('category tabs (keyboard + ARIA)', () => {

@@ -257,6 +257,11 @@ wiki, forum posts), that content reaches the preview pane and result list unsani
 it the same way you'd treat rendering that content anywhere else on the page, and sanitize it at
 your own build/render step if it isn't already.
 
+This trust boundary is specifically about *your own site's content* — it doesn't extend to the
+visitor's typed query. `strings.noResults(query)` is the one place the query reaches `innerHTML`;
+hawk HTML-escapes the `query` argument before calling it, so a query like `<img
+src=x onerror=...>` renders as literal text, including in a custom `noResults` override.
+
 ### Section-outline previews
 
 `previewSections: true` changes what a **page-level** match's preview shows: instead of the full
