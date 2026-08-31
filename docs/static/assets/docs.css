@@ -146,11 +146,16 @@ a {
     radial-gradient(ellipse 800px 420px at 86% 8%, var(--hawk-accent-alt-glow, rgba(251, 146, 60, 0.14)), transparent 60%);
 }
 .hero-inner {
+  /* Shares .shell's own 1100px/margin:0 auto container (see index.html's class="shell
+     hero-inner") rather than adding a second, narrower max-width here — a max-width on this
+     element re-centers it inside .shell, pulling its left edge inward and out of alignment with
+     .feature-section/.guides-section below, which are .shell-only. Readable line length for the
+     tagline is handled locally, on .hero-tagline's own max-width, not by narrowing this whole
+     column. */
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  max-width: 720px;
 }
 .hero-logo {
   border-radius: 12px;
@@ -257,6 +262,10 @@ a {
 .feature-section {
   padding-block: 3.5rem;
 }
+.feature-section h2 {
+  font-size: 1.3rem;
+  margin: 0 0 1.25rem;
+}
 .feature-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -312,6 +321,19 @@ a {
   }
   .btn {
     justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  /* .header-inner's own content (brand + search-trigger-btn + header-actions' 3 icon buttons)
+     needs ~400px at natural size — more than a 375px phone's viewport has even before .shell's
+     own 1.5rem side padding, and nothing in the row was shrinking to compensate, so
+     .header-actions silently overflowed the viewport by a few px on every page. The "Ctrl+K"
+     hint is also genuinely meaningless on a touch device with no physical keyboard, so hiding it
+     here is a correctness fix for the content, not just a width hack — it reclaims ~60px, more
+     than the overflow's own ~27px. */
+  .search-trigger-btn kbd {
+    display: none;
   }
 }
 
@@ -388,6 +410,18 @@ a {
   color: var(--hawk-text-secondary, #94a3b8);
   font-size: 1.05rem;
 }
+.doc-content {
+  /* A single unbroken run of text (a long URL, or prose like "ArrowUp/ArrowDown/PageUp/PageDown/
+     Home/End" — a real example from this site's own density-and-navigation guide) has no space
+     or hyphen for the browser's default line-breaking to use, so it doesn't wrap at the narrow
+     article width a sidebar+TOC layout leaves on a phone-width viewport — it just overflows the
+     column instead, taking .doc-article's own scrollWidth (and therefore the whole page's) past
+     the viewport with it. overflow-wrap: break-word is the standard fallback: normal words still
+     break at normal points; only a token with no such point gets force-broken, as a last resort.
+     `/` doesn't count as a break opportunity in the CSS text-breaking model the way a space or
+     hyphen does, which is exactly why that guide's sentence needed this. */
+  overflow-wrap: break-word;
+}
 .doc-content pre {
   background: var(--hawk-bg-surface, #0f172a);
   border: 1px solid var(--hawk-border-subtle, #1e293b);
@@ -405,6 +439,21 @@ a {
   border-radius: 4px;
 }
 .doc-content table {
+  /* display:block (not the default table/inline-table) turns the <table> itself into a plain
+     block-level scroll container — its descendants (thead/tbody/tr/td) keep their own default
+     table-* display values, so internal column layout is unaffected. Needed because width: 100%
+     alone is only ever a *preferred* width under the default table-layout: auto — a cell with a
+     long unbroken token (a `code`-spanned union type, a long URL) still forces the table to its
+     content's real minimum width regardless of that 100%, overflowing this ~570px article column
+     by 300-400px and visually running past .doc-toc / off the page (confirmed via Playwright: a
+     4-column option/type/default/description reference table rendered ~920px wide here). A Hugo
+     render-hook wrapper div would be the more conventional fix, but table render hooks aren't
+     supported until Hugo v0.134 — this project's Hugo build is v0.131. table-layout: fixed was
+     the other CSS-only option; skipped because without per-column width hints (markdown tables
+     don't have any) it forces every column to the same width, which reads worse for this specific
+     4-column shape than a horizontal scrollbar on the rare row that needs one. */
+  display: block;
+  overflow-x: auto;
   border-collapse: collapse;
   width: 100%;
 }
