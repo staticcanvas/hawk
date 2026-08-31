@@ -13,6 +13,8 @@ in the repository, following [Keep a Changelog](https://keepachangelog.com/en/1.
 pre-1.0 and hasn't cut a tagged release yet — the versions there track `package.json`'s history,
 not published tags.
 
+- **0.5.2** — fixed a real, confirmed reflected-XSS vulnerability (the typed search query reached
+  `innerHTML` unescaped via `strings.noResults`).
 - **0.5.1** — a real search-results race condition (`#searchGeneration`), a modal-chrome
   vertical-squish bug at narrow widths, a table/long-word overflow past the docs site's TOC, a
   header overflow at phone widths, and homepage hero/feature-grid alignment and parity polish.

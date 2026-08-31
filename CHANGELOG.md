@@ -4,6 +4,32 @@ All notable changes to this project are documented in this file. The format is b
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Hawk is pre-1.0 and hasn't cut a
 tagged release yet — the versions below track `package.json`'s history, not published tags.
 
+## [0.5.2] - 2026-08-31
+
+### Security
+
+- **Reflected XSS via the search query.** `strings.noResults(query)` interpolated the visitor's
+  typed query directly into a template literal assigned to `innerHTML`, with no escaping —
+  confirmed exploitable: typing `<img src=x onerror="...">` executed arbitrary JS in the page's
+  context. Distinct from the documented preview-pane trust boundary (which is specifically about
+  *your own site's already-built content*, not visitor input). Fixed by escaping the `query`
+  argument before it reaches `noResults` — protects a custom `strings.noResults` override too,
+  not just the default. Added regression tests, including one confirming a custom override still
+  receives an escaped query.
+
+### Fixed
+
+- `test:bun`/`test:coverage:bun` were picking up `tests/e2e/hawk.spec.mjs` (a Playwright file, not
+  a unit test) and failing on every `test.describe()` call. Scoped both scripts to `tests/*.test.js`.
+  Bun's own `vi` mock still doesn't implement `vi.stubGlobal`/`vi.unstubAllGlobals`
+  (used in `tests/hawk.test.js`'s `beforeEach`/`afterEach`), so `test:bun` remains broken beyond
+  this — not attempted here; tracked as a known gap, not fixed.
+
+### Docs
+
+- API reference's trust-boundary note now explicitly distinguishes "your site's content" (not
+  sanitized, deliberately) from "the visitor's typed query" (escaped, always).
+
 ## [0.5.1] - 2026-08-31
 
 ### Fixed
