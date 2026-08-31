@@ -9,10 +9,16 @@ hero:
 features:
   - title: Pagefind-backed
     body: Chunked, lazily-loaded index with typo tolerance, scaling past a hand-rolled in-browser scorer — hawk owns the UI, Pagefind owns ranking.
-  - title: Dev-controlled tabs
-    body: Auto-derived category pills by default, or explicit tabs with full Pagefind filter power — multi-dimension AND, multi-value OR, no translation layer.
+  - title: Tabs, curated or auto-derived
+    body: Auto-derived category pills by default, explicit tabs with full Pagefind filter power, a sort-based listing tab (e.g. "Recently updated"), or a tab list loaded from a JSON file.
   - title: Themeable to the token
     body: Every color, font, and scrollbar is a --hawk-* custom property. Ship a CSS file, or a few tokens inline with theme.tokens — no fork required.
+  - title: Real page previews
+    body: The preview pane fetches and renders the actual matched page — headings, code blocks, tables — not a short excerpt. A page-level match can break into a scannable section outline instead of a full dump.
+  - title: Modal reveal animations
+    body: 5 built-in open/close animations (fade, scale-fade, slide-down, blur-zoom, spring), a custom one of your own, or none — always instant under prefers-reduced-motion.
+  - title: Fit, medium, or compact
+    body: An in-modal density switcher, persisted per visitor, on top of scale/position/columns layout params.
   - title: Keyboard-first
     body: A real focus trap, two-pane Tab navigation, arrow-key scrolling, Ctrl/Cmd+K — accessible by default, not bolted on after the fact.
   - title: Pins and inline filters
