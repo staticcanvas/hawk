@@ -62,7 +62,15 @@ export default [
     },
   },
   {
-    ignores: ['node_modules/**', 'dist/**', 'public/**', 'docs/**', 'coverage/**', '*.min.js'],
+    ignores: [
+      'node_modules/**',
+      'dist/**',
+      'public/**',
+      'public-shot/**',
+      'docs/**',
+      'coverage/**',
+      '*.min.js',
+    ],
   },
   prettierConfig,
 ];
