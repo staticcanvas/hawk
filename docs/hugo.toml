@@ -38,6 +38,10 @@ disableKinds = ['taxonomy', 'term']
     pageRef = '/getting-started/'
     weight = 20
   [[menu.main]]
+    name = 'Playground'
+    pageRef = '/playground/'
+    weight = 25
+  [[menu.main]]
     name = 'Guides'
     identifier = 'guides'
     pageRef = '/guides/'
@@ -67,6 +71,16 @@ disableKinds = ['taxonomy', 'term']
     parent = 'guides'
     pageRef = '/guides/pins-and-embedding/'
     weight = 35
+  [[menu.main]]
+    name = 'Debug'
+    parent = 'guides'
+    pageRef = '/guides/debug/'
+    weight = 36
+  [[menu.main]]
+    name = 'Metrics'
+    parent = 'guides'
+    pageRef = '/guides/metrics/'
+    weight = 37
   [[menu.main]]
     name = 'API reference'
     pageRef = '/api/'

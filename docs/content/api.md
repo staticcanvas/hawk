@@ -442,6 +442,53 @@ with `revealDuration` to match your own timing; an unrecognized name otherwise d
 - `@staticcanvas/hawk/theme-typeflow` — `HawkThemeTypeflow`
 - `@staticcanvas/hawk/theme-typeflow/css` — the stylesheet
 - `@staticcanvas/hawk/animation-typeflow` — `createHawkAnimationTypeflow(TypeFlow, options?)`
+- `@staticcanvas/hawk/debug` — `createHawkDebug(hawk, options?)`
+- `@staticcanvas/hawk/metrics` — `createHawkMetrics(hawk, options?)`
 
 See [Theming]({{< relref "/guides/theming" >}}) and
 [Animation Plugins]({{< relref "/guides/animation-plugins" >}}) for the full contracts.
+
+## `createHawkDebug(hawk, options?)`
+
+Optional, non-invasive console diagnostics for a `HawkSearch` instance — wraps its public
+`open`/`close`/`destroy`/`setParams`/`onSelect` and polls its public `state` while open. Routes
+through [`@staticcanvas/logcad`](https://gitlab.com/staticcanvas/logcad) if installed, else falls
+back to styled `console.*` output.
+
+```ts
+interface HawkDebugOptions {
+  enabled?: boolean;       // default true
+  label?: string;          // default 'Hawk'
+  trace?: boolean;         // default false (logcad path only)
+  pollIntervalMs?: number; // default 150
+}
+interface HawkDebugController {
+  readonly enabled: boolean;
+  setEnabled(value: boolean): void;
+  dispose(): void; // restores hawk's original methods/callbacks
+}
+```
+
+See the [Debug guide]({{< relref "/guides/debug" >}}) for a walkthrough.
+
+## `createHawkMetrics(hawk, options?)`
+
+Optional, headless counters/timings for a `HawkSearch` instance — same non-invasive wrapping as
+`createHawkDebug`, no DOM of its own.
+
+```ts
+interface HawkMetricsOptions {
+  now?: () => number;      // default performance.now
+  pollIntervalMs?: number; // default 150
+}
+interface HawkMetricsController {
+  snapshot(): HawkMetricsSnapshot; // opens, closes, totalOpenMs, queries, zeroResultQueries,
+                                    // zeroResultRate, totalMatches, maxMatches, averageMatches,
+                                    // selects, selectRate, tabSwitches, perTab, pinAdds,
+                                    // pinRemoves, errors, lastQueryLatencyMs, averageQueryLatencyMs
+  reset(): void;
+  dispose(): void; // restores hawk's original methods/callbacks
+}
+```
+
+See the [Metrics guide]({{< relref "/guides/metrics" >}}) for a walkthrough.

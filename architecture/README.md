@@ -27,3 +27,10 @@ poll `TypeFlow.active`, or (for framework adapters) plain factory functions the 
 directly with their framework's runtime. Hawk's plugin system (`HawkSearch.registerTheme` /
 `HawkSearch.registerAnimation`) is new design, not a port — see `plugin-system.md` for the
 reasoning that shaped it.
+
+Hawk's own `debug`/`metrics` extras (`@staticcanvas/hawk/debug`, `@staticcanvas/hawk/metrics`,
+added after this note was first written) followed `@staticcanvas/lume`'s shape instead of
+typeflow's: `createHawkDebug(hawk, options)` / `createHawkMetrics(hawk, options)` factory
+functions that wrap `HawkSearch`'s already-public methods/callbacks and poll its public `state`
+getter, rather than a new registration mechanism or any change to `hawk.js` itself. Non-invasive
+by construction — the same reason there's no `Hawk.use()`.

@@ -4,6 +4,23 @@ All notable changes to this project are documented in this file. The format is b
 [Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Hawk is pre-1.0 and hasn't cut a
 tagged release yet — the versions below track `package.json`'s history, not published tags.
 
+## [Unreleased]
+
+### Added
+
+- **`@staticcanvas/hawk/debug`** — optional, non-invasive console diagnostics for a `HawkSearch`
+  instance (opens/closes/query changes/settled results/tab switches/pin changes/errors), routed
+  through `@staticcanvas/logcad` when installed, else a styled `console.*` fallback.
+- **`@staticcanvas/hawk/metrics`** — optional, headless counters/timings for a `HawkSearch`
+  instance: Pagefind query stats (`zeroResultRate`, `averageMatches`, `averageQueryLatencyMs`),
+  tab/pin usage, and session duration. No DOM of its own — draw a UI from `.snapshot()`.
+  Both follow the same shape (wrap the instance's public methods/callbacks, poll its public
+  `state` getter) as `@staticcanvas/lume`'s own `lume-debug`/`lume-metrics`; see
+  `architecture/README.md`.
+- **Playground page** (`/playground/`) — a real, linked page on hawk's own docs site with controls
+  to toggle theme, animation driver, modal reveal animation, results reveal, scale/position/
+  columns/density live against the site's own real Pagefind index, plus Debug/Metrics toggles.
+
 ## [0.5.2] - 2026-08-31
 
 ### Security

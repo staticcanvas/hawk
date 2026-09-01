@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="{{ "webutil/libs/hawk.css" | relURL }}">
   <link rel="stylesheet" href="{{ "webutil/libs/hawk-theme-typeflow.css" | relURL }}">
   <link rel="stylesheet" href="{{ "assets/docs.css" | relURL }}">
+  {{ if eq .Type "playground" }}<link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}">{{ end }}
 </head>
 <body data-hawk-index="{{ "pagefind/" | relURL }}" data-hawk-theme="typeflow">
 
