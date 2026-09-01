@@ -29,9 +29,24 @@ a {
 }
 
 .shell {
-  max-width: 1100px;
-  margin: 0 auto;
+  /* Full-bleed: no max-width, so the header/footer/hero background and homepage sections span
+     the real viewport instead of centering in a fixed column with empty gutters on a wide
+     monitor. Actual reading text still gets its own cap where it needs one (.doc-content, below)
+     rather than the whole page being capped — long prose lines hurt readability, a wide nav bar
+     or card grid doesn't. Padding grows in steps past 1440px instead of scaling continuously
+     (clamp()/vw), so it stays a deliberate, easy-to-reason-about value at each breakpoint rather
+     than an ever-changing one. */
   padding: 0 1.5rem;
+}
+@media (min-width: 1440px) {
+  .shell {
+    padding: 0 3rem;
+  }
+}
+@media (min-width: 1920px) {
+  .shell {
+    padding: 0 5rem;
+  }
 }
 
 .site-header {
@@ -42,12 +57,20 @@ a {
   z-index: 10;
 }
 .header-inner {
-  display: flex;
+  /* 3-column grid, not flex: with flex, "centering" the search trigger only works when the brand
+     and header-right happen to be equal width, which they never are (brand is short; header-right
+     carries a nav and/or icon row). Two equal 1fr tracks flanking an auto-sized center track keep
+     the search trigger genuinely centered regardless of how lopsided the two sides are, since
+     each side aligns within its own equally-sized track (justify-self: start/end) rather than
+     pushing directly against the center content. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 1.25rem;
   height: 60px;
 }
 .brand {
+  justify-self: start;
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -61,6 +84,7 @@ a {
 }
 
 .search-trigger-btn {
+  justify-self: center;
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -79,8 +103,15 @@ a {
   padding: 0.05rem 0.3rem;
 }
 
+.header-right {
+  /* The grid's 3rd column (.header-inner, above) — wraps header-nav (home page only) and
+     header-actions so the pair sits together as one right-aligned group. */
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
 .header-nav {
-  margin-left: auto;
   display: flex;
   gap: 1rem;
 }
@@ -342,6 +373,13 @@ a {
   grid-template-columns: 200px 1fr;
   gap: 2.5rem;
   align-items: start;
+  /* .shell (its own ancestor) no longer caps width, so this needs its own — otherwise the sidebar
+     and TOC (each a fixed 200px grid track) would end up hundreds of px apart from the actual
+     article text on a wide monitor, with a large dead gap between text and TOC. Wider than the
+     old sitewide 1100px cap (more breathing room for the grid/TOC), while .doc-article below
+     keeps prose text itself narrower still — the two caps serve different things. */
+  max-width: 1400px;
+  margin: 0 auto;
 }
 .doc-sidebar {
   position: sticky;
@@ -397,6 +435,13 @@ a {
 }
 .doc-article {
   min-width: 0;
+  /* Reading-width cap for the prose itself — the chrome/grid around it (.shell, .docs-layout,
+     above) got wider or lost its cap entirely so the page uses a real wide viewport properly,
+     but paragraph text still shouldn't stretch to 100+ characters per line just because there's
+     room. Doesn't pinch code blocks/tables: those already scroll internally
+     (.doc-content pre/table's own overflow-x: auto) rather than reflowing, so a narrower
+     container just means they hit that scroll a little sooner, not that they lose content. */
+  max-width: 48rem;
 }
 .doc-eyebrow {
   display: block;
@@ -423,12 +468,82 @@ a {
   overflow-wrap: break-word;
 }
 .doc-content pre {
-  background: var(--hawk-bg-surface, #0f172a);
+  background: #0a0f1a;
   border: 1px solid var(--hawk-border-subtle, #1e293b);
   border-radius: 8px;
   padding: 1rem;
   overflow-x: auto;
 }
+.doc-content .highlight {
+  margin: 1rem 0;
+}
+.doc-content .highlight pre {
+  margin: 0;
+  color: #d7e0ea;
+  background: #0a0f1a;
+  line-height: 1.65;
+  scrollbar-color: var(--hawk-border-strong, #334155) transparent;
+}
+.doc-content .highlight pre:focus-visible {
+  outline: 2px solid var(--hawk-accent, #38bdf8);
+  outline-offset: 2px;
+}
+.doc-content .highlight code::selection,
+.doc-content .highlight code *::selection {
+  color: #f8fafc;
+  background: rgba(56, 189, 248, 0.3);
+}
+.chroma .c, .chroma .ch, .chroma .cm, .chroma .c1, .chroma .cs, .chroma .cp,
+.chroma .cpf { color: #7f8fa4; font-style: italic; }
+.chroma .k, .chroma .kc, .chroma .kd, .chroma .kn, .chroma .kp, .chroma .kr,
+.chroma .kt { color: #c4a7ff; }
+.chroma .s, .chroma .sa, .chroma .sb, .chroma .sc, .chroma .dl, .chroma .sd,
+.chroma .s1, .chroma .s2, .chroma .se, .chroma .sh, .chroma .si, .chroma .sx,
+.chroma .sr, .chroma .ss { color: #a8d99c; }
+.chroma .m, .chroma .mb, .chroma .mf, .chroma .mh, .chroma .mi, .chroma .il,
+.chroma .mo { color: #f2b97f; }
+.chroma .na, .chroma .nc, .chroma .nd, .chroma .ne, .chroma .nf,
+.chroma .fm, .chroma .nt { color: #71d6ff; }
+.chroma .nb, .chroma .bp, .chroma .nv, .chroma .vc, .chroma .vg,
+.chroma .vi, .chroma .vm { color: #ff9f7f; }
+.chroma .o, .chroma .ow, .chroma .p { color: #aab7c7; }
+.chroma .gd { color: #ff8b8b; background: rgba(248, 81, 73, 0.12); }
+.chroma .gi { color: #8fdb8f; background: rgba(46, 160, 67, 0.12); }
+
+[data-theme="light"] .doc-content .highlight pre {
+  color: #24292f;
+  background: #f6f8fa;
+  border-color: var(--hawk-border-default, #cbd5e1);
+}
+[data-theme="light"] .chroma .c, [data-theme="light"] .chroma .ch,
+[data-theme="light"] .chroma .cm, [data-theme="light"] .chroma .c1,
+[data-theme="light"] .chroma .cs, [data-theme="light"] .chroma .cp,
+[data-theme="light"] .chroma .cpf { color: #667085; }
+[data-theme="light"] .chroma .k, [data-theme="light"] .chroma .kc,
+[data-theme="light"] .chroma .kd, [data-theme="light"] .chroma .kn,
+[data-theme="light"] .chroma .kp, [data-theme="light"] .chroma .kr,
+[data-theme="light"] .chroma .kt { color: #7c3aed; }
+[data-theme="light"] .chroma .s, [data-theme="light"] .chroma .sa,
+[data-theme="light"] .chroma .sb, [data-theme="light"] .chroma .sc,
+[data-theme="light"] .chroma .dl, [data-theme="light"] .chroma .sd,
+[data-theme="light"] .chroma .s1, [data-theme="light"] .chroma .s2,
+[data-theme="light"] .chroma .se, [data-theme="light"] .chroma .sh,
+[data-theme="light"] .chroma .si, [data-theme="light"] .chroma .sx,
+[data-theme="light"] .chroma .sr, [data-theme="light"] .chroma .ss { color: #177245; }
+[data-theme="light"] .chroma .m, [data-theme="light"] .chroma .mb,
+[data-theme="light"] .chroma .mf, [data-theme="light"] .chroma .mh,
+[data-theme="light"] .chroma .mi, [data-theme="light"] .chroma .il,
+[data-theme="light"] .chroma .mo { color: #b54708; }
+[data-theme="light"] .chroma .na, [data-theme="light"] .chroma .nc,
+[data-theme="light"] .chroma .nd, [data-theme="light"] .chroma .ne,
+[data-theme="light"] .chroma .nf, [data-theme="light"] .chroma .fm,
+[data-theme="light"] .chroma .nt { color: #0369a1; }
+[data-theme="light"] .chroma .nb, [data-theme="light"] .chroma .bp,
+[data-theme="light"] .chroma .nv, [data-theme="light"] .chroma .vc,
+[data-theme="light"] .chroma .vg, [data-theme="light"] .chroma .vi,
+[data-theme="light"] .chroma .vm { color: #c2410c; }
+[data-theme="light"] .chroma .o, [data-theme="light"] .chroma .ow,
+[data-theme="light"] .chroma .p { color: #475467; }
 .doc-content code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;

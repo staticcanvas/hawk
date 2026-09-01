@@ -384,6 +384,9 @@
      compressing pills — flex-shrink:0 makes that the only possible outcome under width pressure,
      matching white-space:nowrap's role for text. */
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: transparent;
   border: 1px solid var(--hawk-border-default, #253347);
   border-radius: 999px;
@@ -397,10 +400,31 @@
   outline: 2px solid var(--hawk-accent, #38bdf8);
   outline-offset: 1px;
 }
+/* config.tabs[].accentColor (see hawk.js's #renderFilters) writes --hawk-tab-accent inline on
+   just that pill — every rule below falls back to the theme's own --hawk-accent when a tab
+   doesn't set one, so this is a no-op for tabs that don't opt in. */
 .hawk-filter-pill.active {
-  border-color: var(--hawk-accent, #38bdf8);
-  color: var(--hawk-accent, #38bdf8);
+  border-color: var(--hawk-tab-accent, var(--hawk-accent, #38bdf8));
+  color: var(--hawk-tab-accent, var(--hawk-accent, #38bdf8));
   background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
+}
+@supports (background: color-mix(in srgb, red 10%, transparent)) {
+  .hawk-filter-pill.active {
+    /* Refines the flat --hawk-accent-dim fallback above into a tint of this tab's own accent,
+       in engines that support color-mix (2023+) — progressive enhancement, not a requirement. */
+    background: color-mix(in srgb, var(--hawk-tab-accent, var(--hawk-accent, #38bdf8)) 14%, transparent);
+  }
+}
+/* The color dot renders even when a tab isn't the active one, so an accent reads as "this tab's
+   color" at a glance across the whole row, not just on selection — transparent (invisible, no
+   layout/visual change) for any tab that didn't set accentColor. */
+.hawk-filter-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hawk-tab-accent, transparent);
+  flex-shrink: 0;
 }
 
 .hawk-modal-body {
@@ -474,6 +498,65 @@
   text-decoration: none;
   color: inherit;
 }
+
+/* ── Staggered result-row reveal ──────────────────────────────────────────────────────────
+   config.resultsReveal (default true) + config.resultsRevealDirection ('up'|'down'|'left'|
+   'right', default 'up') — see hawk.js's #mount() and #renderResults(). [data-hawk-results-
+   reveal] on #root selects the direction; each row's own --hawk-row-index (capped at 10, set
+   inline per row) staggers its animation-delay via --hawk-results-stagger. A single 2-stop
+   keyframe (opacity + one transform) with a spring-y cubic-bezier gets real overshoot cheaply —
+   same technique as the modal's own 'spring' reveal — rather than a heavier multi-stage
+   keyframe, which matters here since it can run on every keystroke's re-render, not once per
+   open(). transform+opacity only: no layout-triggering properties, so this stays cheap even
+   stacked across ~10 rows firing close together. */
+[data-hawk-results-reveal] .hawk-result-item {
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-fill-mode: both;
+  animation-delay: calc(var(--hawk-row-index, 0) * var(--hawk-results-stagger, 22ms));
+}
+@keyframes hawk-result-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes hawk-result-reveal-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+@keyframes hawk-result-reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+@keyframes hawk-result-reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+[data-hawk-results-reveal='up'] .hawk-result-item {
+  animation-name: hawk-result-reveal-up;
+}
+[data-hawk-results-reveal='down'] .hawk-result-item {
+  animation-name: hawk-result-reveal-down;
+}
+[data-hawk-results-reveal='left'] .hawk-result-item {
+  animation-name: hawk-result-reveal-left;
+}
+[data-hawk-results-reveal='right'] .hawk-result-item {
+  animation-name: hawk-result-reveal-right;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-hawk-results-reveal] .hawk-result-item {
+    animation: none;
+  }
+}
+
 .hawk-result-item:hover,
 .hawk-result-item.is-selected {
   background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));

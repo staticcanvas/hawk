@@ -1673,6 +1673,91 @@ describe('previewSections', () => {
   });
 });
 
+describe('tab accentColor', () => {
+  it('writes --hawk-tab-accent inline on a tab with accentColor, and omits the style attribute for one without', async () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      tabs: [
+        { id: 'guides', label: 'Guides', accentColor: '#22d3ee' },
+        { id: 'reference', label: 'Reference' },
+      ],
+    });
+    const guides = document.querySelector('[data-filter="guides"]');
+    const reference = document.querySelector('[data-filter="reference"]');
+    expect(guides.getAttribute('style')).toContain('--hawk-tab-accent: #22d3ee');
+    expect(reference.hasAttribute('style')).toBe(false);
+    hawk.destroy();
+  });
+
+  it('escapes a stray double-quote in accentColor so it cannot break out of the style attribute', async () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      tabs: [{ id: 'x', label: 'X', accentColor: 'red" onmouseover="window.__hawkAccentProbe = true' }],
+    });
+    const pill = document.querySelector('[data-filter="x"]');
+    // The real security property: the quote never breaks out of the style attribute to create a
+    // second, live one. getAttribute('style') returns the *decoded* value (jsdom, like a real
+    // browser, turns the &quot; the escape produced back into a literal " on parse) — a raw
+    // string still containing the payload text here is expected and fine, since it never became
+    // markup.
+    expect(pill.getAttribute('onmouseover')).toBeNull();
+    expect(pill.outerHTML).toContain('&quot;');
+    hawk.destroy();
+  });
+});
+
+describe('staggered results reveal', () => {
+  it('defaults to direction "up", writing --hawk-results-stagger and a per-row --hawk-row-index', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [resultFor({ meta: { title: 'One' }, url: '/one/', excerpt: 'x', sub_results: [] })],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    const root = document.querySelector('.hawk-modal');
+    expect(root.dataset.hawkResultsReveal).toBe('up');
+    expect(root.style.getPropertyValue('--hawk-results-stagger')).toBe('22ms');
+
+    hawk.open();
+    document.querySelector('.hawk-modal-input').value = 'x';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const row = document.querySelector('.hawk-result-item');
+    expect(row.getAttribute('style')).toContain('--hawk-row-index: 0');
+    hawk.destroy();
+  });
+
+  it('caps --hawk-row-index at 10 so a long result list has a bounded stagger tail', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: Array.from({ length: 15 }, (_, i) =>
+          resultFor({ meta: { title: `Page ${i}` }, url: `/p${i}/`, excerpt: 'x', sub_results: [] })
+        ),
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, maxResults: 15 });
+    hawk.open();
+    document.querySelector('.hawk-modal-input').value = 'x';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const rows = document.querySelectorAll('.hawk-result-item');
+    expect(rows[9].getAttribute('style')).toContain('--hawk-row-index: 9'); // the 10th row, still uncapped
+    expect(rows[10].getAttribute('style')).toContain('--hawk-row-index: 10'); // the 11th row, cap kicks in
+    expect(rows[14].getAttribute('style')).toContain('--hawk-row-index: 10');
+    hawk.destroy();
+  });
+
+  it('resultsRevealDirection and resultsReveal: false are configurable', () => {
+    const hawkRight = new HawkSearch({ pagefind: mockPagefind(), id: 'hawk-right', resultsRevealDirection: 'right' });
+    expect(document.getElementById('hawk-right').dataset.hawkResultsReveal).toBe('right');
+    hawkRight.destroy();
+
+    const hawkOff = new HawkSearch({ pagefind: mockPagefind(), id: 'hawk-off', resultsReveal: false });
+    expect(document.getElementById('hawk-off').dataset.hawkResultsReveal).toBeUndefined();
+    hawkOff.destroy();
+  });
+});
+
 describe('modal reveal animation', () => {
   it('defaults to scale-fade, writing --hawk-reveal-duration from the built-in duration table', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });

@@ -144,7 +144,7 @@ export class HawkSearch {
    *   name is registered (i.e. the consumer loaded hawk-animation-typeflow.js and registered it), else `'instant'`.
    * @param {string[]} [config.categories] Shorthand for `config.tabs`: one tab per category name, each
    *   filtering on `categoryFilterName`. Ignored if `config.tabs` is given.
-   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, sort?: Record<string, 'asc'|'desc'>, pagefindOptions?: Record<string, unknown>, defaultPreviewUrl?: string, defaultPreviewTitle?: string}>} [config.tabs]
+   * @param {Array<{id?: string, label: string, filter?: Record<string, string|string[]>, sort?: Record<string, 'asc'|'desc'>, pagefindOptions?: Record<string, unknown>, defaultPreviewUrl?: string, defaultPreviewTitle?: string, accentColor?: string}>} [config.tabs]
    *   Explicit tab list. `filter` is a raw Pagefind `filters` object (passed to `search()`/`debouncedSearch()`
    *   verbatim) — omit it for a filterless tab (e.g. "All"). `sort` is shorthand for
    *   `pagefindOptions: { sort }` — Pagefind's own sort object (e.g. `{ date: 'desc' }`), which needs the
@@ -153,9 +153,11 @@ export class HawkSearch {
    *   or category-filtered tab a visitor browses rather than searches. `defaultPreviewUrl`/`defaultPreviewTitle`
    *   override `config.defaultPreviewUrl`/`config.defaultPreviewTitle` while this tab is active and nothing is
    *   selected (zero matches, or before a query is typed) — see the top-level options below for the
-   *   fetch/extract behavior those share. Replaces auto-derivation from Pagefind's `filters()` entirely and
-   *   renders synchronously on mount instead of waiting for Pagefind to load. Ignored if `config.tabsUrl` is
-   *   also given (this wins, being available with zero latency).
+   *   fetch/extract behavior those share. `accentColor` (any valid CSS color) tints this tab's own pill —
+   *   a small dot at all times, plus its border/text/background once active — falling back to the theme's
+   *   own accent color for any tab that doesn't set one. Replaces auto-derivation from Pagefind's
+   *   `filters()` entirely and renders synchronously on mount instead of waiting for Pagefind to load.
+   *   Ignored if `config.tabsUrl` is also given (this wins, being available with zero latency).
    * @param {string} [config.tabsUrl] Fetches a JSON file (an array in the same shape as `config.tabs` above)
    *   once Pagefind loads, instead of requiring the tab list to live in the mount script itself — lets a
    *   non-JS site maintainer, or a separate build step, edit tabs without touching JS. Ignored if
@@ -193,6 +195,14 @@ export class HawkSearch {
    *   after `close()` (and the value written to `--hawk-reveal-duration`, which hawk.css's keyframes read
    *   for `animation-duration`) — defaults to the built-in duration for the 5 named animations above, or
    *   220ms for an unrecognized/custom `revealAnimation` name.
+   * @param {boolean} [config.resultsReveal=true] Staggers each result row's entrance with a fade + slide +
+   *   spring-ish bounce (CSS keyframes, `prefers-reduced-motion`-aware) every time the results pane
+   *   re-renders — including on every keystroke, not just on open. `false` disables it entirely.
+   * @param {'up'|'down'|'left'|'right'} [config.resultsRevealDirection='up'] Which direction rows slide in
+   *   from.
+   * @param {number} [config.resultsRevealStagger=22] Milliseconds between each row's animation start —
+   *   capped at the 10th row internally, so a long result list's total entrance duration doesn't keep
+   *   growing past that.
    * @param {boolean} [config.eagerResults=true] Runs an empty-query search as soon as Pagefind loads, so the
    *   results pane shows a default listing instead of "Type to search". Set `false` to keep the results pane
    *   empty until the visitor types.
@@ -279,6 +289,9 @@ export class HawkSearch {
     this.defaultPreviewTitle = config.defaultPreviewTitle || '';
     this.revealAnimation = config.revealAnimation === false ? false : config.revealAnimation || 'scale-fade';
     this.revealDuration = config.revealDuration ?? REVEAL_ANIMATION_DURATIONS[this.revealAnimation] ?? 220;
+    this.resultsReveal = config.resultsReveal !== false;
+    this.resultsRevealDirection = config.resultsRevealDirection || 'up';
+    this.resultsRevealStagger = config.resultsRevealStagger ?? 22;
     this.eagerResults = config.eagerResults !== false;
     this.onOpen = config.onOpen;
     this.onClose = config.onClose;
@@ -418,6 +431,7 @@ export class HawkSearch {
       pagefindOptions: t.sort ? { ...(t.pagefindOptions || {}), sort: t.sort } : t.pagefindOptions || null,
       defaultPreviewUrl: t.defaultPreviewUrl || null,
       defaultPreviewTitle: t.defaultPreviewTitle || '',
+      accentColor: t.accentColor || null,
     }));
     return this.includeAllTab
       ? [{ id: 'all', label: 'All', filter: null, pagefindOptions: null }, ...normalized]
@@ -499,6 +513,10 @@ export class HawkSearch {
     if (this.revealAnimation) {
       this.#root.dataset.hawkReveal = this.revealAnimation;
       this.#root.style.setProperty('--hawk-reveal-duration', `${this.revealDuration}ms`);
+    }
+    if (this.resultsReveal) {
+      this.#root.dataset.hawkResultsReveal = this.resultsRevealDirection;
+      this.#root.style.setProperty('--hawk-results-stagger', `${this.resultsRevealStagger}ms`);
     }
     this.#applyParams();
     if (this.#tabsExplicit) {
@@ -945,7 +963,13 @@ export class HawkSearch {
     this.#filtersEl.innerHTML = tabs
       .map((tab) => {
         const isActive = tab.id === this.#currentTabId;
-        return `<button type="button" class="hawk-filter-pill${isActive ? ' active' : ''}" data-filter="${tab.id}" role="tab" aria-selected="${isActive}" aria-controls="${this.id}-results" tabindex="${isActive ? 0 : -1}">${tab.label}</button>`;
+        // Written as a CSS custom property, not a direct color, so hawk.css's own rules (active
+        // border/text/dot) decide *how* it's used — this just says *which* color. The attribute
+        // value itself still gets its own minimal escape (not the innerHTML-wide trust boundary
+        // config strings elsewhere rely on): a stray `"` in a dev-supplied color string would
+        // otherwise break out of the style="" attribute, unlike interpolating into text content.
+        const style = tab.accentColor ? ` style="--hawk-tab-accent: ${String(tab.accentColor).replace(/"/g, '&quot;')}"` : '';
+        return `<button type="button" class="hawk-filter-pill${isActive ? ' active' : ''}" data-filter="${tab.id}" role="tab" aria-selected="${isActive}" aria-controls="${this.id}-results" tabindex="${isActive ? 0 : -1}"${style}>${tab.label}</button>`;
       })
       .join('');
 
@@ -1124,8 +1148,12 @@ export class HawkSearch {
     this.#resultsEl.innerHTML = this.#matches
       .map((item, idx) => {
         const pinned = this.enablePins && this.#isPinned(item.url);
+        // Capped at 10 (not the raw index) so a long result list's staggered entrance has a
+        // bounded total duration instead of a growing tail — rows past the 10th all animate
+        // together at the 10th's delay rather than queuing further and further behind.
+        const revealIndex = Math.min(idx, 10);
         return `
-        <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}">
+        <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}" style="--hawk-row-index: ${revealIndex}">
           <div class="hawk-result-header">
             <span class="hawk-result-title">${item.isAnchor ? '&sect; ' : ''}${item.title}</span>
             ${item.meta?.section ? `<span class="hawk-meta-badge">${item.meta.section}</span>` : ''}

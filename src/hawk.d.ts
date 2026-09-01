@@ -52,6 +52,7 @@ export interface HawkTab {
   label: string;
   filter?: Record<string, string | string[]>;
   sort?: Record<string, 'asc' | 'desc'>;
+  accentColor?: string;
   pagefindOptions?: Record<string, unknown>;
   defaultPreviewUrl?: string;
   defaultPreviewTitle?: string;
@@ -124,6 +125,9 @@ export interface HawkSearchConfig {
   previewSectionExcerptLength?: number;
   revealAnimation?: 'fade' | 'scale-fade' | 'slide-down' | 'blur-zoom' | 'spring' | string | false;
   revealDuration?: number;
+  resultsReveal?: boolean;
+  resultsRevealDirection?: 'up' | 'down' | 'left' | 'right';
+  resultsRevealStagger?: number;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;
