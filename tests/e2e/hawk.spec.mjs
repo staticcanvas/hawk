@@ -40,7 +40,9 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(page.locator('.hawk-preview-content')).not.toHaveText('');
   });
 
-  test('ArrowDown/ArrowUp move the selection and Enter navigates to the selected result', async ({ page }) => {
+  test('ArrowDown/ArrowUp move the selection and Enter navigates to the selected result', async ({
+    page,
+  }) => {
     await page.locator('[data-search-trigger]').click();
     await page.locator('.hawk-modal-input').fill('guide');
     await expect(page.locator('.hawk-result-item').first()).toBeVisible();
@@ -54,7 +56,9 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(page).toHaveURL(new RegExp(targetHref.replace(/\/$/, '') + '/?$'));
   });
 
-  test('Tab focus is trapped inside the modal: Shift+Tab from the input wraps to the last stop', async ({ page }) => {
+  test('Tab focus is trapped inside the modal: Shift+Tab from the input wraps to the last stop', async ({
+    page,
+  }) => {
     await page.locator('[data-search-trigger]').click();
     const input = page.locator('.hawk-modal-input');
     await expect(input).toBeFocused();

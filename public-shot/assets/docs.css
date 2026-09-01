@@ -1,0 +1,615 @@
+/*!
+ * hawk docs site chrome — intentionally minimal (nav, header, footer, article layout). Color
+ * tokens reuse hawk's own --hawk-* custom properties (via hawk-theme-typeflow.css, loaded
+ * before this file in baseof.html) so the docs site and the search modal it dogfoods share one
+ * palette instead of maintaining two.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  color-scheme: dark;
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: var(--hawk-bg-canvas, #090d16);
+  color: var(--hawk-text-primary, #f1f5f9);
+  line-height: 1.6;
+}
+
+a {
+  color: var(--hawk-accent, #38bdf8);
+}
+
+.shell {
+  /* Full-bleed: no max-width, so the header/footer/hero background and homepage sections span
+     the real viewport instead of centering in a fixed column with empty gutters on a wide
+     monitor. Actual reading text still gets its own cap where it needs one (.doc-content, below)
+     rather than the whole page being capped — long prose lines hurt readability, a wide nav bar
+     or card grid doesn't. Padding grows in steps past 1440px instead of scaling continuously
+     (clamp()/vw), so it stays a deliberate, easy-to-reason-about value at each breakpoint rather
+     than an ever-changing one. */
+  padding: 0 1.5rem;
+}
+@media (min-width: 1440px) {
+  .shell {
+    padding: 0 3rem;
+  }
+}
+@media (min-width: 1920px) {
+  .shell {
+    padding: 0 5rem;
+  }
+}
+
+.site-header {
+  border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
+  position: sticky;
+  top: 0;
+  background: var(--hawk-bg-canvas, #090d16);
+  z-index: 10;
+}
+.header-inner {
+  /* 3-column grid, not flex: with flex, "centering" the search trigger only works when the brand
+     and header-right happen to be equal width, which they never are (brand is short; header-right
+     carries a nav and/or icon row). Two equal 1fr tracks flanking an auto-sized center track keep
+     the search trigger genuinely centered regardless of how lopsided the two sides are, since
+     each side aligns within its own equally-sized track (justify-self: start/end) rather than
+     pushing directly against the center content. */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1.25rem;
+  height: 60px;
+}
+.brand {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.brand-logo {
+  border-radius: 6px;
+  display: block;
+}
+
+.search-trigger-btn {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--hawk-bg-surface, #0f172a);
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 8px;
+  padding: 0.4rem 0.7rem;
+  color: var(--hawk-text-muted, #64748b);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.search-trigger-btn kbd {
+  font-size: 0.7rem;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+}
+
+.header-right {
+  /* The grid's 3rd column (.header-inner, above) — wraps header-nav (home page only) and
+     header-actions so the pair sits together as one right-aligned group. */
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.header-nav {
+  display: flex;
+  gap: 1rem;
+}
+.header-link {
+  text-decoration: none;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 0.9rem;
+}
+.header-link:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.icon-link,
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--hawk-text-muted, #64748b);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.icon-link:hover,
+.theme-toggle:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+  border-color: var(--hawk-border-default, #253347);
+  background: var(--hawk-bg-surface, #0f172a);
+}
+.theme-icon-moon {
+  display: none;
+}
+:root[data-theme='light'] .theme-icon-sun {
+  display: none;
+}
+:root[data-theme='light'] .theme-icon-moon {
+  display: block;
+}
+
+.page-shell {
+  padding-block: 2.5rem;
+  min-height: calc(100vh - 60px - 80px);
+}
+.page-shell--home {
+  padding-block: 0;
+}
+
+/* ── Homepage hero ─────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding-block: 4.5rem 4rem;
+  border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 900px 420px at 18% -10%, var(--hawk-accent-glow, rgba(56, 189, 248, 0.16)), transparent 60%),
+    radial-gradient(ellipse 800px 420px at 86% 8%, var(--hawk-accent-alt-glow, rgba(251, 146, 60, 0.14)), transparent 60%);
+}
+.hero-inner {
+  /* Shares .shell's own 1100px/margin:0 auto container (see index.html's class="shell
+     hero-inner") rather than adding a second, narrower max-width here — a max-width on this
+     element re-centers it inside .shell, pulling its left edge inward and out of alignment with
+     .feature-section/.guides-section below, which are .shell-only. Readable line length for the
+     tagline is handled locally, on .hero-tagline's own max-width, not by narrowing this whole
+     column. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.hero-logo {
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+.hero-eyebrow {
+  display: block;
+  color: var(--hawk-accent, #38bdf8);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  margin: 0 0 0.9rem;
+  background: linear-gradient(120deg, var(--hawk-text-primary, #f1f5f9) 55%, var(--hawk-accent, #38bdf8));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.hero-tagline {
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: var(--hawk-text-secondary, #94a3b8);
+  margin: 0 0 2rem;
+  max-width: 56ch;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: linear-gradient(120deg, var(--hawk-accent, #38bdf8), var(--hawk-accent-alt, #fb923c));
+  color: #0b1120;
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-secondary {
+  background: var(--hawk-bg-surface, #0f172a);
+  border-color: var(--hawk-border-default, #253347);
+  color: var(--hawk-text-primary, #f1f5f9);
+  font-weight: 500;
+}
+.btn-secondary:hover {
+  border-color: var(--hawk-accent, #38bdf8);
+}
+.btn-secondary kbd {
+  font-size: 0.72rem;
+  font-weight: 400;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  color: var(--hawk-text-muted, #64748b);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-weight: 500;
+  padding-inline: 0.5rem;
+}
+.btn-ghost:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+.hero-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--hawk-bg-surface, #0f172a);
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+}
+.hero-install-prompt {
+  color: var(--hawk-text-muted, #64748b);
+}
+.hero-install code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+/* ── Homepage feature grid ─────────────────────────────────── */
+.feature-section {
+  padding-block: 3.5rem;
+}
+.feature-section h2 {
+  font-size: 1.3rem;
+  margin: 0 0 1.25rem;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+.feature-card {
+  position: relative;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem;
+  overflow: hidden;
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--hawk-accent, #38bdf8), var(--hawk-accent-alt, #fb923c));
+  opacity: 0.7;
+}
+.feature-card h3 {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 1rem;
+}
+.feature-card p {
+  margin: 0;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+/* ── Homepage guides section ───────────────────────────────── */
+.guides-section {
+  padding-block: 1rem 4rem;
+}
+.guides-section h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.25rem;
+}
+.home-note {
+  padding-bottom: 3rem;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    padding-block: 3rem 2.5rem;
+  }
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  /* .header-inner's own content (brand + search-trigger-btn + header-actions' 3 icon buttons)
+     needs ~400px at natural size — more than a 375px phone's viewport has even before .shell's
+     own 1.5rem side padding, and nothing in the row was shrinking to compensate, so
+     .header-actions silently overflowed the viewport by a few px on every page. The "Ctrl+K"
+     hint is also genuinely meaningless on a touch device with no physical keyboard, so hiding it
+     here is a correctness fix for the content, not just a width hack — it reclaims ~60px, more
+     than the overflow's own ~27px. */
+  .search-trigger-btn kbd {
+    display: none;
+  }
+}
+
+.docs-layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2.5rem;
+  align-items: start;
+  /* .shell (its own ancestor) no longer caps width, so this needs its own — otherwise the sidebar
+     and TOC (each a fixed 200px grid track) would end up hundreds of px apart from the actual
+     article text on a wide monitor, with a large dead gap between text and TOC. Wider than the
+     old sitewide 1100px cap (more breathing room for the grid/TOC), while .doc-article below
+     keeps prose text itself narrower still — the two caps serve different things. */
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.doc-sidebar {
+  position: sticky;
+  top: 90px;
+  font-size: 0.88rem;
+}
+.sidebar-list,
+.sidebar-sublist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sidebar-item {
+  margin-bottom: 0.35rem;
+}
+.sidebar-item > a {
+  display: block;
+  padding: 0.3rem 0;
+  color: var(--hawk-text-secondary, #94a3b8);
+  text-decoration: none;
+  font-weight: 600;
+}
+.sidebar-item.is-active > a {
+  color: var(--hawk-accent, #38bdf8);
+}
+.sidebar-sublist {
+  border-left: 1px solid var(--hawk-border-subtle, #1e293b);
+  margin: 0.15rem 0 0.4rem 0.1rem;
+  padding-left: 0.85rem;
+}
+.sidebar-subitem > a {
+  display: block;
+  padding: 0.25rem 0;
+  color: var(--hawk-text-muted, #64748b);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+.sidebar-subitem > a:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.sidebar-subitem.is-active > a {
+  color: var(--hawk-accent, #38bdf8);
+}
+
+.doc-page {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 2.5rem;
+  min-width: 0;
+}
+.doc-page--no-toc {
+  grid-template-columns: 1fr;
+}
+.doc-article {
+  min-width: 0;
+  /* Reading-width cap for the prose itself — the chrome/grid around it (.shell, .docs-layout,
+     above) got wider or lost its cap entirely so the page uses a real wide viewport properly,
+     but paragraph text still shouldn't stretch to 100+ characters per line just because there's
+     room. Doesn't pinch code blocks/tables: those already scroll internally
+     (.doc-content pre/table's own overflow-x: auto) rather than reflowing, so a narrower
+     container just means they hit that scroll a little sooner, not that they lose content. */
+  max-width: 48rem;
+}
+.doc-eyebrow {
+  display: block;
+  color: var(--hawk-accent, #38bdf8);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+.doc-lead {
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 1.05rem;
+}
+.doc-content {
+  /* A single unbroken run of text (a long URL, or prose like "ArrowUp/ArrowDown/PageUp/PageDown/
+     Home/End" — a real example from this site's own density-and-navigation guide) has no space
+     or hyphen for the browser's default line-breaking to use, so it doesn't wrap at the narrow
+     article width a sidebar+TOC layout leaves on a phone-width viewport — it just overflows the
+     column instead, taking .doc-article's own scrollWidth (and therefore the whole page's) past
+     the viewport with it. overflow-wrap: break-word is the standard fallback: normal words still
+     break at normal points; only a token with no such point gets force-broken, as a last resort.
+     `/` doesn't count as a break opportunity in the CSS text-breaking model the way a space or
+     hyphen does, which is exactly why that guide's sentence needed this. */
+  overflow-wrap: break-word;
+}
+.doc-content pre {
+  background: var(--hawk-bg-surface, #0f172a);
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  border-radius: 8px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+.doc-content code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+.doc-content :not(pre) > code {
+  background: var(--hawk-bg-surface-elevated, #1e293b);
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+}
+.doc-content table {
+  /* display:block (not the default table/inline-table) turns the <table> itself into a plain
+     block-level scroll container — its descendants (thead/tbody/tr/td) keep their own default
+     table-* display values, so internal column layout is unaffected. Needed because width: 100%
+     alone is only ever a *preferred* width under the default table-layout: auto — a cell with a
+     long unbroken token (a `code`-spanned union type, a long URL) still forces the table to its
+     content's real minimum width regardless of that 100%, overflowing this ~570px article column
+     by 300-400px and visually running past .doc-toc / off the page (confirmed via Playwright: a
+     4-column option/type/default/description reference table rendered ~920px wide here). A Hugo
+     render-hook wrapper div would be the more conventional fix, but table render hooks aren't
+     supported until Hugo v0.134 — this project's Hugo build is v0.131. table-layout: fixed was
+     the other CSS-only option; skipped because without per-column width hints (markdown tables
+     don't have any) it forces every column to the same width, which reads worse for this specific
+     4-column shape than a horizontal scrollbar on the rare row that needs one. */
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  width: 100%;
+}
+.doc-content th,
+.doc-content td {
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  padding: 0.5rem 0.7rem;
+  text-align: left;
+}
+
+.doc-toc {
+  position: sticky;
+  top: 90px;
+  align-self: start;
+  font-size: 0.85rem;
+}
+.toc-title {
+  display: block;
+  color: var(--hawk-text-muted, #64748b);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.guide-card {
+  display: block;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 10px;
+  padding: 1rem;
+  text-decoration: none;
+  color: inherit;
+}
+.guide-card:hover {
+  border-color: var(--hawk-accent, #38bdf8);
+}
+.guide-card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+}
+.guide-card p {
+  margin: 0;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 0.85rem;
+}
+
+.callout {
+  border: 1px solid var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
+  background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+}
+
+.site-footer {
+  border-top: 1px solid var(--hawk-border-subtle, #1e293b);
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.85rem;
+  padding-block: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .doc-page {
+    grid-template-columns: 1fr;
+  }
+  .doc-toc {
+    display: none;
+  }
+  .header-nav {
+    display: none;
+  }
+  .docs-layout {
+    grid-template-columns: 1fr;
+  }
+  .doc-sidebar {
+    position: static;
+    border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
+    padding-bottom: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+  .sidebar-sublist {
+    display: none;
+  }
+}
+
+/* ── Scroll-reveal (IntersectionObserver, see baseof.html) ────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal-group] > [data-reveal]:nth-child(2) { transition-delay: 0.06s; }
+[data-reveal-group] > [data-reveal]:nth-child(3) { transition-delay: 0.12s; }
+[data-reveal-group] > [data-reveal]:nth-child(4) { transition-delay: 0.18s; }
+[data-reveal-group] > [data-reveal]:nth-child(5) { transition-delay: 0.24s; }
+[data-reveal-group] > [data-reveal]:nth-child(6) { transition-delay: 0.3s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

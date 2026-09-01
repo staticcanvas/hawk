@@ -1,0 +1,59 @@
+/*!
+ * hawk-theme-typeflow.css — default theme, ported from typeflow's docs site tokens
+ * (docs/static/assets/docs.css:23-81). Scoped under [data-hawk-theme="typeflow"] so multiple
+ * themes can coexist in the same page without clobbering each other.
+ *
+ * Two bugs from the original are fixed here rather than reproduced:
+ *  1. --hawk-text-secondary now has a real dark-mode default. In docs.css, --tf-text-secondary
+ *     was only ever defined under [data-theme="light"] — in dark mode it silently fell back to
+ *     inherited color everywhere it was used (search result descriptions, preview content).
+ *  2. Brand accent colors are read from tokens everywhere. docs.css hardcoded #ff6b2b/#38bdf8
+ *     (and their light equivalents) directly in several .search-* rules instead of using
+ *     --tf-accent-orange/--tf-accent, so a theme swap there couldn't fully recolor the UI. Here
+ *     hawk.css only ever reads --hawk-accent/--hawk-accent-alt, so this file is the single
+ *     source of truth for color.
+ */
+
+[data-hawk-theme='typeflow'] {
+  --hawk-bg-canvas: #090d16;
+  --hawk-bg-surface: #0f172a;
+  --hawk-bg-surface-elevated: #1e293b;
+  --hawk-border-subtle: #1e293b;
+  --hawk-border-default: #253347;
+  --hawk-border-strong: #334155;
+  --hawk-text-primary: #f1f5f9;
+  --hawk-text-secondary: #94a3b8;
+  --hawk-text-muted: #64748b;
+  --hawk-accent: #38bdf8;
+  --hawk-accent-dim: rgba(56, 189, 248, 0.12);
+  --hawk-accent-glow: rgba(56, 189, 248, 0.25);
+  --hawk-accent-alt: #fb923c;
+  --hawk-accent-alt-dim: rgba(251, 146, 60, 0.12);
+  --hawk-accent-alt-glow: rgba(251, 146, 60, 0.25);
+  --hawk-backdrop: rgba(9, 13, 22, 0.8);
+  --hawk-preview-bg: rgba(9, 13, 22, 0.65);
+  --hawk-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--hawk-accent-dim);
+  --hawk-radius: 14px;
+}
+
+[data-hawk-theme='typeflow'][data-theme='light'],
+[data-theme='light'] [data-hawk-theme='typeflow'] {
+  --hawk-bg-canvas: #f8fafc;
+  --hawk-bg-surface: #ffffff;
+  --hawk-bg-surface-elevated: #f1f5f9;
+  --hawk-border-subtle: #e2e8f0;
+  --hawk-border-default: #cbd5e1;
+  --hawk-border-strong: #94a3b8;
+  --hawk-text-primary: #0f172a;
+  --hawk-text-secondary: #475569;
+  --hawk-text-muted: #94a3b8;
+  --hawk-accent: #0284c7;
+  --hawk-accent-dim: rgba(2, 132, 199, 0.1);
+  --hawk-accent-glow: rgba(2, 132, 199, 0.2);
+  --hawk-accent-alt: #ea580c;
+  --hawk-accent-alt-dim: rgba(234, 88, 12, 0.1);
+  --hawk-accent-alt-glow: rgba(234, 88, 12, 0.2);
+  --hawk-backdrop: rgba(15, 23, 42, 0.35);
+  --hawk-preview-bg: rgba(241, 245, 249, 0.75);
+  --hawk-shadow: 0 24px 64px rgba(15, 23, 42, 0.18), 0 0 0 1px var(--hawk-accent-dim);
+}

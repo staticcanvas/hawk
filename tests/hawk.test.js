@@ -50,7 +50,9 @@ describe('plugin registries', () => {
   });
 
   it('throws for an unregistered theme name', () => {
-    expect(() => new HawkSearch({ pagefind: mockPagefind(), theme: 'does-not-exist' })).toThrow(/no theme registered/);
+    expect(() => new HawkSearch({ pagefind: mockPagefind(), theme: 'does-not-exist' })).toThrow(
+      /no theme registered/
+    );
   });
 
   it('throws for an unregistered animation name', () => {
@@ -108,14 +110,23 @@ describe('density', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });
     const root = document.getElementById(hawk.id);
     expect(root.dataset.hawkDensity).toBe('medium');
-    const buttons = Array.from(document.querySelectorAll('.hawk-density-btn')).map((b) => b.dataset.density);
+    const buttons = Array.from(document.querySelectorAll('.hawk-density-btn')).map(
+      (b) => b.dataset.density
+    );
     expect(buttons).toEqual(['fit', 'medium', 'compact']);
-    expect(document.querySelector('.hawk-density-btn[data-density="medium"]').classList.contains('active')).toBe(true);
+    expect(
+      document
+        .querySelector('.hawk-density-btn[data-density="medium"]')
+        .classList.contains('active')
+    ).toBe(true);
     hawk.destroy();
   });
 
   it('omits the toggle when allowDensityToggle is false', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), params: { allowDensityToggle: false } });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      params: { allowDensityToggle: false },
+    });
     expect(document.querySelectorAll('.hawk-density-btn')).toHaveLength(0);
     hawk.destroy();
   });
@@ -126,7 +137,11 @@ describe('density', () => {
     document.querySelector('.hawk-density-btn[data-density="compact"]').click();
     expect(root.dataset.hawkDensity).toBe('compact');
     expect(hawk.params.density).toBe('compact');
-    expect(document.querySelector('.hawk-density-btn[data-density="compact"]').classList.contains('active')).toBe(true);
+    expect(
+      document
+        .querySelector('.hawk-density-btn[data-density="compact"]')
+        .classList.contains('active')
+    ).toBe(true);
     expect(localStorage.getItem('hawk:density')).toBe('compact');
     hawk.destroy();
   });
@@ -148,7 +163,9 @@ describe('category derivation', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind() });
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['all', 'Guides', 'Reference']);
     hawk.destroy();
   });
@@ -159,7 +176,9 @@ describe('category derivation', () => {
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(pagefind.filters).not.toHaveBeenCalled();
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['all', 'Custom']);
     hawk.destroy();
   });
@@ -170,9 +189,14 @@ describe('explicit tabs config', () => {
     const pagefind = mockPagefind();
     const hawk = new HawkSearch({
       pagefind,
-      tabs: [{ label: 'Guides', filter: { category: 'Guides' } }, { id: 'ref', label: 'Reference' }],
+      tabs: [
+        { label: 'Guides', filter: { category: 'Guides' } },
+        { id: 'ref', label: 'Reference' },
+      ],
     });
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['all', 'guides', 'ref']);
     expect(pagefind.filters).not.toHaveBeenCalled();
     hawk.destroy();
@@ -184,7 +208,9 @@ describe('explicit tabs config', () => {
       tabs: [{ label: 'Guides' }],
       includeAllTab: false,
     });
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['guides']);
     hawk.destroy();
   });
@@ -205,7 +231,10 @@ describe('explicit tabs config', () => {
     input.value = 'x';
     input.dispatchEvent(new Event('input'));
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('x', expect.objectContaining({ filters: { category: 'Guides' } }));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'x',
+      expect.objectContaining({ filters: { category: 'Guides' } })
+    );
     hawk.destroy();
   });
 
@@ -226,7 +255,13 @@ describe('explicit tabs config', () => {
     const pagefind = mockPagefind();
     const hawk = new HawkSearch({
       pagefind,
-      tabs: [{ id: 'multi', label: 'Multi', filter: { category: ['Guides', 'Reference'], version: '2.x' } }],
+      tabs: [
+        {
+          id: 'multi',
+          label: 'Multi',
+          filter: { category: ['Guides', 'Reference'], version: '2.x' },
+        },
+      ],
       defaultTab: 'multi',
     });
     hawk.open();
@@ -251,7 +286,10 @@ describe('pagefindOptions passthrough', () => {
     input.value = 'x';
     input.dispatchEvent(new Event('input'));
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('x', expect.objectContaining({ sort: { date: 'desc' } }));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'x',
+      expect.objectContaining({ sort: { date: 'desc' } })
+    );
     hawk.destroy();
   });
 
@@ -268,7 +306,10 @@ describe('pagefindOptions passthrough', () => {
     input.value = 'x';
     input.dispatchEvent(new Event('input'));
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('x', expect.objectContaining({ sort: { title: 'asc' } }));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'x',
+      expect.objectContaining({ sort: { title: 'asc' } })
+    );
     hawk.destroy();
   });
 });
@@ -278,7 +319,9 @@ describe('categories shorthand still expands to tabs', () => {
     const pagefind = mockPagefind();
     const hawk = new HawkSearch({ pagefind, categories: ['Custom'] });
     expect(pagefind.filters).not.toHaveBeenCalled();
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['all', 'Custom']);
     hawk.destroy();
   });
@@ -290,7 +333,14 @@ describe('initial popup state', () => {
   it('eagerResults (default true) populates the results pane as soon as Pagefind loads, with no query typed', async () => {
     const pagefind = mockPagefind({
       search: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Landing' }, url: '/landing/', excerpt: 'landing excerpt', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Landing' },
+            url: '/landing/',
+            excerpt: 'landing excerpt',
+            sub_results: [],
+          }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind });
@@ -314,7 +364,10 @@ describe('initial popup state', () => {
 
   it('defaultPreviewUrl renders on mount, before Pagefind loads or any selection exists', async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><h2>Welcome</h2><p>overview text</p></main>')),
+      text: () =>
+        Promise.resolve(
+          htmlPage('<main data-pagefind-body><h2>Welcome</h2><p>overview text</p></main>')
+        ),
     });
     const hawk = new HawkSearch({
       pagefind: mockPagefind(),
@@ -332,14 +385,26 @@ describe('initial popup state', () => {
 
   it('a real result replaces the default preview once eagerResults populates matches', async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>real result content</p></main>')),
+      text: () =>
+        Promise.resolve(htmlPage('<main data-pagefind-body><p>real result content</p></main>')),
     });
     const pagefind = mockPagefind({
       search: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Real' }, url: '/real/', excerpt: 'real excerpt', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Real' },
+            url: '/real/',
+            excerpt: 'real excerpt',
+            sub_results: [],
+          }),
+        ],
       }),
     });
-    const hawk = new HawkSearch({ pagefind, defaultPreviewUrl: '/default/', defaultPreviewTitle: 'Default' });
+    const hawk = new HawkSearch({
+      pagefind,
+      defaultPreviewUrl: '/default/',
+      defaultPreviewTitle: 'Default',
+    });
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
     const content = document.querySelector('.hawk-preview-content');
@@ -354,7 +419,12 @@ describe('search results and keyboard navigation', () => {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
         results: [
-          resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first <mark>match</mark>', sub_results: [] }),
+          resultFor({
+            meta: { title: 'Page One' },
+            url: '/one/',
+            excerpt: 'first <mark>match</mark>',
+            sub_results: [],
+          }),
           resultFor({
             meta: { title: 'Page Two' },
             url: '/two/',
@@ -402,8 +472,18 @@ describe('two-pane keyboard navigation', () => {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
         results: [
-          resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] }),
-          resultFor({ meta: { title: 'Page Two' }, url: '/two/', excerpt: 'second match', sub_results: [] }),
+          resultFor({
+            meta: { title: 'Page One' },
+            url: '/one/',
+            excerpt: 'first match',
+            sub_results: [],
+          }),
+          resultFor({
+            meta: { title: 'Page Two' },
+            url: '/two/',
+            excerpt: 'second match',
+            sub_results: [],
+          }),
         ],
       }),
     });
@@ -477,7 +557,14 @@ describe('focus trap', () => {
   async function hawkWithResults(config = {}) {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'match', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Page One' },
+            url: '/one/',
+            excerpt: 'match',
+            sub_results: [],
+          }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind, ...config });
@@ -494,7 +581,9 @@ describe('focus trap', () => {
     const input = document.querySelector('.hawk-modal-input');
     const previewPane = document.querySelector('.hawk-preview-pane'); // last stop: medium density, a result is selected
     previewPane.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+    );
     expect(document.activeElement).toBe(input);
     hawk.destroy();
   });
@@ -504,7 +593,9 @@ describe('focus trap', () => {
     const input = document.querySelector('.hawk-modal-input');
     const previewPane = document.querySelector('.hawk-preview-pane');
     input.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true })
+    );
     expect(document.activeElement).toBe(previewPane);
     hawk.destroy();
   });
@@ -515,7 +606,9 @@ describe('focus trap', () => {
     const outside = document.createElement('button');
     document.body.appendChild(outside);
     outside.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+    );
     expect(document.activeElement).toBe(outside);
     outside.remove();
     hawk.destroy();
@@ -527,11 +620,15 @@ describe('focus trap', () => {
     const resultsPane = document.querySelector('.hawk-results-pane');
     // Last reachable stop is the results pane (preview pane hidden/unreached in compact density).
     resultsPane.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true })
+    );
     expect(document.activeElement).toBe(input);
 
     input.focus();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true })
+    );
     expect(document.activeElement).toBe(resultsPane);
     hawk.destroy();
   });
@@ -633,10 +730,14 @@ describe('category tabs (keyboard + ARIA)', () => {
     expect(document.activeElement.getAttribute('aria-selected')).toBe('true');
     expect(pills[0].tabIndex).toBe(-1);
 
-    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    document.activeElement.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })
+    );
     expect(document.activeElement.dataset.filter).toBe('all');
 
-    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+    document.activeElement.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true })
+    );
     expect(document.activeElement.dataset.filter).toBe('Reference');
 
     hawk.destroy();
@@ -651,7 +752,9 @@ describe('category tabs (keyboard + ARIA)', () => {
     pills[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
     expect(document.activeElement.dataset.filter).toBe('Reference');
 
-    document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }));
+    document.activeElement.dispatchEvent(
+      new KeyboardEvent('keydown', { key: 'Home', bubbles: true })
+    );
     expect(document.activeElement.dataset.filter).toBe('all');
 
     hawk.destroy();
@@ -673,7 +776,14 @@ describe('rich preview content', () => {
     });
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Getting started' }, url: '/getting-started/', excerpt: 'excerpt', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Getting started' },
+            url: '/getting-started/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind });
@@ -727,7 +837,9 @@ describe('rich preview content', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     // Row 0 is the page itself, row 1 is the "Second" sub_result.
-    document.querySelectorAll('.hawk-result-item')[1].dispatchEvent(new Event('mouseenter', { bubbles: true }));
+    document
+      .querySelectorAll('.hawk-result-item')[1]
+      .dispatchEvent(new Event('mouseenter', { bubbles: true }));
 
     const content = document.querySelector('.hawk-preview-content');
     await vi.waitFor(() => expect(content.innerHTML).toContain('second section'));
@@ -742,7 +854,14 @@ describe('rich preview content', () => {
     // beforeEach's default fetch mock already rejects.
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Offline Page' }, url: '/offline/', excerpt: 'the excerpt text', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Offline Page' },
+            url: '/offline/',
+            excerpt: 'the excerpt text',
+            sub_results: [],
+          }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind });

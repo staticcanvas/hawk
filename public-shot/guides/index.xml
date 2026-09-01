@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Guides on Hawk documentation</title>
+    <link>http://localhost:4175/public-shot/guides/</link>
+    <description>Recent content in Guides on Hawk documentation</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <atom:link href="http://localhost:4175/public-shot/guides/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Animation Plugins</title>
+      <link>http://localhost:4175/public-shot/guides/animation-plugins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/animation-plugins/</guid>
+      <description>The contract An animation driver controls how the preview pane&amp;rsquo;s title/content reveal, and how an optional header placeholder rotates:&#xA;interface HawkAnimationDriver { typeTitle(el, text, options?: { isAnchor?: boolean }): unknown; typeContent(el, html, options?): unknown; rotatePlaceholder(el, strings, options?): unknown; stop(controller): void; } typeTitle/typeContent/rotatePlaceholder may return a controller (anything with whatever shape the driver itself understands) or null. Hawk never inspects it — it only ever passes it back into stop(), which runs before every preview re-render and on destroy().</description>
+    </item>
+    <item>
+      <title>Density and keyboard navigation</title>
+      <link>http://localhost:4175/public-shot/guides/density-and-navigation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/density-and-navigation/</guid>
+      <description>Density modes params.density picks between three sizing presets:&#xA;new HawkSearch({ index: &amp;#39;/pagefind/&amp;#39;, params: { density: &amp;#39;fit&amp;#39; }, // &amp;#39;fit&amp;#39; | &amp;#39;medium&amp;#39; (default) | &amp;#39;compact&amp;#39; }); medium — the default sizing (unchanged from before density existed): a fixed-size dialog, 2 columns. fit — a near-viewport dialog (96vw / 92vh), for a dedicated &amp;ldquo;search page&amp;rdquo; feel. compact — a smaller dialog, forced to a single column with the preview pane hidden by default — see Reaching the preview pane in compact layouts.</description>
+    </item>
+    <item>
+      <title>Pagefind Setup</title>
+      <link>http://localhost:4175/public-shot/guides/pagefind-setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/pagefind-setup/</guid>
+      <description>Scope the index before you run it Pagefind indexes whatever it finds in &amp;lt;body&amp;gt; by default. Without scoping, every result gets polluted with your repeated nav/header/footer text, and broad queries surface pages that only matched on chrome, not content. This one step is the difference between a good and a bad hawk setup:&#xA;&amp;lt;body&amp;gt; &amp;lt;header data-pagefind-ignore&amp;gt;...&amp;lt;/header&amp;gt; &amp;lt;main data-pagefind-body&amp;gt; &amp;lt;!-- your actual page content --&amp;gt; &amp;lt;/main&amp;gt; &amp;lt;footer data-pagefind-ignore&amp;gt;...&amp;lt;/footer&amp;gt; &amp;lt;/body&amp;gt; Once at least one element on the site carries data-pagefind-body, Pagefind switches to &amp;ldquo;ignore everything outside marked regions&amp;rdquo; mode automatically.</description>
+    </item>
+    <item>
+      <title>Pins, the built-in trigger, and attribution</title>
+      <link>http://localhost:4175/public-shot/guides/pins-and-embedding/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/pins-and-embedding/</guid>
+      <description>Pins A pin toggle renders on every result row by default (enablePins: true) — clicking it doesn&amp;rsquo;t navigate or trigger onSelect, just pins the result:&#xA;new HawkSearch({ index: &amp;#39;/pagefind/&amp;#39;, enablePins: true, // default pinStorageKey: &amp;#39;hawk:pins&amp;#39;, maxPins: 20, }); Pins persist to localStorage as {url, title, isAnchor}[]. The moment at least one exists, a synthetic &amp;ldquo;Pinned&amp;rdquo; tab is prepended to the tab list — selecting it lists pins directly with no Pagefind call (they already carry their own title/url), and clears any typed query, since it isn&amp;rsquo;t a search scope.</description>
+    </item>
+    <item>
+      <title>Theming</title>
+      <link>http://localhost:4175/public-shot/guides/theming/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/theming/</guid>
+      <description>The contract A theme is two things: a CSS file that defines --hawk-* custom properties scoped under [data-hawk-theme=&amp;quot;&amp;lt;name&amp;gt;&amp;quot;], and a small plugin object:&#xA;{ name: &amp;#39;my-theme&amp;#39;, apply(rootEl) { rootEl.dataset.hawkTheme = &amp;#39;my-theme&amp;#39;; }, } apply() runs once when HawkSearch mounts. It doesn&amp;rsquo;t inject the stylesheet — loading the CSS is the consumer&amp;rsquo;s job, via a &amp;lt;link&amp;gt; tag or import &#39;@staticcanvas/hawk/theme-typeflow/css&#39;.&#xA;Token list hawk.css (structural, ships with core) reads every color through a --hawk-* custom property with a neutral fallback, so hawk renders — unstyled but usable — with zero theme loaded.</description>
+    </item>
+  </channel>
+</rss>

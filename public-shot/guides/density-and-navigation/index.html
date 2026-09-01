@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('hawk-docs:theme');
+          var theme =
+            stored || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          if (theme === 'light') document.documentElement.dataset.theme = 'light';
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Density and keyboard navigation · Hawk documentation</title>
+    <meta
+      name="description"
+      content="Fit/medium/compact density modes, two-pane keyboard navigation, and initial popup state."
+    />
+    <link rel="icon" href="/public-shot/assets/branding/hawk-logo.svg" />
+    <link rel="stylesheet" href="/public-shot/webutil/libs/hawk.css" />
+    <link rel="stylesheet" href="/public-shot/webutil/libs/hawk-theme-typeflow.css" />
+    <link rel="stylesheet" href="/public-shot/assets/docs.css" />
+  </head>
+  <body data-hawk-index="/public-shot/pagefind/" data-hawk-theme="typeflow">
+    <header class="site-header" data-pagefind-ignore>
+      <div class="shell header-inner">
+        <a class="brand" href="/public-shot/" aria-label="hawk home">
+          <img
+            class="brand-logo"
+            src="/public-shot/assets/branding/hawk-logo.svg"
+            alt=""
+            width="24"
+            height="24"
+          />
+          <span class="brand-text">hawk</span>
+        </a>
+
+        <button
+          class="search-trigger-btn"
+          type="button"
+          data-search-trigger
+          aria-label="Search documentation (Ctrl+K)"
+        >
+          <span>Search docs...</span>
+          <kbd>Ctrl+K</kbd>
+        </button>
+
+        <div class="header-right">
+          <div class="header-actions">
+            <a
+              class="icon-link"
+              href="https://gitlab.com/staticcanvas/hawk"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Hawk on GitLab"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z"
+                  transform="translate(0 2)"
+                />
+              </svg>
+            </a>
+            <a
+              class="icon-link"
+              href="https://github.com/staticcanvas/hawk"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Hawk on GitHub"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2a10 10 0 0 0-3.16 19.49c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.64-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.1.39-2 1.03-2.7-.1-.25-.45-1.26.1-2.62 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.9-1.3 2.75-1.02 2.75-1.02.55 1.36.2 2.37.1 2.62.64.7 1.03 1.6 1.03 2.7 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"
+                />
+              </svg>
+            </a>
+            <button
+              class="theme-toggle"
+              type="button"
+              aria-label="Toggle light/dark theme"
+              aria-pressed="false"
+            >
+              <svg
+                class="theme-icon theme-icon-sun"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4.5" />
+                <path
+                  d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <svg
+                class="theme-icon theme-icon-moon"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell page-shell" data-pagefind-body>
+      <div class="docs-layout">
+        <nav class="doc-sidebar" aria-label="Documentation sections" data-pagefind-ignore>
+          <ul class="sidebar-list">
+            <li class="sidebar-item">
+              <a href="/public-shot/">Overview</a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/getting-started/">Get started</a>
+            </li>
+
+            <li class="sidebar-item is-active">
+              <a href="/public-shot/guides/">Guides</a>
+
+              <ul class="sidebar-sublist">
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/theming/">Theming</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/animation-plugins/">Animation Plugins</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/pagefind-setup/">Pagefind Setup</a>
+                </li>
+
+                <li class="sidebar-subitem is-active">
+                  <a href="/public-shot/guides/density-and-navigation/"
+                    >Density and keyboard navigation</a
+                  >
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/pins-and-embedding/"
+                    >Pins, the built-in trigger, and attribution</a
+                  >
+                </li>
+              </ul>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/api/">API reference</a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/">Resources</a>
+
+              <ul class="sidebar-sublist">
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/downloads/">Downloads</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/changelog/">Changelog</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="docs-main">
+          <div class="doc-page">
+            <article class="doc-article">
+              <span hidden data-pagefind-filter="category:Guides"></span>
+
+              <span hidden data-pagefind-sort="date">2026-08-30</span>
+              <header class="doc-header">
+                <span class="doc-eyebrow">Guide</span>
+                <h1>Density and keyboard navigation</h1>
+                <p class="doc-lead">
+                  Fit/medium/compact density modes, two-pane keyboard navigation, and initial popup
+                  state.
+                </p>
+              </header>
+
+              <div class="doc-content">
+                <h2 id="density-modes">Density modes</h2>
+                <p><code>params.density</code> picks between three sizing presets:</p>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#ff7b72">new</span> HawkSearch({
+</span></span><span style="display:flex;"><span>  index<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;/pagefind/&#39;</span>,
+</span></span><span style="display:flex;"><span>  params<span style="color:#ff7b72;font-weight:bold">:</span> { density<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;fit&#39;</span> }, <span style="color:#8b949e;font-style:italic">// &#39;fit&#39; | &#39;medium&#39; (default) | &#39;compact&#39;
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>});
+</span></span></code></pre>
+                </div>
+                <ul>
+                  <li>
+                    <code>medium</code> — the default sizing (unchanged from before density
+                    existed): a fixed-size dialog, 2 columns.
+                  </li>
+                  <li>
+                    <code>fit</code> — a near-viewport dialog (<code>96vw</code> /
+                    <code>92vh</code>), for a dedicated &ldquo;search page&rdquo; feel.
+                  </li>
+                  <li>
+                    <code>compact</code> — a smaller dialog, forced to a single column with the
+                    preview pane hidden by default — see
+                    <a href="#reaching-the-preview-pane-in-compact-layouts"
+                      >Reaching the preview pane in compact layouts</a
+                    >.
+                  </li>
+                </ul>
+                <p>
+                  Density composes with the existing <code>breakpoint</code>: whichever forces
+                  single-column wins, so a <code>fit</code>/<code>medium</code> dialog still
+                  degrades gracefully on narrow viewports even without <code>compact</code>.
+                </p>
+                <h3 id="the-in-modal-switcher">The in-modal switcher</h3>
+                <p>
+                  By default (<code>params.allowDensityToggle: true</code>) hawk renders a
+                  Fit/Medium/Compact button group in the modal header, calling
+                  <code>search.setParams({ density })</code> internally. The visitor&rsquo;s last
+                  choice persists to <code>localStorage</code> (<code>hawk:density</code>) and is
+                  read back on the next construction — unless <code>config.params.density</code> is
+                  set explicitly, which always wins over a stored preference. Set
+                  <code>allowDensityToggle: false</code> to fix density via config only and hide the
+                  switcher.
+                </p>
+                <h2 id="two-pane-keyboard-navigation">Two-pane keyboard navigation</h2>
+                <p>
+                  The modal&rsquo;s Tab order is: search input → filter tabs → results pane →
+                  preview pane → close. Both panes are real focus stops
+                  (<code>tabindex=&quot;0&quot;</code>), so this is reachable from a plain keyboard,
+                  not just the mouse:
+                </p>
+                <ul>
+                  <li>
+                    <strong>Input focused (default):</strong> ArrowUp/ArrowDown move the selection,
+                    wrapping around; Enter navigates to the selected result.
+                  </li>
+                  <li>
+                    <strong>Results pane focused:</strong> identical ArrowUp/ArrowDown/Enter
+                    behavior. Typing any printable character refocuses the input and forwards the
+                    keystroke, so you can resume typing without an extra click.
+                  </li>
+                  <li>
+                    <strong>Preview pane focused:</strong>
+                    ArrowUp/ArrowDown/PageUp/PageDown/Home/End scroll its content instead of
+                    changing selection.
+                  </li>
+                </ul>
+                <p>
+                  The results pane exposes the current selection via
+                  <code>aria-activedescendant</code> rather than making every result individually
+                  tabbable (the correct pattern for its <code>role=&quot;listbox&quot;</code>), so
+                  pressing Tab moves from &ldquo;the list&rdquo; to &ldquo;the preview&rdquo; in one
+                  step regardless of how many results are showing.
+                </p>
+                <h3 id="reaching-the-preview-pane-in-compact-layouts">
+                  Reaching the preview pane in compact layouts
+                </h3>
+                <p>
+                  In <code>compact</code> density (or below <code>breakpoint</code>), only one
+                  column is shown and the preview pane is hidden by default — there&rsquo;s nowhere
+                  to put it next to the results. Tabbing into the preview pane reveals it in place
+                  of the results pane (<code>[data-hawk-show-preview]</code>); tabbing or clicking
+                  away hides it again. This is the only way to reach the preview in a single-column
+                  layout — there&rsquo;s no separate &ldquo;view result&rdquo; button.
+                </p>
+                <h3 id="scrollbars">Scrollbars</h3>
+                <p>
+                  The results pane, preview pane, and filter strip all get a themed scrollbar (thin,
+                  low-opacity at rest, brightening on hover <em>or</em> while actively scrolling —
+                  see <a href="/public-shot/guides/theming/#token-list">Theming — token list</a> for
+                  <code>--hawk-scrollbar-thumb</code>/<code>-active</code>). The scroll trigger
+                  fires on a <code>scroll</code> event regardless of cause, so keyboard-driven
+                  scrolling (arrow keys in the preview pane) lights it up the same as a mouse wheel,
+                  fading back to idle ~500ms after the last scroll. Both the hover and scroll
+                  triggers are Blink/WebKit-only (<code>::-webkit-scrollbar-thumb</code>) — the
+                  standards-track <code>scrollbar-color</code> property Firefox uses doesn&rsquo;t
+                  support a separate hover/active state, so there the thumb stays at its idle color
+                  throughout.
+                </p>
+                <h2 id="initial-popup-state">Initial popup state</h2>
+                <p>
+                  Three config keys shape what the modal shows the instant it opens, before the
+                  visitor has typed or clicked anything:
+                </p>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#ff7b72">new</span> HawkSearch({
+</span></span><span style="display:flex;"><span>  index<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;/pagefind/&#39;</span>,
+</span></span><span style="display:flex;"><span>  defaultTab<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;guides&#39;</span>, <span style="color:#8b949e;font-style:italic">// active tab on open — see the API reference&#39;s Tabs section
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>  defaultPreviewUrl<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;/getting-started/&#39;</span>,
+</span></span><span style="display:flex;"><span>  defaultPreviewTitle<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;Getting started&#39;</span>,
+</span></span><span style="display:flex;"><span>  eagerResults<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#79c0ff">true</span>, <span style="color:#8b949e;font-style:italic">// default — set false to keep the results pane empty until the visitor types
+</span></span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"></span>});
+</span></span></code></pre>
+                </div>
+                <ul>
+                  <li>
+                    <strong><code>defaultPreviewUrl</code></strong> shows a specific page&rsquo;s
+                    content in the preview pane as soon as the modal mounts — before Pagefind even
+                    loads, let alone before anything is selected. It uses the same fetch/extract
+                    path a real selection uses (<a href="/public-shot/api/#rich-preview-content"
+                      >Rich preview content</a
+                    >), so it&rsquo;s real rendered page content. A real result — from a click, a
+                    keyboard selection, or an <code>eagerResults</code> listing — replaces it
+                    automatically.
+                  </li>
+                  <li>
+                    <strong><code>eagerResults</code></strong> (default <code>true</code>) runs an
+                    empty-query search as soon as Pagefind loads, so the results pane shows a
+                    default listing instead of &ldquo;Type to search&rdquo;. This is a behavior
+                    change from hawk&rsquo;s very first releases, where the results pane stayed
+                    empty until the first keystroke — set <code>eagerResults: false</code> to keep
+                    that behavior.
+                  </li>
+                  <li>
+                    <strong><code>defaultTab</code></strong> is documented in
+                    <a href="/public-shot/api/#tabs">API reference — Tabs</a>; it also determines
+                    which tab&rsquo;s <code>filter</code> scopes the
+                    <code>eagerResults</code> listing.
+                  </li>
+                </ul>
+              </div>
+            </article>
+
+            <aside class="doc-toc" aria-label="On this page">
+              <span class="toc-title">On this page</span>
+              <nav id="TableOfContents">
+                <ul>
+                  <li>
+                    <a href="#density-modes">Density modes</a>
+                    <ul>
+                      <li><a href="#the-in-modal-switcher">The in-modal switcher</a></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="#two-pane-keyboard-navigation">Two-pane keyboard navigation</a>
+                    <ul>
+                      <li>
+                        <a href="#reaching-the-preview-pane-in-compact-layouts"
+                          >Reaching the preview pane in compact layouts</a
+                        >
+                      </li>
+                      <li><a href="#scrollbars">Scrollbars</a></li>
+                    </ul>
+                  </li>
+                  <li><a href="#initial-popup-state">Initial popup state</a></li>
+                </ul>
+              </nav>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer" data-pagefind-ignore>
+      <div class="shell">
+        <p>
+          Hawk ·
+          <a href="https://gitlab.com/staticcanvas/hawk" target="_blank" rel="noreferrer">GitLab</a>
+          ·
+          <a href="https://github.com/staticcanvas/hawk" target="_blank" rel="noreferrer">GitHub</a>
+          · MIT
+        </p>
+      </div>
+    </footer>
+
+    <script type="module">
+      import { HawkSearch } from '\/public-shot\/webutil\/libs\/hawk.mjs';
+      import { HawkThemeTypeflow } from '\/public-shot\/webutil\/libs\/hawk-theme-typeflow.mjs';
+
+      HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+
+      const categories = ['Guides', 'Reference', 'Resources'];
+      const categoryDefaults = {
+        Guides: { title: 'Guides', url: '/public-shot/guides/' },
+        Reference: { title: 'API reference', url: '/public-shot/api/' },
+        Resources: { title: 'Changelog', url: '/public-shot/changelog/' },
+      };
+
+      const accentColors = { Guides: '#38bdf8', Reference: '#a78bfa', Resources: '#fb923c' };
+
+      new HawkSearch({
+        index: document.body.dataset.hawkIndex,
+        theme: 'typeflow',
+
+        contentSelector: '.doc-article',
+        tabs: [
+          ...categories.map((name) => {
+            const fallback = categoryDefaults[name];
+            return {
+              id: name.toLowerCase(),
+              label: name,
+              filter: { category: name },
+              ...(accentColors[name] ? { accentColor: accentColors[name] } : {}),
+              ...(fallback
+                ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title }
+                : {}),
+            };
+          }),
+
+          {
+            id: 'recent',
+            label: 'Recently updated',
+            sort: { date: 'desc' },
+            accentColor: '#34d399',
+          },
+        ],
+
+        previewSections: true,
+      });
+
+      const themeToggle = document.querySelector('.theme-toggle');
+      const applyTheme = (theme) => {
+        document.documentElement.dataset.theme = theme;
+        themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+      };
+      themeToggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        applyTheme(next);
+        try {
+          localStorage.setItem('hawk-docs:theme', next);
+        } catch (e) {}
+      });
+      applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+
+      const revealTargets = document.querySelectorAll('[data-reveal]');
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (revealTargets.length && !reduceMotion && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+              }
+            }
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+        );
+        revealTargets.forEach((el) => observer.observe(el));
+      } else {
+        revealTargets.forEach((el) => el.classList.add('is-revealed'));
+      }
+    </script>
+  </body>
+</html>

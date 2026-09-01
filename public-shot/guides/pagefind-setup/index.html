@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('hawk-docs:theme');
+          var theme =
+            stored || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          if (theme === 'light') document.documentElement.dataset.theme = 'light';
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pagefind Setup · Hawk documentation</title>
+    <meta
+      name="description"
+      content="The data-pagefind-body / data-pagefind-ignore scoping that makes match quality good."
+    />
+    <link rel="icon" href="/public-shot/assets/branding/hawk-logo.svg" />
+    <link rel="stylesheet" href="/public-shot/webutil/libs/hawk.css" />
+    <link rel="stylesheet" href="/public-shot/webutil/libs/hawk-theme-typeflow.css" />
+    <link rel="stylesheet" href="/public-shot/assets/docs.css" />
+  </head>
+  <body data-hawk-index="/public-shot/pagefind/" data-hawk-theme="typeflow">
+    <header class="site-header" data-pagefind-ignore>
+      <div class="shell header-inner">
+        <a class="brand" href="/public-shot/" aria-label="hawk home">
+          <img
+            class="brand-logo"
+            src="/public-shot/assets/branding/hawk-logo.svg"
+            alt=""
+            width="24"
+            height="24"
+          />
+          <span class="brand-text">hawk</span>
+        </a>
+
+        <button
+          class="search-trigger-btn"
+          type="button"
+          data-search-trigger
+          aria-label="Search documentation (Ctrl+K)"
+        >
+          <span>Search docs...</span>
+          <kbd>Ctrl+K</kbd>
+        </button>
+
+        <div class="header-right">
+          <div class="header-actions">
+            <a
+              class="icon-link"
+              href="https://gitlab.com/staticcanvas/hawk"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Hawk on GitLab"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z"
+                  transform="translate(0 2)"
+                />
+              </svg>
+            </a>
+            <a
+              class="icon-link"
+              href="https://github.com/staticcanvas/hawk"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Hawk on GitHub"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2a10 10 0 0 0-3.16 19.49c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.64-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.1.39-2 1.03-2.7-.1-.25-.45-1.26.1-2.62 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.9-1.3 2.75-1.02 2.75-1.02.55 1.36.2 2.37.1 2.62.64.7 1.03 1.6 1.03 2.7 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"
+                />
+              </svg>
+            </a>
+            <button
+              class="theme-toggle"
+              type="button"
+              aria-label="Toggle light/dark theme"
+              aria-pressed="false"
+            >
+              <svg
+                class="theme-icon theme-icon-sun"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4.5" />
+                <path
+                  d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <svg
+                class="theme-icon theme-icon-moon"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell page-shell" data-pagefind-body>
+      <div class="docs-layout">
+        <nav class="doc-sidebar" aria-label="Documentation sections" data-pagefind-ignore>
+          <ul class="sidebar-list">
+            <li class="sidebar-item">
+              <a href="/public-shot/">Overview</a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/getting-started/">Get started</a>
+            </li>
+
+            <li class="sidebar-item is-active">
+              <a href="/public-shot/guides/">Guides</a>
+
+              <ul class="sidebar-sublist">
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/theming/">Theming</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/animation-plugins/">Animation Plugins</a>
+                </li>
+
+                <li class="sidebar-subitem is-active">
+                  <a href="/public-shot/guides/pagefind-setup/">Pagefind Setup</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/density-and-navigation/"
+                    >Density and keyboard navigation</a
+                  >
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/pins-and-embedding/"
+                    >Pins, the built-in trigger, and attribution</a
+                  >
+                </li>
+              </ul>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/api/">API reference</a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/">Resources</a>
+
+              <ul class="sidebar-sublist">
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/downloads/">Downloads</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/changelog/">Changelog</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="docs-main">
+          <div class="doc-page">
+            <article class="doc-article">
+              <span hidden data-pagefind-filter="category:Guides"></span>
+
+              <span hidden data-pagefind-sort="date">2026-08-29</span>
+              <header class="doc-header">
+                <span class="doc-eyebrow">Guide</span>
+                <h1>Pagefind Setup</h1>
+                <p class="doc-lead">
+                  The data-pagefind-body / data-pagefind-ignore scoping that makes match quality
+                  good.
+                </p>
+              </header>
+
+              <div class="doc-content">
+                <h2 id="scope-the-index-before-you-run-it">Scope the index before you run it</h2>
+                <p>
+                  Pagefind indexes whatever it finds in <code>&lt;body&gt;</code> by default.
+                  Without scoping, every result gets polluted with your repeated nav/header/footer
+                  text, and broad queries surface pages that only matched on chrome, not content.
+                  This one step is the difference between a good and a bad hawk setup:
+                </p>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#7ee787">body</span>&gt;
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#7ee787">header</span> data-pagefind-ignore&gt;...&lt;/<span style="color:#7ee787">header</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#7ee787">main</span> data-pagefind-body&gt;
+</span></span><span style="display:flex;"><span>    <span style="color:#8b949e;font-style:italic">&lt;!-- your actual page content --&gt;</span>
+</span></span><span style="display:flex;"><span>  &lt;/<span style="color:#7ee787">main</span>&gt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#7ee787">footer</span> data-pagefind-ignore&gt;...&lt;/<span style="color:#7ee787">footer</span>&gt;
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#7ee787">body</span>&gt;
+</span></span></code></pre>
+                </div>
+                <p>
+                  Once at least one element on the site carries <code>data-pagefind-body</code>,
+                  Pagefind switches to &ldquo;ignore everything outside marked regions&rdquo; mode
+                  automatically.
+                </p>
+                <h2 id="build-the-index">Build the index</h2>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>node scripts/pagefind-index.mjs --site dist
+</span></span><span style="display:flex;"><span><span style="color:#8b949e;font-style:italic"># equivalent to: npx pagefind --site dist</span>
+</span></span></code></pre>
+                </div>
+                <p>
+                  This writes a <code>pagefind/</code> folder into <code>dist/</code> — the index
+                  plus a small WASM-backed runtime hawk loads lazily (only once you actually open
+                  the search modal, and only the WASM/JS runtime once per session; per-query it
+                  fetches just the relevant index chunks and page fragments, not your entire site as
+                  one blob).
+                </p>
+                <h2 id="category-filters-tabs">Category filters (tabs)</h2>
+                <p>
+                  Hawk&rsquo;s filter pills — rendered as a proper ARIA tablist, Left/Right/Home/End
+                  to move between them — are derived automatically from Pagefind&rsquo;s
+                  <code>filters()</code> API by default. No hardcoded category list to maintain, and
+                  no hawk-side config for a new tab to show up: flag a page by marking a filter
+                  dimension anywhere inside its <code>data-pagefind-body</code> region:
+                </p>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#7ee787">article</span> data-pagefind-filter<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">&#34;category:Guides&#34;</span>&gt;...&lt;/<span style="color:#7ee787">article</span>&gt;
+</span></span></code></pre>
+                </div>
+                <p>
+                  A page isn&rsquo;t limited to one tab — add more than one marker to flag it for
+                  several:
+                </p>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-html" data-lang="html"><span style="display:flex;"><span>&lt;<span style="color:#7ee787">article</span>&gt;
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#7ee787">span</span> hidden data-pagefind-filter<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">&#34;category:Guides&#34;</span>&gt;&lt;/<span style="color:#7ee787">span</span>&gt;
+</span></span><span style="display:flex;"><span>  &lt;<span style="color:#7ee787">span</span> hidden data-pagefind-filter<span style="color:#ff7b72;font-weight:bold">=</span><span style="color:#a5d6ff">&#34;category:Reference&#34;</span>&gt;&lt;/<span style="color:#7ee787">span</span>&gt;
+</span></span><span style="display:flex;"><span>  ...
+</span></span><span style="display:flex;"><span>&lt;/<span style="color:#7ee787">article</span>&gt;
+</span></span></code></pre>
+                </div>
+                <p>
+                  (This is exactly what hawk&rsquo;s own
+                  <code>docs/layouts/_default/single.html</code> and <code>list.html</code> do,
+                  generated from frontmatter — <code>category: Guides</code> for one tab, or
+                  <code>categories: [Guides, Reference]</code> for several.)
+                </p>
+                <p>
+                  Hawk reads the <code>category</code> filter dimension by default (<code
+                    >categoryFilterName</code
+                  >
+                  in the config to use a different one), and falls back to a single
+                  &ldquo;All&rdquo; pill with no filtering if nothing is marked.
+                </p>
+                <h3 id="taking-manual-control-with-tabs">
+                  Taking manual control with <code>tabs</code>
+                </h3>
+                <p>
+                  Auto-derivation covers the common case — one <code>category</code> frontmatter
+                  field, one filter dimension. For anything more (multiple filter dimensions per
+                  tab, a fixed tab order independent of what&rsquo;s in the index yet, per-tab
+                  search tuning), pass <code>tabs</code> explicitly:
+                </p>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#ff7b72">new</span> HawkSearch({
+</span></span><span style="display:flex;"><span>  index<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;/pagefind/&#39;</span>,
+</span></span><span style="display:flex;"><span>  tabs<span style="color:#ff7b72;font-weight:bold">:</span> [
+</span></span><span style="display:flex;"><span>    { label<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;Guides&#39;</span>, filter<span style="color:#ff7b72;font-weight:bold">:</span> { category<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;Guides&#39;</span> } },
+</span></span><span style="display:flex;"><span>    { id<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;ref&#39;</span>, label<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;Reference&#39;</span>, filter<span style="color:#ff7b72;font-weight:bold">:</span> { category<span style="color:#ff7b72;font-weight:bold">:</span> [<span style="color:#a5d6ff">&#39;Reference&#39;</span>, <span style="color:#a5d6ff">&#39;API&#39;</span>] } },
+</span></span><span style="display:flex;"><span>    { label<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;v2 only&#39;</span>, filter<span style="color:#ff7b72;font-weight:bold">:</span> { category<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;Guides&#39;</span>, version<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;2.x&#39;</span> } },
+</span></span><span style="display:flex;"><span>  ],
+</span></span><span style="display:flex;"><span>  defaultTab<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;ref&#39;</span>,
+</span></span><span style="display:flex;"><span>});
+</span></span></code></pre>
+                </div>
+                <p>
+                  <code>filter</code> is a raw Pagefind <code>filters</code> object, passed straight
+                  into <code>search()</code>/<code>debouncedSearch()</code> — an array of values
+                  within one dimension is an OR (<code>category: ['Reference', 'API']</code> matches
+                  either), multiple dimensions are ANDed together. When <code>tabs</code> is given,
+                  <code>filters()</code> is never called and the pills render synchronously on mount
+                  instead of waiting for Pagefind to load. See
+                  <a href="/public-shot/api/#tabs">API reference — Tabs</a> for the full shape,
+                  including per-tab <code>pagefindOptions</code>.
+                </p>
+                <h2 id="inline-filter-syntax">Inline filter syntax</h2>
+                <p>
+                  Tabs are one way to scope by filter — <code>inlineFilters: true</code> lets a
+                  visitor do it themselves, typing the same <code>dimension:value</code> shape
+                  directly into the search box:
+                </p>
+                <div class="highlight">
+                  <pre
+                    tabindex="0"
+                    style="
+                      color: #e6edf3;
+                      background-color: #0d1117;
+                      -moz-tab-size: 4;
+                      -o-tab-size: 4;
+                      tab-size: 4;
+                    "
+                  ><code class="language-js" data-lang="js"><span style="display:flex;"><span><span style="color:#ff7b72">new</span> HawkSearch({ index<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#a5d6ff">&#39;/pagefind/&#39;</span>, inlineFilters<span style="color:#ff7b72;font-weight:bold">:</span> <span style="color:#79c0ff">true</span> });
+</span></span></code></pre>
+                </div>
+                <pre tabindex="0"><code>category:Guides responsive nav
+</code></pre>
+                <p>
+                  parses out <code>{ category: 'Guides' }</code> as a filter and searches only
+                  <code>responsive nav</code> — the same filter dimensions
+                  <code>data-pagefind-filter</code> already marks pages with,
+                  <code>tags</code>/<code>category</code>/anything else, no separate configuration
+                  to keep in sync. A quoted value (<code>tag:&quot;multi word&quot;</code>) keeps
+                  its spaces; repeating a dimension collects an array, same OR semantics as
+                  <code>tabs[].filter</code>. It merges with whichever tab is active rather than
+                  replacing it — inline wins on a dimension collision.
+                </p>
+                <p>
+                  Off by default, because it changes how a literal colon in a normal query behaves —
+                  <code>&quot;ratio: 16:9&quot;</code> would get <code>ratio:</code> parsed as a
+                  filter attempt. Turn it on for a docs set where visitors are likely to know (or
+                  discover) the filter dimensions in play; leave it off otherwise.
+                </p>
+              </div>
+            </article>
+
+            <aside class="doc-toc" aria-label="On this page">
+              <span class="toc-title">On this page</span>
+              <nav id="TableOfContents">
+                <ul>
+                  <li>
+                    <a href="#scope-the-index-before-you-run-it"
+                      >Scope the index before you run it</a
+                    >
+                  </li>
+                  <li><a href="#build-the-index">Build the index</a></li>
+                  <li>
+                    <a href="#category-filters-tabs">Category filters (tabs)</a>
+                    <ul>
+                      <li>
+                        <a href="#taking-manual-control-with-tabs"
+                          >Taking manual control with <code>tabs</code></a
+                        >
+                      </li>
+                    </ul>
+                  </li>
+                  <li><a href="#inline-filter-syntax">Inline filter syntax</a></li>
+                </ul>
+              </nav>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer" data-pagefind-ignore>
+      <div class="shell">
+        <p>
+          Hawk ·
+          <a href="https://gitlab.com/staticcanvas/hawk" target="_blank" rel="noreferrer">GitLab</a>
+          ·
+          <a href="https://github.com/staticcanvas/hawk" target="_blank" rel="noreferrer">GitHub</a>
+          · MIT
+        </p>
+      </div>
+    </footer>
+
+    <script type="module">
+      import { HawkSearch } from '\/public-shot\/webutil\/libs\/hawk.mjs';
+      import { HawkThemeTypeflow } from '\/public-shot\/webutil\/libs\/hawk-theme-typeflow.mjs';
+
+      HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+
+      const categories = ['Guides', 'Reference', 'Resources'];
+      const categoryDefaults = {
+        Guides: { title: 'Guides', url: '/public-shot/guides/' },
+        Reference: { title: 'API reference', url: '/public-shot/api/' },
+        Resources: { title: 'Changelog', url: '/public-shot/changelog/' },
+      };
+
+      const accentColors = { Guides: '#38bdf8', Reference: '#a78bfa', Resources: '#fb923c' };
+
+      new HawkSearch({
+        index: document.body.dataset.hawkIndex,
+        theme: 'typeflow',
+
+        contentSelector: '.doc-article',
+        tabs: [
+          ...categories.map((name) => {
+            const fallback = categoryDefaults[name];
+            return {
+              id: name.toLowerCase(),
+              label: name,
+              filter: { category: name },
+              ...(accentColors[name] ? { accentColor: accentColors[name] } : {}),
+              ...(fallback
+                ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title }
+                : {}),
+            };
+          }),
+
+          {
+            id: 'recent',
+            label: 'Recently updated',
+            sort: { date: 'desc' },
+            accentColor: '#34d399',
+          },
+        ],
+
+        previewSections: true,
+      });
+
+      const themeToggle = document.querySelector('.theme-toggle');
+      const applyTheme = (theme) => {
+        document.documentElement.dataset.theme = theme;
+        themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+      };
+      themeToggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        applyTheme(next);
+        try {
+          localStorage.setItem('hawk-docs:theme', next);
+        } catch (e) {}
+      });
+      applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+
+      const revealTargets = document.querySelectorAll('[data-reveal]');
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (revealTargets.length && !reduceMotion && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+              }
+            }
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+        );
+        revealTargets.forEach((el) => observer.observe(el));
+      } else {
+        revealTargets.forEach((el) => el.classList.add('is-revealed'));
+      }
+    </script>
+  </body>
+</html>

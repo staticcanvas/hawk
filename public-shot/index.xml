@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Hawk on Hawk documentation</title>
+    <link>http://localhost:4175/public-shot/</link>
+    <description>Recent content in Hawk on Hawk documentation</description>
+    <generator>Hugo</generator>
+    <language>en</language>
+    <atom:link href="http://localhost:4175/public-shot/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Animation Plugins</title>
+      <link>http://localhost:4175/public-shot/guides/animation-plugins/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/animation-plugins/</guid>
+      <description>The contract An animation driver controls how the preview pane&amp;rsquo;s title/content reveal, and how an optional header placeholder rotates:&#xA;interface HawkAnimationDriver { typeTitle(el, text, options?: { isAnchor?: boolean }): unknown; typeContent(el, html, options?): unknown; rotatePlaceholder(el, strings, options?): unknown; stop(controller): void; } typeTitle/typeContent/rotatePlaceholder may return a controller (anything with whatever shape the driver itself understands) or null. Hawk never inspects it — it only ever passes it back into stop(), which runs before every preview re-render and on destroy().</description>
+    </item>
+    <item>
+      <title>API reference</title>
+      <link>http://localhost:4175/public-shot/api/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/api/</guid>
+      <description>new HawkSearch(config) Option Type Default Description index string — Base path to a Pagefind bundle. Required unless pagefind is given. pagefind object — A pre-loaded Pagefind module, instead of dynamically importing one from index. id string hawk-search-N DOM id for the modal root. triggerSelector string &#39;[data-search-trigger]&#39; Elements that open the modal on click. trigger object — Renders hawk&amp;rsquo;s own trigger button instead of requiring hand-built markup. See Built-in trigger. container HTMLElement document.</description>
+    </item>
+    <item>
+      <title>Changelog</title>
+      <link>http://localhost:4175/public-shot/changelog/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/changelog/</guid>
+      <description>Changelog Full release history: CHANGELOG.md in the repository, following Keep a Changelog. Hawk is pre-1.0 and hasn&amp;rsquo;t cut a tagged release yet — the versions there track package.json&amp;rsquo;s history, not published tags.&#xA;0.5.2 — fixed a real, confirmed reflected-XSS vulnerability (the typed search query reached innerHTML unescaped via strings.noResults). 0.5.1 — a real search-results race condition (#searchGeneration), a modal-chrome vertical-squish bug at narrow widths, a table/long-word overflow past the docs site&amp;rsquo;s TOC, a header overflow at phone widths, and homepage hero/feature-grid alignment and parity polish.</description>
+    </item>
+    <item>
+      <title>Density and keyboard navigation</title>
+      <link>http://localhost:4175/public-shot/guides/density-and-navigation/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/density-and-navigation/</guid>
+      <description>Density modes params.density picks between three sizing presets:&#xA;new HawkSearch({ index: &amp;#39;/pagefind/&amp;#39;, params: { density: &amp;#39;fit&amp;#39; }, // &amp;#39;fit&amp;#39; | &amp;#39;medium&amp;#39; (default) | &amp;#39;compact&amp;#39; }); medium — the default sizing (unchanged from before density existed): a fixed-size dialog, 2 columns. fit — a near-viewport dialog (96vw / 92vh), for a dedicated &amp;ldquo;search page&amp;rdquo; feel. compact — a smaller dialog, forced to a single column with the preview pane hidden by default — see Reaching the preview pane in compact layouts.</description>
+    </item>
+    <item>
+      <title>Downloads</title>
+      <link>http://localhost:4175/public-shot/downloads/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/downloads/</guid>
+      <description>Choose a release This page lists versions with a published GitLab Release. Choose unminified development assets or minified production assets for each release. Source archives remain separate from generated bundles.&#xA;Asset provenance. Every download uses a public GitLab release endpoint. The source link beside each asset opens the tagged repository tree used for that release.&#xA;Release metadata is not available in this preview build. Visit the GitLab releases page for downloads.</description>
+    </item>
+    <item>
+      <title>Getting started</title>
+      <link>http://localhost:4175/public-shot/getting-started/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/getting-started/</guid>
+      <description>Install npm install @staticcanvas/hawk npm install --save-dev pagefind pagefind is a real dependency — hawk has nothing to search without an index, so it&amp;rsquo;s installed automatically. @staticcanvas/typeflow is an optional peer dependency, only needed if you use the typeflow theme/animation driver instead of the built-in unstyled/instant ones.&#xA;Build an index Mark your page&amp;rsquo;s main content region with data-pagefind-body, and mark chrome you don&amp;rsquo;t want indexed (nav, header, footer) with data-pagefind-ignore — see Pagefind setup for why this matters.</description>
+    </item>
+    <item>
+      <title>Pagefind Setup</title>
+      <link>http://localhost:4175/public-shot/guides/pagefind-setup/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/pagefind-setup/</guid>
+      <description>Scope the index before you run it Pagefind indexes whatever it finds in &amp;lt;body&amp;gt; by default. Without scoping, every result gets polluted with your repeated nav/header/footer text, and broad queries surface pages that only matched on chrome, not content. This one step is the difference between a good and a bad hawk setup:&#xA;&amp;lt;body&amp;gt; &amp;lt;header data-pagefind-ignore&amp;gt;...&amp;lt;/header&amp;gt; &amp;lt;main data-pagefind-body&amp;gt; &amp;lt;!-- your actual page content --&amp;gt; &amp;lt;/main&amp;gt; &amp;lt;footer data-pagefind-ignore&amp;gt;...&amp;lt;/footer&amp;gt; &amp;lt;/body&amp;gt; Once at least one element on the site carries data-pagefind-body, Pagefind switches to &amp;ldquo;ignore everything outside marked regions&amp;rdquo; mode automatically.</description>
+    </item>
+    <item>
+      <title>Pins, the built-in trigger, and attribution</title>
+      <link>http://localhost:4175/public-shot/guides/pins-and-embedding/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/pins-and-embedding/</guid>
+      <description>Pins A pin toggle renders on every result row by default (enablePins: true) — clicking it doesn&amp;rsquo;t navigate or trigger onSelect, just pins the result:&#xA;new HawkSearch({ index: &amp;#39;/pagefind/&amp;#39;, enablePins: true, // default pinStorageKey: &amp;#39;hawk:pins&amp;#39;, maxPins: 20, }); Pins persist to localStorage as {url, title, isAnchor}[]. The moment at least one exists, a synthetic &amp;ldquo;Pinned&amp;rdquo; tab is prepended to the tab list — selecting it lists pins directly with no Pagefind call (they already carry their own title/url), and clears any typed query, since it isn&amp;rsquo;t a search scope.</description>
+    </item>
+    <item>
+      <title>Theming</title>
+      <link>http://localhost:4175/public-shot/guides/theming/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:4175/public-shot/guides/theming/</guid>
+      <description>The contract A theme is two things: a CSS file that defines --hawk-* custom properties scoped under [data-hawk-theme=&amp;quot;&amp;lt;name&amp;gt;&amp;quot;], and a small plugin object:&#xA;{ name: &amp;#39;my-theme&amp;#39;, apply(rootEl) { rootEl.dataset.hawkTheme = &amp;#39;my-theme&amp;#39;; }, } apply() runs once when HawkSearch mounts. It doesn&amp;rsquo;t inject the stylesheet — loading the CSS is the consumer&amp;rsquo;s job, via a &amp;lt;link&amp;gt; tag or import &#39;@staticcanvas/hawk/theme-typeflow/css&#39;.&#xA;Token list hawk.css (structural, ships with core) reads every color through a --hawk-* custom property with a neutral fallback, so hawk renders — unstyled but usable — with zero theme loaded.</description>
+    </item>
+  </channel>
+</rss>

@@ -145,11 +145,17 @@ export class HawkSearch {
    */
   constructor(config = {}) {
     if (!config.index && !config.pagefind) {
-      throw new Error('HawkSearch requires config.index (the Pagefind bundle base path) or config.pagefind.');
+      throw new Error(
+        'HawkSearch requires config.index (the Pagefind bundle base path) or config.pagefind.'
+      );
     }
 
     this.id = config.id || `hawk-search-${(instanceCount += 1)}`;
-    this.indexBasePath = config.index ? (config.index.endsWith('/') ? config.index : `${config.index}/`) : null;
+    this.indexBasePath = config.index
+      ? config.index.endsWith('/')
+        ? config.index
+        : `${config.index}/`
+      : null;
     this.#injectedPagefind = config.pagefind || null;
     this.triggerSelector = config.triggerSelector || '[data-search-trigger]';
     this.container = config.container || (typeof document !== 'undefined' ? document.body : null);
@@ -240,7 +246,9 @@ export class HawkSearch {
     if (typeof theme === 'string') {
       const resolved = themeRegistry.get(theme);
       if (!resolved) {
-        throw new Error(`HawkSearch: no theme registered as "${theme}". Call HawkSearch.registerTheme first.`);
+        throw new Error(
+          `HawkSearch: no theme registered as "${theme}". Call HawkSearch.registerTheme first.`
+        );
       }
       return resolved;
     }
@@ -257,7 +265,9 @@ export class HawkSearch {
     if (typeof animation === 'string') {
       const resolved = animationRegistry.get(animation);
       if (!resolved) {
-        throw new Error(`HawkSearch: no animation driver registered as "${animation}". Call HawkSearch.registerAnimation first.`);
+        throw new Error(
+          `HawkSearch: no animation driver registered as "${animation}". Call HawkSearch.registerAnimation first.`
+        );
       }
       return resolved;
     }
@@ -273,7 +283,13 @@ export class HawkSearch {
       return this.#normalizeTabs(config.tabs);
     }
     if (config.categories) {
-      return this.#normalizeTabs(config.categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } })));
+      return this.#normalizeTabs(
+        config.categories.map((c) => ({
+          id: c,
+          label: c,
+          filter: { [this.categoryFilterName]: c },
+        }))
+      );
     }
     return null;
   }
@@ -315,7 +331,9 @@ export class HawkSearch {
     this.#tabs = tabs;
     if (!tabs.some((t) => t.id === this.#currentTabId)) {
       if (this.#currentTabId !== 'all') {
-        console.warn(`HawkSearch: no tab with id "${this.#currentTabId}" (defaultTab); falling back to "all".`);
+        console.warn(
+          `HawkSearch: no tab with id "${this.#currentTabId}" (defaultTab); falling back to "all".`
+        );
       }
       this.#currentTabId = tabs.some((t) => t.id === 'all') ? 'all' : (tabs[0]?.id ?? 'all');
     }
@@ -451,7 +469,8 @@ export class HawkSearch {
   /** Reads a persisted density preference, if any. Never throws (private browsing, SSR, etc.). */
   #readStoredDensity() {
     try {
-      const value = typeof localStorage !== 'undefined' ? localStorage.getItem(DENSITY_STORAGE_KEY) : null;
+      const value =
+        typeof localStorage !== 'undefined' ? localStorage.getItem(DENSITY_STORAGE_KEY) : null;
       return DENSITY_VALUES.has(value) ? value : null;
     } catch {
       return null;
@@ -472,7 +491,11 @@ export class HawkSearch {
    * @param {Partial<typeof DEFAULT_PARAMS>} params
    */
   setParams(params) {
-    this.params = { ...this.params, ...params, offset: { ...this.params.offset, ...params?.offset } };
+    this.params = {
+      ...this.params,
+      ...params,
+      offset: { ...this.params.offset, ...params?.offset },
+    };
     this.#applyParams();
   }
 
@@ -548,7 +571,11 @@ export class HawkSearch {
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
     this.#animation.typeTitle(titleEl, this.defaultPreviewTitle, { isAnchor: false });
-    this.#loadPreviewContent({ url: this.defaultPreviewUrl, excerpt: '', isAnchor: false }, key, contentEl);
+    this.#loadPreviewContent(
+      { url: this.defaultPreviewUrl, excerpt: '', isAnchor: false },
+      key,
+      contentEl
+    );
   }
 
   /**
@@ -573,7 +600,9 @@ export class HawkSearch {
       categories = [];
     }
     this.#applyDefaultTabAndRender(
-      this.#normalizeTabs(categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } })))
+      this.#normalizeTabs(
+        categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } }))
+      )
     );
   }
 
@@ -665,7 +694,12 @@ export class HawkSearch {
     const flattened = [];
     for (const result of (results || []).slice(0, this.maxResults)) {
       const data = await result.data();
-      flattened.push({ title: data.meta?.title || this.strings.untitled, url: data.url, excerpt: data.excerpt, isAnchor: false });
+      flattened.push({
+        title: data.meta?.title || this.strings.untitled,
+        url: data.url,
+        excerpt: data.excerpt,
+        isAnchor: false,
+      });
       for (const sub of data.sub_results || []) {
         if (sub.url === data.url) continue;
         flattened.push({ title: sub.title, url: sub.url, excerpt: sub.excerpt, isAnchor: true });
@@ -680,7 +714,9 @@ export class HawkSearch {
     if (!this.#matches.length) {
       this.#resultsEl.innerHTML = `<div class="hawk-empty">${this.strings.noResults(this.#query)}</div>`;
       this.#resultsEl.removeAttribute('aria-activedescendant');
-      this.#counterEl.textContent = this.#query ? this.strings.matchingResults(0) : this.strings.typeToSearch;
+      this.#counterEl.textContent = this.#query
+        ? this.strings.matchingResults(0)
+        : this.strings.typeToSearch;
       this.#renderPreview();
       return;
     }
@@ -700,7 +736,10 @@ export class HawkSearch {
         </a>`
       )
       .join('');
-    this.#resultsEl.setAttribute('aria-activedescendant', `${this.id}-result-${this.#selectedIndex}`);
+    this.#resultsEl.setAttribute(
+      'aria-activedescendant',
+      `${this.id}-result-${this.#selectedIndex}`
+    );
 
     this.#resultsEl.querySelectorAll('.hawk-result-item').forEach((el) => {
       el.addEventListener('mouseenter', () => this.#setSelection(Number(el.dataset.index), false));
@@ -839,7 +878,10 @@ export class HawkSearch {
     } else if (event.key === 'ArrowUp') {
       event.preventDefault();
       if (this.#matches.length) {
-        this.#setSelection((this.#selectedIndex - 1 + this.#matches.length) % this.#matches.length, true);
+        this.#setSelection(
+          (this.#selectedIndex - 1 + this.#matches.length) % this.#matches.length,
+          true
+        );
       }
     } else if (event.key === 'Enter') {
       const item = this.#matches[this.#selectedIndex];
@@ -923,7 +965,8 @@ export class HawkSearch {
    * (and is testable under jsdom, which never renders).
    */
   #isPreviewPaneReachable() {
-    const singleColumn = this.#root.dataset.hawkCompact === 'true' || this.params.density === 'compact';
+    const singleColumn =
+      this.#root.dataset.hawkCompact === 'true' || this.params.density === 'compact';
     return !singleColumn || this.#root.dataset.hawkShowPreview === 'true';
   }
 
@@ -931,7 +974,9 @@ export class HawkSearch {
   #getFocusableElements() {
     return [
       this.#input,
-      ...(this.params.allowDensityToggle ? Array.from(this.#root.querySelectorAll('.hawk-density-btn')) : []),
+      ...(this.params.allowDensityToggle
+        ? Array.from(this.#root.querySelectorAll('.hawk-density-btn'))
+        : []),
       this.#root.querySelector('.hawk-modal-esc'),
       this.#filtersEl.querySelector('.hawk-filter-pill[tabindex="0"]'),
       this.#resultsEl,

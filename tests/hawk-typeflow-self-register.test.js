@@ -21,7 +21,9 @@ describe('typeflow theme/animation self-registration', () => {
   });
 
   it('a plain HawkSearch instance defaults to the typeflow theme with no explicit registerTheme call', () => {
-    const hawk = new HawkSearch({ pagefind: { options: vi.fn(), filters: vi.fn(), search: vi.fn(), debouncedSearch: vi.fn() } });
+    const hawk = new HawkSearch({
+      pagefind: { options: vi.fn(), filters: vi.fn(), search: vi.fn(), debouncedSearch: vi.fn() },
+    });
     const root = document.getElementById(hawk.id);
     expect(root.dataset.hawkTheme).toBe('typeflow');
     hawk.destroy();

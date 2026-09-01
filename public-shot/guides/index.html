@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('hawk-docs:theme');
+          var theme =
+            stored || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+          if (theme === 'light') document.documentElement.dataset.theme = 'light';
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Guides · Hawk documentation</title>
+    <meta
+      name="description"
+      content="Theming, animation plugins, Pagefind indexing and tabs, density and keyboard navigation, and pins/embedding/attribution."
+    />
+    <link rel="icon" href="/public-shot/assets/branding/hawk-logo.svg" />
+    <link rel="stylesheet" href="/public-shot/webutil/libs/hawk.css" />
+    <link rel="stylesheet" href="/public-shot/webutil/libs/hawk-theme-typeflow.css" />
+    <link rel="stylesheet" href="/public-shot/assets/docs.css" />
+  </head>
+  <body data-hawk-index="/public-shot/pagefind/" data-hawk-theme="typeflow">
+    <header class="site-header" data-pagefind-ignore>
+      <div class="shell header-inner">
+        <a class="brand" href="/public-shot/" aria-label="hawk home">
+          <img
+            class="brand-logo"
+            src="/public-shot/assets/branding/hawk-logo.svg"
+            alt=""
+            width="24"
+            height="24"
+          />
+          <span class="brand-text">hawk</span>
+        </a>
+
+        <button
+          class="search-trigger-btn"
+          type="button"
+          data-search-trigger
+          aria-label="Search documentation (Ctrl+K)"
+        >
+          <span>Search docs...</span>
+          <kbd>Ctrl+K</kbd>
+        </button>
+
+        <div class="header-right">
+          <div class="header-actions">
+            <a
+              class="icon-link"
+              href="https://gitlab.com/staticcanvas/hawk"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Hawk on GitLab"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z"
+                  transform="translate(0 2)"
+                />
+              </svg>
+            </a>
+            <a
+              class="icon-link"
+              href="https://github.com/staticcanvas/hawk"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Hawk on GitHub"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  d="M12 2a10 10 0 0 0-3.16 19.49c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.64-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.1.39-2 1.03-2.7-.1-.25-.45-1.26.1-2.62 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.9-1.3 2.75-1.02 2.75-1.02.55 1.36.2 2.37.1 2.62.64.7 1.03 1.6 1.03 2.7 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"
+                />
+              </svg>
+            </a>
+            <button
+              class="theme-toggle"
+              type="button"
+              aria-label="Toggle light/dark theme"
+              aria-pressed="false"
+            >
+              <svg
+                class="theme-icon theme-icon-sun"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4.5" />
+                <path
+                  d="M12 2.5v2.5M12 19v2.5M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2.5 12H5M19 12h2.5M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <svg
+                class="theme-icon theme-icon-moon"
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="shell page-shell" data-pagefind-body>
+      <div class="docs-layout">
+        <nav class="doc-sidebar" aria-label="Documentation sections" data-pagefind-ignore>
+          <ul class="sidebar-list">
+            <li class="sidebar-item">
+              <a href="/public-shot/">Overview</a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/getting-started/">Get started</a>
+            </li>
+
+            <li class="sidebar-item is-active">
+              <a href="/public-shot/guides/">Guides</a>
+
+              <ul class="sidebar-sublist">
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/theming/">Theming</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/animation-plugins/">Animation Plugins</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/pagefind-setup/">Pagefind Setup</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/density-and-navigation/"
+                    >Density and keyboard navigation</a
+                  >
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/guides/pins-and-embedding/"
+                    >Pins, the built-in trigger, and attribution</a
+                  >
+                </li>
+              </ul>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/api/">API reference</a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/public-shot/">Resources</a>
+
+              <ul class="sidebar-sublist">
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/downloads/">Downloads</a>
+                </li>
+
+                <li class="sidebar-subitem">
+                  <a href="/public-shot/changelog/">Changelog</a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="docs-main">
+          <div class="doc-page doc-page--no-toc">
+            <article class="doc-article">
+              <span hidden data-pagefind-filter="category:Guides"></span>
+              <span hidden data-pagefind-sort="date">2026-08-29</span>
+              <header class="doc-header">
+                <h1>Guides</h1>
+                <p class="doc-lead">
+                  Theming, animation plugins, Pagefind indexing and tabs, density and keyboard
+                  navigation, and pins/embedding/attribution.
+                </p>
+              </header>
+
+              <div class="doc-content">
+                <h2 id="guides">Guides</h2>
+
+                <div class="card-grid">
+                  <a
+                    class="guide-card"
+                    href="http://localhost:4175/public-shot/guides/animation-plugins/"
+                  >
+                    <h3>Animation Plugins</h3>
+                    <p>
+                      The reveal-animation driver contract, the built-in drivers, and how to write
+                      your own.
+                    </p>
+                  </a>
+
+                  <a
+                    class="guide-card"
+                    href="http://localhost:4175/public-shot/guides/density-and-navigation/"
+                  >
+                    <h3>Density and keyboard navigation</h3>
+                    <p>
+                      Fit/medium/compact density modes, two-pane keyboard navigation, and initial
+                      popup state.
+                    </p>
+                  </a>
+
+                  <a
+                    class="guide-card"
+                    href="http://localhost:4175/public-shot/guides/pagefind-setup/"
+                  >
+                    <h3>Pagefind Setup</h3>
+                    <p>
+                      The data-pagefind-body / data-pagefind-ignore scoping that makes match quality
+                      good.
+                    </p>
+                  </a>
+
+                  <a
+                    class="guide-card"
+                    href="http://localhost:4175/public-shot/guides/pins-and-embedding/"
+                  >
+                    <h3>Pins, the built-in trigger, and attribution</h3>
+                    <p>
+                      Letting visitors pin results, embedding hawk without hand-built trigger
+                      markup, and the powered-by-Pagefind attribution.
+                    </p>
+                  </a>
+
+                  <a class="guide-card" href="http://localhost:4175/public-shot/guides/theming/">
+                    <h3>Theming</h3>
+                    <p>The token contract hawk themes implement, and how to write your own.</p>
+                  </a>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer" data-pagefind-ignore>
+      <div class="shell">
+        <p>
+          Hawk ·
+          <a href="https://gitlab.com/staticcanvas/hawk" target="_blank" rel="noreferrer">GitLab</a>
+          ·
+          <a href="https://github.com/staticcanvas/hawk" target="_blank" rel="noreferrer">GitHub</a>
+          · MIT
+        </p>
+      </div>
+    </footer>
+
+    <script type="module">
+      import { HawkSearch } from '\/public-shot\/webutil\/libs\/hawk.mjs';
+      import { HawkThemeTypeflow } from '\/public-shot\/webutil\/libs\/hawk-theme-typeflow.mjs';
+
+      HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+
+      const categories = ['Guides', 'Reference', 'Resources'];
+      const categoryDefaults = {
+        Guides: { title: 'Guides', url: '/public-shot/guides/' },
+        Reference: { title: 'API reference', url: '/public-shot/api/' },
+        Resources: { title: 'Changelog', url: '/public-shot/changelog/' },
+      };
+
+      const accentColors = { Guides: '#38bdf8', Reference: '#a78bfa', Resources: '#fb923c' };
+
+      new HawkSearch({
+        index: document.body.dataset.hawkIndex,
+        theme: 'typeflow',
+
+        contentSelector: '.doc-article',
+        tabs: [
+          ...categories.map((name) => {
+            const fallback = categoryDefaults[name];
+            return {
+              id: name.toLowerCase(),
+              label: name,
+              filter: { category: name },
+              ...(accentColors[name] ? { accentColor: accentColors[name] } : {}),
+              ...(fallback
+                ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title }
+                : {}),
+            };
+          }),
+
+          {
+            id: 'recent',
+            label: 'Recently updated',
+            sort: { date: 'desc' },
+            accentColor: '#34d399',
+          },
+        ],
+
+        previewSections: true,
+      });
+
+      const themeToggle = document.querySelector('.theme-toggle');
+      const applyTheme = (theme) => {
+        document.documentElement.dataset.theme = theme;
+        themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+      };
+      themeToggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        applyTheme(next);
+        try {
+          localStorage.setItem('hawk-docs:theme', next);
+        } catch (e) {}
+      });
+      applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+
+      const revealTargets = document.querySelectorAll('[data-reveal]');
+      const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (revealTargets.length && !reduceMotion && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-revealed');
+                observer.unobserve(entry.target);
+              }
+            }
+          },
+          { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
+        );
+        revealTargets.forEach((el) => observer.observe(el));
+      } else {
+        revealTargets.forEach((el) => el.classList.add('is-revealed'));
+      }
+    </script>
+  </body>
+</html>
