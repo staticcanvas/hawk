@@ -12,15 +12,23 @@ A theme is two things:
    interface HawkTheme {
      name: string;
      apply(rootEl: HTMLElement): void;
+     tokens?: Record<string, string>;
    }
    ```
 
-`apply()` runs once, when `HawkSearch` mounts, and its only job is to stamp
-`rootEl.dataset.hawkTheme = name` so the theme's CSS selector matches. It does **not** inject the
-stylesheet itself — loading the CSS is the consumer's responsibility, via a `<link>` tag or a
-bundler CSS import (`import '@staticcanvas/hawk/theme-typeflow/css'`). This matches the existing
-org convention of a `"./css"` subpath export (lume's `package.json` exports `"./css": "./src/lume.css"`)
-rather than runtime stylesheet injection, which is fragile across the UMD/ESM/CJS builds hawk ships.
+`apply()` runs once, when `HawkSearch` mounts (and again on the built-in trigger button, if
+`config.trigger` is used — it renders outside `#root`, so it needs the same `data-hawk-theme`
+attribute stamped on it separately to reach a theme's CSS-file tokens at all), and its only job
+is to stamp `rootEl.dataset.hawkTheme = name` so the theme's CSS selector matches. It does **not**
+inject the stylesheet itself — loading the CSS is the consumer's responsibility, via a `<link>`
+tag or a bundler CSS import (`import '@staticcanvas/hawk/theme-typeflow/css'`). This matches the
+existing org convention of a `"./css"` subpath export (lume's `package.json` exports
+`"./css": "./src/lume.css"`) rather than runtime stylesheet injection, which is fragile across
+the UMD/ESM/CJS builds hawk ships.
+
+`tokens`, if present, is a JS-only alternative/supplement to a CSS file — applied as inline
+`--hawk-*` custom property overrides on `apply()`'s target element. Useful for a one-off site
+tweaking a few colors/fonts without writing a redistributable theme's worth of CSS.
 
 ## The token list
 
@@ -38,6 +46,10 @@ only needs to redefine tokens — never hawk.css's structural rules.
 | `--hawk-backdrop` | Modal backdrop overlay color |
 | `--hawk-preview-bg` | Preview pane background |
 | `--hawk-shadow`, `--hawk-radius` | Dialog chrome |
+| `--hawk-font-family`, `--hawk-font-size-base` | Typography, set on `.hawk-modal-dialog` |
+| `--hawk-mark-bg`, `--hawk-mark-color`, `--hawk-mark-weight`, `--hawk-mark-style` | Search-match `<mark>` styling (`-bg` falls back to `--hawk-accent-glow`) |
+| `--hawk-scrollbar-thumb`, `--hawk-scrollbar-thumb-active` | Results/preview/filter-strip scrollbars (idle / hover-or-scrolling — the active state is Blink/WebKit-only) |
+| `--hawk-powered-by-color`, `--hawk-powered-by-opacity` | The "Search powered by Pagefind" attribution link |
 
 ## A known bug this contract exists to prevent
 

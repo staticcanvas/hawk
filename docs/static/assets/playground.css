@@ -1,0 +1,195 @@
+/*
+ * Playground page styles — reuses hawk's own --hawk-* custom properties (see docs.css's header
+ * comment) so the controls panel matches both the dark/light site theme and whichever hawk theme
+ * the mounted instance itself is currently using, with no separate color decisions of its own.
+ */
+
+.doc-page--playground .doc-article {
+  /* single.html's own .doc-article caps prose at 48rem — too narrow for a controls panel plus a
+     mounted search instance sitting beside it. */
+  max-width: none;
+}
+
+.pg-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.pg-controls {
+  min-width: 0;
+}
+
+.pg-open-btn {
+  background: var(--hawk-accent, #38bdf8);
+  color: #04121c;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.pg-open-btn:hover {
+  filter: brightness(1.08);
+}
+
+.pg-status {
+  font-size: 0.82rem;
+  color: var(--hawk-text-muted, #64748b);
+  margin: 0.6rem 0 0;
+}
+
+.pg-controls fieldset {
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 8px;
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+}
+.pg-controls legend {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hawk-text-muted, #64748b);
+  padding: 0 0.4rem;
+}
+.pg-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.3rem 1.1rem 0.3rem 0;
+  font-size: 0.85rem;
+  color: var(--hawk-text-secondary, #94a3b8);
+}
+
+.pg-select,
+.pg-number,
+.pg-text {
+  background: var(--hawk-bg-surface, #0f172a);
+  border: 1px solid var(--hawk-border-default, #253347);
+  color: var(--hawk-text-primary, #f1f5f9);
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+}
+.pg-number {
+  width: 4.5rem;
+}
+.pg-text {
+  width: 3rem;
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+}
+
+/* Nested fieldsets (TypeFlow's own title/anchorTitle/content/rotate sub-configs) — visually
+   subordinate to the outer "TypeFlow options" fieldset: lighter border, tighter padding, no
+   uppercase legend so the eye reads them as a group, not four more top-level sections. */
+.pg-tf-subgroup {
+  border: 1px dashed var(--hawk-border-subtle, #1e293b);
+  border-radius: 6px;
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0.75rem;
+}
+.pg-tf-subgroup legend {
+  font-size: 0.72rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--hawk-text-secondary, #94a3b8);
+}
+
+.pg-metrics-panel {
+  position: sticky;
+  top: 1.5rem;
+  background: var(--hawk-bg-surface, #0f172a);
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+.pg-metrics-panel h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hawk-accent, #38bdf8);
+}
+.pg-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 0.75rem;
+  margin: 0;
+  font-size: 0.82rem;
+}
+.pg-metrics-grid dt {
+  color: var(--hawk-text-muted, #64748b);
+}
+.pg-metrics-grid dd {
+  margin: 0;
+  text-align: right;
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+.pg-usage {
+  margin-top: 2.5rem;
+  border-top: 1px solid var(--hawk-border-subtle, #1e293b);
+  padding-top: 1.5rem;
+}
+.pg-usage h2 {
+  font-size: 1rem;
+}
+.pg-usage-block {
+  margin-top: 1.25rem;
+}
+.pg-usage-block h3 {
+  font-size: 0.9rem;
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.pg-note {
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 0.88rem;
+  max-width: 60rem;
+}
+.pg-note code {
+  font-size: 0.85em;
+}
+
+.pg-code {
+  position: relative;
+  background: var(--hawk-bg-surface, #0f172a);
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 8px;
+  padding: 1rem 3.5rem 1rem 1rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.pg-code code {
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  color: var(--hawk-text-primary, #f1f5f9);
+  white-space: pre;
+}
+.pg-copy-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--hawk-border-default, #253347);
+  color: var(--hawk-text-secondary, #94a3b8);
+  border-radius: 6px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.pg-copy-btn:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+  border-color: var(--hawk-accent, #38bdf8);
+}
+
+@media (max-width: 900px) {
+  .pg-workbench {
+    grid-template-columns: 1fr;
+  }
+  .pg-metrics-panel {
+    position: static;
+  }
+}

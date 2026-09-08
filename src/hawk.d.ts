@@ -1,6 +1,7 @@
 export interface HawkTheme {
   name: string;
   apply(rootEl: HTMLElement): void;
+  tokens?: Record<string, string>;
 }
 
 export interface HawkAnimationDriver {
@@ -26,6 +27,13 @@ export interface HawkMatch {
   url: string;
   excerpt: string;
   isAnchor: boolean;
+  meta: Record<string, string>;
+}
+
+export interface HawkPin {
+  url: string;
+  title: string;
+  isAnchor: boolean;
 }
 
 export interface HawkState {
@@ -33,6 +41,8 @@ export interface HawkState {
   query: string;
   selectedIndex: number;
   matches: HawkMatch[];
+  pageCount: number;
+  pins: HawkPin[];
   activeTab: string;
   error: Error | null;
 }
@@ -41,7 +51,11 @@ export interface HawkTab {
   id?: string;
   label: string;
   filter?: Record<string, string | string[]>;
+  sort?: Record<string, 'asc' | 'desc'>;
+  accentColor?: string;
   pagefindOptions?: Record<string, unknown>;
+  defaultPreviewUrl?: string;
+  defaultPreviewTitle?: string;
 }
 
 export interface HawkStrings {
@@ -69,28 +83,51 @@ export interface HawkStrings {
   unavailableCounter?: string;
 }
 
+export interface HawkTriggerConfig {
+  kind?: 'minimal' | 'compact' | 'default';
+  container: string | HTMLElement;
+}
+
 export interface HawkSearchConfig {
   index?: string;
   pagefind?: Record<string, unknown>;
   id?: string;
   triggerSelector?: string;
+  trigger?: HawkTriggerConfig;
   container?: HTMLElement;
   params?: HawkParams;
   theme?: string | HawkTheme;
   animation?: string | HawkAnimationDriver | false;
   categories?: string[];
   tabs?: HawkTab[];
+  tabsUrl?: string;
   includeAllTab?: boolean;
   defaultTab?: string;
   pagefindOptions?: Record<string, unknown>;
   categoryFilterName?: string;
   maxResults?: number;
   contentSelector?: string;
+  disableDefaultMarkdownStyles?: boolean;
   hotkeys?: { open?: boolean; slash?: boolean; escape?: boolean };
   strings?: HawkStrings;
   defaultPreviewUrl?: string;
   defaultPreviewTitle?: string;
   eagerResults?: boolean;
+  rotatingPlaceholders?: string[];
+  showPoweredBy?: boolean;
+  poweredByHref?: string;
+  enablePins?: boolean;
+  pinStorageKey?: string;
+  maxPins?: number;
+  inlineFilters?: boolean;
+  previewSections?: boolean;
+  previewSectionSelector?: string;
+  previewSectionExcerptLength?: number;
+  revealAnimation?: 'fade' | 'scale-fade' | 'slide-down' | 'blur-zoom' | 'spring' | string | false;
+  revealDuration?: number;
+  resultsReveal?: boolean;
+  resultsRevealDirection?: 'up' | 'down' | 'left' | 'right';
+  resultsRevealStagger?: number;
   onOpen?: (query: string) => void;
   onClose?: () => void;
   onSelect?: (item: HawkMatch) => void;

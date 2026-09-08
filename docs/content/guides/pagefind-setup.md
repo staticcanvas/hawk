@@ -91,3 +91,26 @@ either), multiple dimensions are ANDed together. When `tabs` is given, `filters(
 called and the pills render synchronously on mount instead of waiting for Pagefind to load. See
 [API reference — Tabs]({{< relref "/api" >}}#tabs) for the full shape, including per-tab
 `pagefindOptions`.
+
+## Inline filter syntax
+
+Tabs are one way to scope by filter — `inlineFilters: true` lets a visitor do it themselves,
+typing the same `dimension:value` shape directly into the search box:
+
+```js
+new HawkSearch({ index: '/pagefind/', inlineFilters: true });
+```
+
+```
+category:Guides responsive nav
+```
+
+parses out `{ category: 'Guides' }` as a filter and searches only `responsive nav` — the same
+filter dimensions `data-pagefind-filter` already marks pages with, `tags`/`category`/anything
+else, no separate configuration to keep in sync. A quoted value (`tag:"multi word"`) keeps its
+spaces; repeating a dimension collects an array, same OR semantics as `tabs[].filter`. It merges
+with whichever tab is active rather than replacing it — inline wins on a dimension collision.
+
+Off by default, because it changes how a literal colon in a normal query behaves — `"ratio: 16:9"`
+would get `ratio:` parsed as a filter attempt. Turn it on for a docs set where visitors are likely
+to know (or discover) the filter dimensions in play; leave it off otherwise.

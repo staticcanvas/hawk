@@ -28,6 +28,18 @@
       "require": "./dist/hawk-animation-typeflow.cjs",
       "default": "./dist/hawk-animation-typeflow.js"
     },
+    "./debug": {
+      "types": "./src/hawk-debug.d.ts",
+      "import": "./dist/hawk-debug.mjs",
+      "require": "./dist/hawk-debug.cjs",
+      "default": "./dist/hawk-debug.js"
+    },
+    "./metrics": {
+      "types": "./src/hawk-metrics.d.ts",
+      "import": "./dist/hawk-metrics.mjs",
+      "require": "./dist/hawk-metrics.cjs",
+      "default": "./dist/hawk-metrics.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -43,7 +55,7 @@
     "serve:demo": "vite --open docs/static/webutil/index.html",
     "docs:build": "npm run build && hugo --source docs && node scripts/pagefind-index.mjs --site public",
     "docs:serve": "npm run build && hugo --source docs && node scripts/pagefind-index.mjs --site public && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
-    "build": "vite build && npm_config_mode=theme-typeflow vite build --config vite.optional.config.js && npm_config_mode=animation-typeflow vite build --config vite.optional.config.js",
+    "build": "vite build && npm_config_mode=theme-typeflow vite build --config vite.optional.config.js && npm_config_mode=animation-typeflow vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=metrics vite build --config vite.optional.config.js",
     "dev:typeflow": "npm run build && node scripts/copy-to-typeflow.mjs",
     "pagefind:index": "node scripts/pagefind-index.mjs",
     "lint": "eslint .",
@@ -51,9 +63,9 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:bun": "bun test",
-    "test:coverage:bun": "bun test --coverage",
-    "test:e2e": "npm run build && hugo --source docs --baseURL http://localhost:4174/public/ && node scripts/pagefind-index.mjs --site public && playwright test",
+    "test:bun": "bun test tests/*.test.js",
+    "test:coverage:bun": "bun test --coverage tests/*.test.js",
+    "test:e2e": "npm run build && hugo --source docs --destination ../public-e2e --baseURL http://localhost:4174/public-e2e/ && node scripts/pagefind-index.mjs --site public-e2e && playwright test",
     "check:size": "node scripts/check-bundle-size.mjs",
     "validate:release": "node scripts/validate-release.mjs",
     "check:quality": "npm run build && npm run check:size && npm test",
@@ -76,10 +88,14 @@
     "pagefind": "^1.5.2"
   },
   "peerDependencies": {
+    "@staticcanvas/logcad": "^0.6.0",
     "@staticcanvas/typeflow": "^0.20.0"
   },
   "peerDependenciesMeta": {
     "@staticcanvas/typeflow": {
+      "optional": true
+    },
+    "@staticcanvas/logcad": {
       "optional": true
     }
   },
@@ -95,6 +111,7 @@
     "@eslint/js": "^9.20.0",
     "@playwright/test": "^1.62.1",
     "@rollup/plugin-terser": "^0.4.4",
+    "@staticcanvas/logcad": "^0.6.0",
     "@vitest/coverage-v8": "^3.2.7",
     "eslint": "^9.20.0",
     "eslint-config-prettier": "^10.0.1",

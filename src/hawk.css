@@ -58,6 +58,153 @@
   color: var(--hawk-text-primary, #f1f5f9);
   box-shadow: var(--hawk-shadow, 0 24px 64px rgba(0, 0, 0, 0.45));
   overflow: hidden;
+  font-family: var(--hawk-font-family, inherit);
+  font-size: var(--hawk-font-size-base, 1rem);
+}
+
+/* ── Modal reveal animations ──────────────────────────────────────────────────────────────
+   config.revealAnimation picks one of the 5 named reveals below via [data-hawk-reveal], applied
+   to .hawk-modal-backdrop/.hawk-modal-dialog only while [data-hawk-anim-state] is 'opening' or
+   'closing' (see hawk.js's open()/close()) — the resting state both sides of that window is just
+   the plain rules above, unanimated. --hawk-reveal-duration is written inline by hawk.js from
+   config.revealDuration (or the built-in default for the chosen name), the single number the
+   CSS animation-duration and hawk.js's close()-then-hide timer both read, so the two can't drift
+   out of sync. A consumer can also pass a name of their own and define matching
+   [data-hawk-reveal="name"] rules — hawk.js only ever sets the attribute and the CSS variable. */
+.hawk-modal[data-hawk-anim-state='closing'] {
+  pointer-events: none;
+}
+
+@keyframes hawk-reveal-fade-in {
+  from { opacity: 0; }
+}
+@keyframes hawk-reveal-fade-out {
+  to { opacity: 0; }
+}
+@keyframes hawk-reveal-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes hawk-reveal-scale-out {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+@keyframes hawk-reveal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+@keyframes hawk-reveal-slide-out {
+  to {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+@keyframes hawk-reveal-blur-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0);
+  }
+}
+@keyframes hawk-reveal-zoom-in {
+  from {
+    opacity: 0;
+    transform: scale(1.045);
+  }
+}
+@keyframes hawk-reveal-spring-in {
+  from {
+    opacity: 0;
+    transform: scale(0.86);
+  }
+}
+
+/* fade — a plain crossfade on both layers, no motion. The simplest and steadiest of the 5. */
+[data-hawk-reveal='fade'][data-hawk-anim-state='opening'] .hawk-modal-backdrop,
+[data-hawk-reveal='fade'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 160ms) ease both;
+}
+[data-hawk-reveal='fade'][data-hawk-anim-state='closing'] .hawk-modal-backdrop,
+[data-hawk-reveal='fade'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 160ms) ease both;
+}
+
+/* scale-fade (default) — the command-palette standard (Linear/Raycast/VS Code Quick Open): the
+   backdrop fades in place, the dialog fades in while easing up from a slight scale-down. */
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 200ms) ease both;
+}
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-in var(--hawk-reveal-duration, 200ms) cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 200ms) ease both;
+}
+[data-hawk-reveal='scale-fade'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-out var(--hawk-reveal-duration, 200ms) ease both;
+}
+
+/* slide-down — the dialog drops in from just above its resting position (Alfred/Spotlight-top
+   style) while the backdrop plain-fades underneath it. */
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 220ms) ease both;
+}
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-slide-in var(--hawk-reveal-duration, 220ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 220ms) ease both;
+}
+[data-hawk-reveal='slide-down'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-slide-out var(--hawk-reveal-duration, 220ms) ease both;
+}
+
+/* blur-zoom — the backdrop's blur ramps up from 0 alongside its fade (rather than starting at
+   full blur), while the dialog eases in from a slight zoomed-in scale. Reads as the search surface
+   "materializing" rather than simply appearing. */
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-blur-in var(--hawk-reveal-duration, 260ms) ease both;
+}
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-zoom-in var(--hawk-reveal-duration, 260ms) ease-out both;
+}
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 260ms) ease both;
+}
+[data-hawk-reveal='blur-zoom'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-out var(--hawk-reveal-duration, 260ms) ease both;
+}
+
+/* spring — the bounciest and most "designed" of the 5 (the Arc-browser/macOS spring feel): a
+   single cubic-bezier with a > 1 mid-curve value carries the dialog's scale past 1 before settling
+   back, no multi-stage keyframe needed. Exits with a plain scale-fade, no bounce on the way out —
+   the bounce reads as intentional only on entry. */
+[data-hawk-reveal='spring'][data-hawk-anim-state='opening'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 340ms) ease both;
+}
+[data-hawk-reveal='spring'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
+  animation: hawk-reveal-spring-in var(--hawk-reveal-duration, 340ms) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+[data-hawk-reveal='spring'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
+  animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 340ms) ease both;
+}
+[data-hawk-reveal='spring'][data-hawk-anim-state='closing'] .hawk-modal-dialog {
+  animation: hawk-reveal-scale-out var(--hawk-reveal-duration, 340ms) ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Belt-and-suspenders: hawk.js already skips setting [data-hawk-anim-state] under reduced
+     motion, so these never actually match in practice — kept in case a consumer's own CSS sets
+     the attribute directly without going through open()/close(). */
+  [data-hawk-reveal][data-hawk-anim-state] .hawk-modal-backdrop,
+  [data-hawk-reveal][data-hawk-anim-state] .hawk-modal-dialog {
+    animation: none;
+  }
 }
 
 /*
@@ -81,6 +228,19 @@
 }
 
 .hawk-modal-header {
+  /* .hawk-modal-dialog is a column flex container with a fixed max-height — without
+     flex-shrink:0 here (and on .hawk-modal-filters/.hawk-modal-footer below), this row has the
+     same default flex-shrink:1 as every other row, including .hawk-modal-body's own flex:1. If
+     the footer's hint text ever wraps onto a second line at a narrow width (nothing in it is
+     nowrap-protected either — see .hawk-hint below) and that pushes total content past
+     max-height, the shrink deficit gets redistributed across every row once .hawk-modal-body
+     hits its own min-height floor — compressing this header's and the filter pills' padding
+     instead of leaving them alone, since the flex algorithm has no notion of "this row is
+     chrome, don't touch it" on its own. Confirmed via Playwright at 375x700: filter pills
+     compressed from 24px to ~10px tall before this fix. flex-shrink:0 opts every fixed-height
+     chrome row out of that redistribution entirely, leaving .hawk-modal-body (still flex:1) as
+     the only row allowed to actually shrink. */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -88,8 +248,14 @@
   border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
 }
 
-.hawk-modal-input {
+.hawk-input-wrap {
+  position: relative;
   flex: 1;
+  min-width: 0;
+}
+
+.hawk-modal-input {
+  width: 100%;
   background: transparent;
   border: none;
   outline: none;
@@ -99,6 +265,28 @@
 }
 .hawk-modal-input::placeholder {
   color: var(--hawk-text-muted, #64748b);
+}
+
+/*
+ * Rotating placeholder overlay (config.rotatingPlaceholders) — an <input>'s native `placeholder`
+ * attribute can't be typed character-by-character by an animation driver (it's browser-rendered,
+ * not a DOM node), so this sits visually where the placeholder would be instead. Only present in
+ * the DOM when rotatingPlaceholders is configured; hidden via [data-hawk-input-active] the
+ * instant the input has a value (see hawk.js's #updatePlaceholderVisibility).
+ */
+.hawk-input-ghost {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+  color: var(--hawk-text-muted, #64748b);
+  font-size: max(1rem, 16px);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hawk-input-wrap[data-hawk-input-active='true'] .hawk-input-ghost {
+  display: none;
 }
 
 .hawk-modal-esc {
@@ -134,6 +322,8 @@
 }
 
 .hawk-modal-filters {
+  /* See .hawk-modal-header's comment — same column-flex shrink-redistribution risk. */
+  flex-shrink: 0;
   display: flex;
   gap: 0.4rem;
   padding: 0.6rem 1rem;
@@ -141,7 +331,62 @@
   overflow-x: auto;
 }
 
+/*
+ * Themed scrollbars — results pane, preview pane, and the filter strip's horizontal overflow.
+ * Two layers, because no single CSS API covers both "themeable color" and "idle low-opacity,
+ * brightens on hover/scroll" across engines yet:
+ *   - scrollbar-color (Firefox, and any engine without the WebKit pseudo-elements below):
+ *     themeable, but the standard doesn't support a separate hover/active state.
+ *   - ::-webkit-scrollbar* (Blink/WebKit): does support per-state styling, so the idle-vs-active
+ *     opacity difference only actually happens in engines that implement these pseudo-elements.
+ */
+.hawk-results-pane,
+.hawk-preview-pane,
+.hawk-modal-filters {
+  scrollbar-width: thin;
+  scrollbar-color: var(--hawk-scrollbar-thumb, rgba(148, 163, 184, 0.35)) transparent;
+}
+.hawk-results-pane::-webkit-scrollbar,
+.hawk-preview-pane::-webkit-scrollbar,
+.hawk-modal-filters::-webkit-scrollbar {
+  width: 8px;
+  height: 6px;
+}
+.hawk-results-pane::-webkit-scrollbar-track,
+.hawk-preview-pane::-webkit-scrollbar-track,
+.hawk-modal-filters::-webkit-scrollbar-track {
+  background: transparent;
+}
+.hawk-results-pane::-webkit-scrollbar-thumb,
+.hawk-preview-pane::-webkit-scrollbar-thumb,
+.hawk-modal-filters::-webkit-scrollbar-thumb {
+  background: var(--hawk-scrollbar-thumb, rgba(148, 163, 184, 0.35));
+  border-radius: 999px;
+  transition: background-color 0.15s ease;
+}
+.hawk-results-pane:hover::-webkit-scrollbar-thumb,
+.hawk-results-pane::-webkit-scrollbar-thumb:hover,
+.hawk-preview-pane:hover::-webkit-scrollbar-thumb,
+.hawk-preview-pane::-webkit-scrollbar-thumb:hover,
+.hawk-modal-filters:hover::-webkit-scrollbar-thumb,
+.hawk-modal-filters::-webkit-scrollbar-thumb:hover,
+.hawk-results-pane[data-hawk-scrolling='true']::-webkit-scrollbar-thumb,
+.hawk-preview-pane[data-hawk-scrolling='true']::-webkit-scrollbar-thumb,
+.hawk-modal-filters[data-hawk-scrolling='true']::-webkit-scrollbar-thumb {
+  /* [data-hawk-scrolling] (see hawk.js's #wireScrollBrighten) brightens on any scroll activity,
+     not just a mouse sitting over the pane — this is what makes keyboard-driven scrolling (the
+     preview pane's arrow-key handler) light the scrollbar up too. */
+  background: var(--hawk-scrollbar-thumb-active, rgba(148, 163, 184, 0.7));
+}
+
 .hawk-filter-pill {
+  /* This row scrolls horizontally (.hawk-modal-filters' overflow-x:auto) rather than wrapping or
+     compressing pills — flex-shrink:0 makes that the only possible outcome under width pressure,
+     matching white-space:nowrap's role for text. */
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   background: transparent;
   border: 1px solid var(--hawk-border-default, #253347);
   border-radius: 999px;
@@ -155,15 +400,43 @@
   outline: 2px solid var(--hawk-accent, #38bdf8);
   outline-offset: 1px;
 }
+/* config.tabs[].accentColor (see hawk.js's #renderFilters) writes --hawk-tab-accent inline on
+   just that pill — every rule below falls back to the theme's own --hawk-accent when a tab
+   doesn't set one, so this is a no-op for tabs that don't opt in. */
 .hawk-filter-pill.active {
-  border-color: var(--hawk-accent, #38bdf8);
-  color: var(--hawk-accent, #38bdf8);
+  border-color: var(--hawk-tab-accent, var(--hawk-accent, #38bdf8));
+  color: var(--hawk-tab-accent, var(--hawk-accent, #38bdf8));
   background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
+}
+@supports (background: color-mix(in srgb, red 10%, transparent)) {
+  .hawk-filter-pill.active {
+    /* Refines the flat --hawk-accent-dim fallback above into a tint of this tab's own accent,
+       in engines that support color-mix (2023+) — progressive enhancement, not a requirement. */
+    background: color-mix(in srgb, var(--hawk-tab-accent, var(--hawk-accent, #38bdf8)) 14%, transparent);
+  }
+}
+/* The color dot renders even when a tab isn't the active one, so an accent reads as "this tab's
+   color" at a glance across the whole row, not just on selection — transparent (invisible, no
+   layout/visual change) for any tab that didn't set accentColor. */
+.hawk-filter-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--hawk-tab-accent, transparent);
+  flex-shrink: 0;
 }
 
 .hawk-modal-body {
   display: grid;
   grid-template-columns: 1.15fr 1fr;
+  /* Without an explicit row track, the single implicit row sizes to its tallest item's content
+     (auto), not to this container's own height — so a long result list silently overflowed
+     max-height instead of the pane itself scrolling (min-height:0 on the panes, below, isn't
+     sufficient on its own: that stops an item's content forcing the row taller, but doesn't make
+     the row fill the container in the first place). minmax(0, 1fr) makes the one row exactly
+     this container's available height, whatever that resolves to between min/max-height. */
+  grid-template-rows: minmax(0, 1fr);
   min-height: 380px;
   max-height: 480px;
   flex: 1;
@@ -201,6 +474,13 @@
 }
 
 .hawk-results-pane {
+  /* Without this, a grid item's automatic minimum size defaults to its content's size, not the
+     grid row's — so a long result list just grows the item past .hawk-modal-body's fixed height
+     instead of the item itself becoming the scroll container. .hawk-modal-body's own
+     overflow:hidden then silently clips everything past ~480px instead of it being reachable by
+     scrolling: no visible bug in short lists, a real "can't get to the rest of the results" bug
+     once the list is long enough to matter. */
+  min-height: 0;
   overflow-y: auto;
   border-right: 1px solid var(--hawk-border-subtle, #1e293b);
   padding: 0.5rem;
@@ -218,13 +498,106 @@
   text-decoration: none;
   color: inherit;
 }
+
+/* ── Staggered result-row reveal ──────────────────────────────────────────────────────────
+   config.resultsReveal (default true) + config.resultsRevealDirection ('up'|'down'|'left'|
+   'right', default 'up') — see hawk.js's #mount() and #renderResults(). [data-hawk-results-
+   reveal] on #root selects the direction; each row's own --hawk-row-index (capped at 10, set
+   inline per row) staggers its animation-delay via --hawk-results-stagger. A single 2-stop
+   keyframe (opacity + one transform) with a spring-y cubic-bezier gets real overshoot cheaply —
+   same technique as the modal's own 'spring' reveal — rather than a heavier multi-stage
+   keyframe, which matters here since it can run on every keystroke's re-render, not once per
+   open(). transform+opacity only: no layout-triggering properties, so this stays cheap even
+   stacked across ~10 rows firing close together. */
+[data-hawk-results-reveal] .hawk-result-item {
+  animation-duration: 260ms;
+  animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-fill-mode: both;
+  animation-delay: calc(var(--hawk-row-index, 0) * var(--hawk-results-stagger, 22ms));
+}
+@keyframes hawk-result-reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+@keyframes hawk-result-reveal-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+@keyframes hawk-result-reveal-left {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+@keyframes hawk-result-reveal-right {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+[data-hawk-results-reveal='up'] .hawk-result-item {
+  animation-name: hawk-result-reveal-up;
+}
+[data-hawk-results-reveal='down'] .hawk-result-item {
+  animation-name: hawk-result-reveal-down;
+}
+[data-hawk-results-reveal='left'] .hawk-result-item {
+  animation-name: hawk-result-reveal-left;
+}
+[data-hawk-results-reveal='right'] .hawk-result-item {
+  animation-name: hawk-result-reveal-right;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-hawk-results-reveal] .hawk-result-item {
+    animation: none;
+  }
+}
+
 .hawk-result-item:hover,
 .hawk-result-item.is-selected {
   background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
 }
+.hawk-result-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 .hawk-result-title {
   font-weight: 600;
   font-size: 0.9rem;
+}
+.hawk-meta-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--hawk-border-default, #253347);
+  color: var(--hawk-text-muted, #64748b);
+  white-space: nowrap;
+}
+.hawk-pin-btn {
+  display: inline-block;
+  margin-left: auto;
+  font-size: 0.68rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--hawk-border-default, #253347);
+  color: var(--hawk-text-muted, #64748b);
+  white-space: nowrap;
+  cursor: pointer;
+}
+.hawk-pin-btn:hover {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-accent, #38bdf8);
+}
+.hawk-pin-btn.is-pinned {
+  border-color: var(--hawk-accent-alt, #fb923c);
+  color: var(--hawk-accent-alt, #fb923c);
+  background: var(--hawk-accent-alt-dim, rgba(251, 146, 60, 0.12));
 }
 .hawk-result-desc {
   margin-top: 0.2rem;
@@ -236,8 +609,10 @@
   overflow: hidden;
 }
 .hawk-result-desc mark {
-  background: var(--hawk-accent-glow, rgba(56, 189, 248, 0.25));
-  color: inherit;
+  background: var(--hawk-mark-bg, var(--hawk-accent-glow, rgba(56, 189, 248, 0.25)));
+  color: var(--hawk-mark-color, inherit);
+  font-weight: var(--hawk-mark-weight, inherit);
+  font-style: var(--hawk-mark-style, inherit);
   border-radius: 3px;
 }
 
@@ -248,6 +623,8 @@
 }
 
 .hawk-preview-pane {
+  /* See .hawk-results-pane's comment — same fix, same reason. */
+  min-height: 0;
   overflow-y: auto;
   padding: 1rem;
   background: var(--hawk-preview-bg, rgba(9, 13, 22, 0.65));
@@ -274,8 +651,10 @@
   line-height: 1.5;
 }
 .hawk-preview-content mark {
-  background: var(--hawk-accent-glow, rgba(56, 189, 248, 0.25));
-  color: inherit;
+  background: var(--hawk-mark-bg, var(--hawk-accent-glow, rgba(56, 189, 248, 0.25)));
+  color: var(--hawk-mark-color, inherit);
+  font-weight: var(--hawk-mark-weight, inherit);
+  font-style: var(--hawk-mark-style, inherit);
   border-radius: 3px;
 }
 .hawk-preview-loading {
@@ -288,98 +667,103 @@
  * Code block *coloring* comes for free from the site's own build (e.g. Hugo's chroma
  * highlighter with noClasses:true bakes token colors in as inline styles) — these rules only
  * handle layout: spacing, block chrome, and readable defaults for un-highlighted markup.
+ *
+ * Every selector below is scoped :not([data-hawk-markdown-styles="off"]) — set via
+ * config.disableDefaultMarkdownStyles, this attribute lets a consumer opt out of hawk's own
+ * prose opinions entirely and target .hawk-preview-content with their own CSS (e.g. an existing
+ * site-wide .prose class) instead of fighting these rules' specificity.
  */
-.hawk-preview-content :first-child {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :first-child {
   margin-top: 0;
 }
-.hawk-preview-content :last-child {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :last-child {
   margin-bottom: 0;
 }
-.hawk-preview-content h1,
-.hawk-preview-content h2,
-.hawk-preview-content h3,
-.hawk-preview-content h4,
-.hawk-preview-content h5,
-.hawk-preview-content h6 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h1,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h2,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h3,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h4,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h5,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h6 {
   color: var(--hawk-text-primary, #f1f5f9);
   line-height: 1.3;
   margin: 1.1em 0 0.4em;
 }
-.hawk-preview-content h1 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h1 {
   font-size: 1.15em;
 }
-.hawk-preview-content h2 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h2 {
   font-size: 1.08em;
 }
-.hawk-preview-content h3,
-.hawk-preview-content h4,
-.hawk-preview-content h5,
-.hawk-preview-content h6 {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h3,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h4,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h5,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h6 {
   font-size: 1em;
 }
-.hawk-preview-content p,
-.hawk-preview-content ul,
-.hawk-preview-content ol,
-.hawk-preview-content blockquote,
-.hawk-preview-content table,
-.hawk-preview-content pre {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) p,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ul,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ol,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) blockquote,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) table,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre {
   margin: 0 0 0.85em;
 }
-.hawk-preview-content ul,
-.hawk-preview-content ol {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ul,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ol {
   padding-left: 1.3em;
 }
-.hawk-preview-content li {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) li {
   margin: 0.2em 0;
 }
-.hawk-preview-content a {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) a {
   color: var(--hawk-accent, #38bdf8);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.hawk-preview-content strong {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) strong {
   color: var(--hawk-text-primary, #f1f5f9);
 }
-.hawk-preview-content hr {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) hr {
   border: none;
   border-top: 1px solid var(--hawk-border-subtle, #1e293b);
   margin: 1.2em 0;
 }
-.hawk-preview-content img {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) img {
   max-width: 100%;
   border-radius: 6px;
 }
-.hawk-preview-content blockquote {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) blockquote {
   border-left: 3px solid var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
   padding: 0.1em 0 0.1em 0.9em;
   color: var(--hawk-text-muted, #64748b);
 }
-.hawk-preview-content table {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9em;
 }
-.hawk-preview-content th,
-.hawk-preview-content td {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) th,
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) td {
   border: 1px solid var(--hawk-border-subtle, #1e293b);
   padding: 0.35em 0.55em;
   text-align: left;
 }
-.hawk-preview-content th {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) th {
   color: var(--hawk-text-primary, #f1f5f9);
 }
 
 /* Code: inline vs. block. `pre > code` is a highlighted block; bare `code` is inline. */
-.hawk-preview-content code {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.88em;
 }
-.hawk-preview-content :not(pre) > code {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :not(pre) > code {
   background: var(--hawk-bg-surface-elevated, #1e293b);
   border-radius: 4px;
   padding: 0.1em 0.4em;
 }
-.hawk-preview-content pre {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre {
   background: var(--hawk-bg-canvas, #090d16);
   border: 1px solid var(--hawk-border-subtle, #1e293b);
   border-radius: 8px;
@@ -387,20 +771,65 @@
   overflow-x: auto;
   line-height: 1.45;
 }
-.hawk-preview-content pre code {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre code {
   background: none;
   padding: 0;
   white-space: pre;
 }
 /* Hugo/chroma wraps highlighted blocks in .highlight > pre — flatten our chrome onto it too. */
-.hawk-preview-content .highlight {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) .highlight {
   margin: 0 0 0.85em;
 }
-.hawk-preview-content .highlight pre {
+.hawk-preview-content:not([data-hawk-markdown-styles="off"]) .highlight pre {
   margin: 0;
 }
 
+/* config.previewSections — a page-level match's content broken into clickable heading+excerpt
+   rows instead of the full page dump (see hawk.js's #renderPreviewSections). .hawk-preview-section-row
+   is an <a> inside .hawk-preview-content, which the markdown-styling block above already targets
+   with ".hawk-preview-content:not([data-hawk-markdown-styles='off']) a { text-decoration: underline }"
+   at specificity (0,2,1) — ".hawk-preview-section-row" alone is only (0,1,0) and can never outrank
+   that regardless of source order, so the selector below repeats ".hawk-preview-content" to reach
+   the same (0,2,1) and let source position (this comes later) actually decide the tie. */
+.hawk-preview-content a.hawk-preview-section-row {
+  display: block;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
+  text-decoration: none;
+  color: inherit;
+}
+.hawk-preview-section-row:first-child {
+  padding-top: 0;
+}
+.hawk-preview-section-row:last-child {
+  border-bottom: none;
+}
+.hawk-preview-section-row:hover .hawk-preview-section-title {
+  color: var(--hawk-accent, #38bdf8);
+}
+.hawk-preview-section-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.hawk-preview-section-excerpt {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--hawk-text-secondary, #94a3b8);
+  line-height: 1.5;
+}
+
 .hawk-modal-footer {
+  /* See .hawk-modal-header's comment — same column-flex shrink-redistribution risk. Also
+     overflow-x:auto (not wrap): none of .hawk-hint/.hawk-modal-counter/.hawk-powered-by below
+     had white-space:nowrap, so at a narrow width the hint text used to wrap onto a second line
+     instead of the row scrolling — growing this row's own height, which is exactly what fed the
+     header/filters squish above (a taller footer pushes the dialog past max-height, and once
+     .hawk-modal-body hits its min-height floor, the deficit lands on every other row). Matches
+     .hawk-modal-filters' own scroll-not-wrap pattern. */
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -408,7 +837,65 @@
   border-top: 1px solid var(--hawk-border-subtle, #1e293b);
   font-size: 0.75rem;
   color: var(--hawk-text-muted, #64748b);
+  overflow-x: auto;
+}
+.hawk-hint {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .hawk-modal-counter {
+  flex-shrink: 0;
+  white-space: nowrap;
   margin-left: auto;
+}
+.hawk-powered-by {
+  flex-shrink: 0;
+  color: var(--hawk-powered-by-color, var(--hawk-text-muted, #64748b));
+  opacity: var(--hawk-powered-by-opacity, 0.7);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.hawk-powered-by:hover,
+.hawk-powered-by:focus-visible {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/*
+ * Built-in trigger button (config.trigger) — an alternative to the consumer hand-building their
+ * own [data-search-trigger] markup. Unscoped by [data-hawk-theme] since it renders outside
+ * hawk's own root element (into config.trigger.container, wherever the consumer's page puts it);
+ * a theme's CSS file still reaches it fine since --hawk-* custom properties inherit normally.
+ */
+.hawk-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 8px;
+  background: var(--hawk-bg-surface, #0f172a);
+  color: var(--hawk-text-muted, #64748b);
+  cursor: pointer;
+  font-family: var(--hawk-font-family, inherit);
+  font-size: 0.85rem;
+}
+.hawk-trigger:hover,
+.hawk-trigger:focus-visible {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+.hawk-trigger-minimal {
+  padding: 0.45rem;
+}
+.hawk-trigger-icon {
+  flex-shrink: 0;
+}
+.hawk-trigger-kbd {
+  margin-left: 0.25rem;
+  padding: 0.1rem 0.35rem;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 4px;
+  font-size: 0.72rem;
+  color: var(--hawk-text-muted, #64748b);
 }

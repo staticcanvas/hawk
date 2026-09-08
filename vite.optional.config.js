@@ -20,6 +20,20 @@ const MODES = {
     entry: 'src/hawk-animation-typeflow.js',
     globalName: 'HawkAnimationTypeflow',
     external: ['@staticcanvas/typeflow'],
+    globals: { '@staticcanvas/typeflow': 'TypeFlow' },
+  },
+  debug: {
+    name: 'hawk-debug',
+    entry: 'src/hawk-debug.js',
+    globalName: 'HawkDebug',
+    external: ['@staticcanvas/logcad'],
+    globals: { '@staticcanvas/logcad': 'logcad' },
+  },
+  metrics: {
+    name: 'hawk-metrics',
+    entry: 'src/hawk-metrics.js',
+    globalName: 'HawkMetrics',
+    external: [],
   },
 };
 
@@ -29,7 +43,7 @@ if (!mode) {
     `vite.optional.config.js requires npm_config_mode to be one of: ${Object.keys(MODES).join(', ')}`
   );
 }
-const { name, entry, globalName, external, cssSource } = mode;
+const { name, entry, globalName, external, cssSource, globals } = mode;
 
 /** Vite plugin that copies optional bundles into the documentation web utility. */
 const stageOptionalAssets = {
@@ -62,7 +76,7 @@ const output = (format, fileName, plugins = []) => ({
   dir: bundleDist,
   entryFileNames: fileName,
   plugins,
-  ...(external.length ? { globals: { '@staticcanvas/typeflow': 'TypeFlow' } } : {}),
+  ...(external.length ? { globals } : {}),
 });
 
 export default defineConfig({

@@ -1,0 +1,468 @@
+{{ define "main" }}
+{{/*
+  playground/single.html — a real, linked page (not a hidden prototype) mounting a second,
+  independently-scoped HawkSearch instance against this site's own real Pagefind index
+  (document.body.dataset.hawkIndex, same value baseof.html's production instance uses), with
+  controls for every theme/animation/reveal/layout option HawkSearchConfig exposes (including
+  every createHawkAnimationTypeflow sub-option once the typeflow driver is selected), plus
+  Debug/Metrics toggles demonstrating @staticcanvas/hawk/debug and /metrics, and a live,
+  copy-pasteable code panel mirroring the current controls.
+
+  Deliberately its own instance/trigger/id (data-playground-trigger, not [data-search-trigger]) so
+  it never collides with baseof.html's production search mounted on every page including this one
+  — see the script block below for why hotkeys are also turned off here.
+*/}}
+<div class="doc-page doc-page--no-toc doc-page--playground">
+  <article class="doc-article">
+    <span hidden data-pagefind-filter="category:{{ .Params.category }}"></span>
+    <span hidden data-pagefind-sort="date">{{ .Lastmod.Format "2006-01-02" }}</span>
+    <header class="doc-header">
+      {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+
+    <div class="pg-workbench">
+      <div class="pg-controls">
+        <button class="pg-open-btn" type="button" data-playground-trigger>Open playground search</button>
+        <p class="pg-status" id="pg-status">Loading hawk...</p>
+
+        <fieldset>
+          <legend>Theme</legend>
+          <label><input type="radio" name="pg-theme" value="typeflow" checked> typeflow</label>
+          <label><input type="radio" name="pg-theme" value="none"> none (unstyled)</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Animation driver</legend>
+          <label><input type="radio" name="pg-animation" value="instant" checked> instant</label>
+          <label><input type="radio" name="pg-animation" value="typeflow"> typeflow</label>
+        </fieldset>
+
+        {{/* Every option createHawkAnimationTypeflow(TypeFlow, options) accepts (src/hawk-animation-typeflow.js's
+             DEFAULT_TITLE_CONFIG/DEFAULT_ANCHOR_TITLE_CONFIG/DEFAULT_CONTENT_CONFIG/DEFAULT_ROTATE_CONFIG) —
+             hidden until "typeflow" is selected above. Changing any of these re-mounts (see mount() below):
+             the driver object is resolved once at HawkSearch construction, so re-registering it afterward
+             wouldn't retroactively reach an already-built instance. */}}
+        <fieldset id="pg-typeflow-options" hidden>
+          <legend>TypeFlow options</legend>
+
+          <fieldset class="pg-tf-subgroup">
+            <legend>Title (page titles)</legend>
+            <label>speed <input type="number" id="pg-tf-title-speed" value="2" min="1" max="10" class="pg-number"></label>
+            <label>cursor <input type="text" id="pg-tf-title-cursor" value="|" maxlength="4" class="pg-text"></label>
+            <label><input type="checkbox" id="pg-tf-title-cursor-blink"> cursorBlink</label>
+          </fieldset>
+
+          <fieldset class="pg-tf-subgroup">
+            <legend>Anchor title (section titles)</legend>
+            <label>typeStyle <select id="pg-tf-anchor-style" class="pg-select">
+              <option value="scramble" selected>scramble</option>
+              <option value="char">char</option>
+              <option value="word">word</option>
+              <option value="fade-trail">fade-trail</option>
+            </select></label>
+            <label>scrambleCharset <select id="pg-tf-anchor-charset" class="pg-select">
+              <option value="cyber" selected>cyber</option>
+              <option value="matrix">matrix</option>
+              <option value="ascii">ascii</option>
+              <option value="ascii-extended">ascii-extended</option>
+              <option value="blocks">blocks</option>
+              <option value="binary">binary</option>
+              <option value="hex">hex</option>
+              <option value="braille">braille</option>
+              <option value="runic">runic</option>
+            </select></label>
+            <label>scrambleRounds <input type="number" id="pg-tf-anchor-rounds" value="1" min="0" max="6" class="pg-number"></label>
+            <label>speed <input type="number" id="pg-tf-anchor-speed" value="2" min="1" max="10" class="pg-number"></label>
+            <label>cursor <input type="text" id="pg-tf-anchor-cursor" value="|" maxlength="4" class="pg-text"></label>
+            <label><input type="checkbox" id="pg-tf-anchor-cursor-blink"> cursorBlink</label>
+          </fieldset>
+
+          <fieldset class="pg-tf-subgroup">
+            <legend>Content (preview pane)</legend>
+            <label><input type="checkbox" id="pg-tf-content-html" checked> html</label>
+            <label>speed <input type="number" id="pg-tf-content-speed" value="2" min="1" max="10" class="pg-number"></label>
+            <label>cursor <input type="text" id="pg-tf-content-cursor" value="" maxlength="4" class="pg-text"></label>
+          </fieldset>
+
+          <fieldset class="pg-tf-subgroup">
+            <legend>Rotate (placeholder)</legend>
+            <label>holdDuration <input type="number" id="pg-tf-rotate-hold" value="3000" min="500" max="8000" step="100" class="pg-number"> ms</label>
+            <label>pauseBetween <input type="number" id="pg-tf-rotate-pause" value="200" min="0" max="2000" step="50" class="pg-number"> ms</label>
+            <label>typeConfig.speed <input type="number" id="pg-tf-rotate-type-speed" value="2" min="1" max="10" class="pg-number"></label>
+            <label>typeConfig.cursor <input type="text" id="pg-tf-rotate-type-cursor" value="|" maxlength="4" class="pg-text"></label>
+            <label><input type="checkbox" id="pg-tf-rotate-type-cursor-blink" checked> typeConfig.cursorBlink</label>
+            <label>eraseConfig.speed <input type="number" id="pg-tf-rotate-erase-speed" value="2" min="1" max="10" class="pg-number"></label>
+            <label>eraseConfig.eraseStyle <select id="pg-tf-rotate-erase-style" class="pg-select">
+              <option value="end" selected>end</option>
+              <option value="start">start</option>
+              <option value="center">center</option>
+              <option value="scramble">scramble</option>
+              <option value="fade-trail">fade-trail</option>
+              <option value="instant">instant</option>
+              <option value="fade">fade</option>
+            </select></label>
+          </fieldset>
+        </fieldset>
+
+        <fieldset>
+          <legend>Modal reveal</legend>
+          <label><select id="pg-reveal-animation" class="pg-select">
+            <option value="scale-fade" selected>scale-fade</option>
+            <option value="fade">fade</option>
+            <option value="slide-down">slide-down</option>
+            <option value="blur-zoom">blur-zoom</option>
+            <option value="spring">spring</option>
+            <option value="false">off</option>
+          </select></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Results reveal</legend>
+          <label><input type="checkbox" id="pg-results-reveal" checked> enabled</label>
+          <label>direction <select id="pg-results-reveal-direction" class="pg-select">
+            <option value="up" selected>up</option>
+            <option value="down">down</option>
+            <option value="left">left</option>
+            <option value="right">right</option>
+          </select></label>
+          <label>stagger <input type="number" id="pg-results-reveal-stagger" value="22" min="0" max="80" step="2" class="pg-number"> ms</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Layout</legend>
+          <label>scale <select id="pg-scale" class="pg-select">
+            <option value="0.8">0.8&times;</option>
+            <option value="1" selected>1&times;</option>
+            <option value="1.2">1.2&times;</option>
+          </select></label>
+          <label>position <select id="pg-position" class="pg-select">
+            <option value="top-center" selected>top-center</option>
+            <option value="center">center</option>
+            <option value="top-left">top-left</option>
+            <option value="top-right">top-right</option>
+          </select></label>
+          <label>columns <select id="pg-columns" class="pg-select">
+            <option value="2" selected>2</option>
+            <option value="1">1</option>
+          </select></label>
+          <label>density <select id="pg-density" class="pg-select">
+            <option value="fit" selected>fit</option>
+            <option value="medium">medium</option>
+            <option value="compact">compact</option>
+          </select></label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Diagnostics</legend>
+          <label><input type="checkbox" id="pg-debug"> Debug (logs to devtools console)</label>
+          <label><input type="checkbox" id="pg-metrics"> Metrics (live readout below)</label>
+        </fieldset>
+      </div>
+
+      <div class="pg-metrics-panel" id="pg-metrics-panel" hidden>
+        <h2>Metrics snapshot</h2>
+        <dl class="pg-metrics-grid" id="pg-metrics-grid"></dl>
+      </div>
+    </div>
+
+    <section class="pg-usage">
+      <h2>Use this in your project</h2>
+
+      <div class="pg-usage-block">
+        <h3>1. Build the Pagefind index</h3>
+        <p class="pg-note">
+          Hawk never builds or writes a search index itself — it only <em>reads</em> one Pagefind
+          already produced. If <code>config.index</code> points at nothing, or at a stale build,
+          hawk's own Pagefind runtime fails to load and every search silently returns zero
+          results. Run Pagefind against your <em>built</em> site once per deploy, after your
+          static site generator runs and before anyone opens the search modal. See the
+          <a href="{{ "guides/pagefind-setup/" | relURL }}">Pagefind Setup guide</a> for scoping
+          your content with <code>data-pagefind-body</code> first — indexing before that step is
+          the #1 footgun (chrome/nav text polluting every result).
+        </p>
+
+        <pre class="pg-code"><code>{{ `"scripts": {
+  "build": "your-static-site-generator && pagefind --site public"
+}` }}</code><button class="pg-copy-btn" type="button">Copy</button></pre>
+
+        <p class="pg-note">Or the same thing programmatically, e.g. from a custom build script:</p>
+
+        <pre class="pg-code"><code>{{ `import * as pagefind from 'pagefind';
+
+const { index } = await pagefind.createIndex();
+await index.addDirectory({ path: 'public' });
+await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button class="pg-copy-btn" type="button">Copy</button></pre>
+      </div>
+
+      <div class="pg-usage-block">
+        <h3>2. Mount HawkSearch with the options above</h3>
+        <p class="pg-note">Updates live as you change any control on this page.</p>
+        <pre class="pg-code"><code id="pg-code-output"></code><button class="pg-copy-btn" type="button" id="pg-copy-config">Copy</button></pre>
+      </div>
+    </section>
+  </article>
+</div>
+
+{{/* Plain (non-module) global-build scripts, not ESM — hawk-debug.js's UMD build externalizes
+     @staticcanvas/logcad as window.logcad, which is never staged here (see the Debug guide's
+     console-fallback note), so it safely resolves to undefined and createHawkDebug takes its
+     console fallback path. Regular scripts run synchronously as parsed, before the deferred
+     module script below, so window.HawkDebug/window.HawkMetrics already exist by the time it runs. */}}
+<script src="{{ "webutil/libs/hawk-debug.js" | relURL }}"></script>
+<script src="{{ "webutil/libs/hawk-metrics.js" | relURL }}"></script>
+
+<script type="module">
+  import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
+  import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
+
+  HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+  // A theme that stamps nothing — hawk.css's own unthemed structural styles apply, none of
+  // hawk-theme-typeflow.css's [data-hawk-theme='typeflow'] rules do. HawkSearchConfig has no
+  // "no theme" sentinel (unlike animation's `false`), so an explicit no-op theme is the way to
+  // demonstrate the unstyled baseline here.
+  HawkSearch.registerTheme('blank', { name: 'blank', apply() {} });
+
+  const statusEl = document.getElementById('pg-status');
+  const val = (id) => document.getElementById(id).value;
+  const checked = (id) => document.getElementById(id).checked;
+  const radio = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
+
+  let search = null;
+  let debugController = null;
+  let metricsController = null;
+  let metricsTimer = null;
+  let typeflowModule = null; // { TypeFlow, createHawkAnimationTypeflow }, cached once loaded
+
+  // TypeFlow itself is a peer dependency hawk's own docs build doesn't stage by default (see
+  // architecture/README.md) — the toggle degrades to 'instant' with a visible note instead of
+  // throwing when webutil/libs/typeflow.mjs isn't present. Only the *module* is cached — the
+  // driver itself is rebuilt fresh on every mount() so TypeFlow-option changes below actually
+  // take effect (HawkSearch resolves config.animation to a driver object once at construction).
+  async function loadTypeflowModule() {
+    if (typeflowModule) return typeflowModule;
+    try {
+      const [{ default: TypeFlow }, { createHawkAnimationTypeflow }] = await Promise.all([
+        import('{{ "webutil/libs/typeflow.mjs" | relURL }}'),
+        import('{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}'),
+      ]);
+      typeflowModule = { TypeFlow, createHawkAnimationTypeflow };
+      return typeflowModule;
+    } catch {
+      return null;
+    }
+  }
+
+  function currentTypeflowOptions() {
+    return {
+      title: {
+        speed: Number(val('pg-tf-title-speed')),
+        cursor: val('pg-tf-title-cursor'),
+        cursorBlink: checked('pg-tf-title-cursor-blink'),
+      },
+      anchorTitle: {
+        typeStyle: val('pg-tf-anchor-style'),
+        scrambleCharset: val('pg-tf-anchor-charset'),
+        scrambleRounds: Number(val('pg-tf-anchor-rounds')),
+        speed: Number(val('pg-tf-anchor-speed')),
+        cursor: val('pg-tf-anchor-cursor'),
+        cursorBlink: checked('pg-tf-anchor-cursor-blink'),
+      },
+      content: {
+        html: checked('pg-tf-content-html'),
+        speed: Number(val('pg-tf-content-speed')),
+        cursor: val('pg-tf-content-cursor'),
+      },
+      rotate: {
+        holdDuration: Number(val('pg-tf-rotate-hold')),
+        pauseBetween: Number(val('pg-tf-rotate-pause')),
+        typeConfig: {
+          speed: Number(val('pg-tf-rotate-type-speed')),
+          cursor: val('pg-tf-rotate-type-cursor'),
+          cursorBlink: checked('pg-tf-rotate-type-cursor-blink'),
+        },
+        eraseConfig: {
+          speed: Number(val('pg-tf-rotate-erase-speed')),
+          eraseStyle: val('pg-tf-rotate-erase-style'),
+        },
+      },
+    };
+  }
+
+  function currentParams() {
+    return {
+      scale: Number(val('pg-scale')),
+      position: val('pg-position'),
+      columns: Number(val('pg-columns')),
+      density: val('pg-density'),
+    };
+  }
+
+  function buildConfigSnippet() {
+    const theme = radio('pg-theme');
+    const animation = radio('pg-animation');
+    const revealAnimation = val('pg-reveal-animation');
+    const lines = [`import { HawkSearch } from '@staticcanvas/hawk';`];
+    if (theme !== 'none') lines.push(`import { HawkThemeTypeflow } from '@staticcanvas/hawk/theme-typeflow';`);
+    if (animation === 'typeflow') {
+      lines.push(`import { createHawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';`);
+      lines.push(`import TypeFlow from '@staticcanvas/typeflow';`);
+    }
+    lines.push('');
+    if (theme !== 'none') lines.push(`HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);`);
+    if (animation === 'typeflow') {
+      lines.push(`HawkSearch.registerAnimation('typeflow', createHawkAnimationTypeflow(TypeFlow, ${JSON.stringify(currentTypeflowOptions(), null, 2)}));`);
+    }
+    lines.push('');
+    const config = {
+      index: '/pagefind/',
+      theme: theme === 'none' ? 'blank' : 'typeflow',
+      animation: animation === 'typeflow' ? 'typeflow' : false,
+      revealAnimation: revealAnimation === 'false' ? false : revealAnimation,
+      resultsReveal: checked('pg-results-reveal'),
+      resultsRevealDirection: val('pg-results-reveal-direction'),
+      resultsRevealStagger: Number(val('pg-results-reveal-stagger')),
+      params: currentParams(),
+    };
+    lines.push(`new HawkSearch(${JSON.stringify(config, null, 2)});`);
+    return lines.join('\n');
+  }
+
+  function refreshCodeSnippet() {
+    const el = document.getElementById('pg-code-output');
+    if (el) el.textContent = buildConfigSnippet();
+  }
+
+  function renderMetricsSnapshot() {
+    if (!metricsController) return;
+    const snap = metricsController.snapshot();
+    const grid = document.getElementById('pg-metrics-grid');
+    const rows = [
+      ['opens', snap.opens],
+      ['queries', snap.queries],
+      ['zero-result rate', snap.zeroResultRate],
+      ['avg matches', snap.averageMatches],
+      ['avg query latency (ms)', snap.averageQueryLatencyMs],
+      ['selects', snap.selects],
+      ['select rate', snap.selectRate],
+      ['tab switches', snap.tabSwitches],
+      ['pins (+/-)', `${snap.pinAdds}/${snap.pinRemoves}`],
+      ['errors', snap.errors],
+    ];
+    grid.innerHTML = rows.map(([label, value]) => `<dt>${label}</dt><dd>${value}</dd>`).join('');
+  }
+
+  function teardownDiagnostics() {
+    debugController?.dispose();
+    debugController = null;
+    metricsController?.dispose();
+    metricsController = null;
+    clearInterval(metricsTimer);
+    metricsTimer = null;
+  }
+
+  function applyDiagnostics() {
+    teardownDiagnostics();
+    if (!search) return;
+
+    if (checked('pg-debug') && window.HawkDebug) {
+      debugController = window.HawkDebug.createHawkDebug(search, { label: 'Playground' });
+    }
+
+    const metricsPanel = document.getElementById('pg-metrics-panel');
+    if (checked('pg-metrics') && window.HawkMetrics) {
+      metricsController = window.HawkMetrics.createHawkMetrics(search);
+      metricsPanel.hidden = false;
+      renderMetricsSnapshot();
+      metricsTimer = setInterval(renderMetricsSnapshot, 500);
+    } else {
+      metricsPanel.hidden = true;
+    }
+  }
+
+  let mountGeneration = 0;
+
+  async function mount() {
+    // Two controls changed in quick succession (e.g. a TypeFlow option right after switching the
+    // animation radio) can each start a mount() call before the first one's await resolves —
+    // whichever finishes last would otherwise win regardless of which is actually newer. Same
+    // stale-response guard shape as hawk.js's own #executeSearch (searchGeneration).
+    const generation = ++mountGeneration;
+
+    const animation = radio('pg-animation');
+    document.getElementById('pg-typeflow-options').hidden = animation !== 'typeflow';
+
+    let resolvedAnimation = 'instant';
+    let fallbackNote = '';
+    if (animation === 'typeflow') {
+      const mod = await loadTypeflowModule();
+      if (generation !== mountGeneration) return; // a newer mount() call superseded this one
+      if (mod) {
+        HawkSearch.registerAnimation('typeflow', mod.createHawkAnimationTypeflow(mod.TypeFlow, currentTypeflowOptions()));
+        resolvedAnimation = 'typeflow';
+      } else {
+        fallbackNote = ' (typeflow build not found in webutil/libs — see the Animation Plugins guide to stage one)';
+      }
+    }
+
+    search?.destroy();
+    const revealAnimation = val('pg-reveal-animation');
+    search = new HawkSearch({
+      index: document.body.dataset.hawkIndex,
+      id: 'hawk-playground-search',
+      triggerSelector: '[data-playground-trigger]',
+      contentSelector: '.doc-article',
+      hotkeys: { open: false, slash: false, escape: true },
+      theme: radio('pg-theme') === 'none' ? 'blank' : 'typeflow',
+      animation: resolvedAnimation === 'typeflow' ? 'typeflow' : false,
+      revealAnimation: revealAnimation === 'false' ? false : revealAnimation,
+      resultsReveal: checked('pg-results-reveal'),
+      resultsRevealDirection: val('pg-results-reveal-direction'),
+      resultsRevealStagger: Number(val('pg-results-reveal-stagger')),
+      params: currentParams(),
+    });
+
+    statusEl.textContent = `Mounted — animation: ${resolvedAnimation}, theme: ${radio('pg-theme')}.${fallbackNote}`;
+    applyDiagnostics();
+    refreshCodeSnippet();
+  }
+
+  document.querySelectorAll('.pg-controls input[type="radio"], .pg-controls input[type="checkbox"]').forEach((input) => {
+    input.addEventListener('change', () => {
+      if (input.id === 'pg-debug' || input.id === 'pg-metrics') {
+        applyDiagnostics();
+      } else {
+        mount();
+      }
+    });
+  });
+  document.querySelectorAll('.pg-controls select, .pg-controls input[type="number"], .pg-controls input[type="text"]').forEach((input) => {
+    input.addEventListener('change', () => {
+      if (input.closest('#pg-typeflow-options') || ['pg-reveal-animation', 'pg-results-reveal-direction', 'pg-results-reveal-stagger'].includes(input.id)) {
+        mount();
+      } else {
+        search?.setParams(currentParams());
+        refreshCodeSnippet();
+      }
+    });
+  });
+
+  document.querySelectorAll('.pg-copy-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.previousElementSibling;
+      try {
+        await navigator.clipboard.writeText(code.textContent);
+        const prev = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = prev; }, 1200);
+      } catch {
+        // Clipboard API unavailable (permissions, insecure context) — the code is still
+        // selectable/readable in the block itself, so this is a silent no-op, not an error.
+      }
+    });
+  });
+
+  mount();
+</script>
+{{ end }}

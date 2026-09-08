@@ -60,6 +60,18 @@ reveals it in place of the results pane (`[data-hawk-show-preview]`); tabbing or
 hides it again. This is the only way to reach the preview in a single-column layout — there's no
 separate "view result" button.
 
+### Scrollbars
+
+The results pane, preview pane, and filter strip all get a themed scrollbar (thin, low-opacity at
+rest, brightening on hover *or* while actively scrolling — see
+[Theming — token list]({{< relref "/guides/theming" >}}#token-list) for
+`--hawk-scrollbar-thumb`/`-active`). The scroll trigger fires on a `scroll` event regardless of
+cause, so keyboard-driven scrolling (arrow keys in the preview pane) lights it up the same as a
+mouse wheel, fading back to idle ~500ms after the last scroll. Both the hover and scroll triggers
+are Blink/WebKit-only (`::-webkit-scrollbar-thumb`) — the standards-track `scrollbar-color`
+property Firefox uses doesn't support a separate hover/active state, so there the thumb stays at
+its idle color throughout.
+
 ## Initial popup state
 
 Three config keys shape what the modal shows the instant it opens, before the visitor has typed

@@ -1,25 +1,31 @@
 ---
 title: Hawk
-description: Themeable, pluggable command-palette search for static sites.
+description: Themeable, pluggable command-palette search widget for static sites.
 category: Overview
+hero:
+  eyebrow: Search widget for static sites
+  tagline: Pagefind-backed command-palette search you can actually make match your site — theme it, tab it, pin it, or leave every default exactly as it ships.
+  install: npm install @staticcanvas/hawk
+features:
+  - title: Pagefind-backed
+    body: Chunked, lazily-loaded index with typo tolerance, scaling past a hand-rolled in-browser scorer — hawk owns the UI, Pagefind owns ranking.
+  - title: Tabs, curated or auto-derived
+    body: Auto-derived category pills by default, explicit tabs with full Pagefind filter power, a sort-based listing tab (e.g. "Recently updated"), or a tab list loaded from a JSON file.
+  - title: Themeable to the token
+    body: Every color, font, and scrollbar is a --hawk-* custom property. Ship a CSS file, or a few tokens inline with theme.tokens — no fork required.
+  - title: Real page previews
+    body: The preview pane fetches and renders the actual matched page — headings, code blocks, tables — not a short excerpt. A page-level match can break into a scannable section outline instead of a full dump.
+  - title: Modal reveal animations
+    body: 5 built-in open/close animations (fade, scale-fade, slide-down, blur-zoom, spring), a custom one of your own, or none — always instant under prefers-reduced-motion.
+  - title: Fit, medium, or compact
+    body: An in-modal density switcher, persisted per visitor, on top of scale/position/columns layout params.
+  - title: Keyboard-first
+    body: A real focus trap, two-pane Tab navigation, arrow-key scrolling, Ctrl/Cmd+K — accessible by default, not bolted on after the fact.
+  - title: Pins and inline filters
+    body: Visitors pin results for later, or type category:Guides directly into the search box — Pagefind's own filtering, exposed as a typed shortcut.
+  - title: Zero-config to start
+    body: One constructor call, a Pagefind index, and a trigger element get you a working search. Typeflow's typewriter and a built-in trigger button are opt-in.
 ---
-
-## Overview
-
-Hawk is a search modal extracted from typeflow's docs site search. It owns the DOM, keyboard
-navigation, and result rendering; [Pagefind](https://pagefind.app/) owns indexing, ranking, and
-typo-tolerant matching; visual theme and reveal animation are swappable plugins rather than
-hardcoded choices.
 
 This site's own search box (top of every page, or Ctrl+K) is hawk searching itself — there's no
 separate demo page, because dogfooding it here is the demo.
-
-## Where to start
-
-- [Get started]({{< relref "/getting-started" >}}) — install, build a Pagefind index, mount hawk.
-- [Theming]({{< relref "/guides/theming" >}}) — the token contract and how to write a new theme.
-- [Animation plugins]({{< relref "/guides/animation-plugins" >}}) — the driver contract, the
-  built-in typeflow and instant drivers, and how to write your own.
-- [Pagefind setup]({{< relref "/guides/pagefind-setup" >}}) — the `data-pagefind-body` /
-  `data-pagefind-ignore` scoping that makes match quality good.
-- [API reference]({{< relref "/api" >}}) — full config, `HawkSearch` methods, and public state.

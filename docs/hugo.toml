@@ -7,7 +7,7 @@ enableGitInfo = true
 disableKinds = ['taxonomy', 'term']
 
 [params]
-  version = '0.1.0'
+  version = '0.5.2'
   description = 'Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations, swappable visual themes.'
   repository = 'https://gitlab.com/staticcanvas/hawk'
   github = 'https://github.com/staticcanvas/hawk'
@@ -16,8 +16,10 @@ disableKinds = ['taxonomy', 'term']
   [markup.goldmark.renderer]
     unsafe = true
   [markup.highlight]
-    noClasses = true
-    style = 'github-dark'
+    noClasses = false
+    guessSyntax = true
+    lineNos = false
+    tabWidth = 2
 
 [[module.mounts]]
   source = 'static'
@@ -35,6 +37,10 @@ disableKinds = ['taxonomy', 'term']
     name = 'Get started'
     pageRef = '/getting-started/'
     weight = 20
+  [[menu.main]]
+    name = 'Playground'
+    pageRef = '/playground/'
+    weight = 25
   [[menu.main]]
     name = 'Guides'
     identifier = 'guides'
@@ -55,6 +61,26 @@ disableKinds = ['taxonomy', 'term']
     parent = 'guides'
     pageRef = '/guides/pagefind-setup/'
     weight = 33
+  [[menu.main]]
+    name = 'Density and keyboard navigation'
+    parent = 'guides'
+    pageRef = '/guides/density-and-navigation/'
+    weight = 34
+  [[menu.main]]
+    name = 'Pins, the built-in trigger, and attribution'
+    parent = 'guides'
+    pageRef = '/guides/pins-and-embedding/'
+    weight = 35
+  [[menu.main]]
+    name = 'Debug'
+    parent = 'guides'
+    pageRef = '/guides/debug/'
+    weight = 36
+  [[menu.main]]
+    name = 'Metrics'
+    parent = 'guides'
+    pageRef = '/guides/metrics/'
+    weight = 37
   [[menu.main]]
     name = 'API reference'
     pageRef = '/api/'

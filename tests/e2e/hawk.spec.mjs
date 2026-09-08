@@ -15,7 +15,7 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     const modal = page.locator('.hawk-modal');
     await expect(modal).toBeHidden();
 
-    await page.locator('[data-search-trigger]').click();
+    await page.locator('[data-search-trigger]').first().click();
     await expect(modal).toBeVisible();
     await expect(page.locator('.hawk-modal-input')).toBeFocused();
 
@@ -29,23 +29,51 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
   });
 
   test('typing a real query returns a real result with a working preview', async ({ page }) => {
-    await page.locator('[data-search-trigger]').click();
+    await page.locator('[data-search-trigger]').first().click();
     await page.locator('.hawk-modal-input').fill('pagefind');
 
+    // "matching result", not just "a result exists" — eagerResults' own unfiltered listing (its
+    // counter reads "N entries", not "N matching results") can otherwise satisfy a looser check
+    // before this debounced query's own results replace it; see #executeSearch's
+    // #searchGeneration comment in hawk.js.
+    await expect(page.locator('.hawk-modal-counter')).toContainText('matching result');
     const firstResult = page.locator('.hawk-result-item').first();
     await expect(firstResult).toBeVisible();
-    await expect(page.locator('.hawk-modal-counter')).not.toHaveText('Type to search');
 
     // The preview pane renders real fetched page content, not just Pagefind's excerpt.
     await expect(page.locator('.hawk-preview-content')).not.toHaveText('');
   });
 
-  test('ArrowDown/ArrowUp move the selection and Enter navigates to the selected result', async ({
-    page,
-  }) => {
-    await page.locator('[data-search-trigger]').click();
+  test('the results pane actually scrolls a long list instead of silently clipping it', async ({ page }) => {
+    // Regression test for a real CSS Grid bug jsdom can't catch (no layout engine): without an
+    // explicit grid-template-rows track and min-height:0 on the panes, .hawk-results-pane grew
+    // to fit all content instead of being clamped by .hawk-modal-body, and the outer
+    // overflow:hidden silently clipped everything past ~480px — results existed in the DOM and
+    // in state.matches, but were visually unreachable past the first handful of rows.
+    await page.locator('[data-search-trigger]').first().click();
+    await page.locator('.hawk-modal-input').fill('pagefind'); // a broad term with enough matches to overflow
+    // Not just "a result is visible" — eagerResults' own unfiltered listing (page load, no query)
+    // can satisfy that the instant it renders, whether or not it happens to still be racing this
+    // debounced query at that moment (both go through #executeSearch; see its own #searchGeneration
+    // comment). The counter text is query-specific ("N matching results" vs eagerResults'
+    // "N entries"), so waiting on it actually waits for *this* query's own results.
+    await expect(page.locator('.hawk-modal-counter')).toContainText('matching result');
+
+    const { offsetHeight, scrollHeight } = await page.locator('.hawk-results-pane').evaluate((el) => ({
+      offsetHeight: el.offsetHeight,
+      scrollHeight: el.scrollHeight,
+    }));
+    expect(scrollHeight).toBeGreaterThan(offsetHeight);
+
+    const lastResult = page.locator('.hawk-result-item').last();
+    await lastResult.scrollIntoViewIfNeeded();
+    await expect(lastResult).toBeInViewport();
+  });
+
+  test('ArrowDown/ArrowUp move the selection and Enter navigates to the selected result', async ({ page }) => {
+    await page.locator('[data-search-trigger]').first().click();
     await page.locator('.hawk-modal-input').fill('guide');
-    await expect(page.locator('.hawk-result-item').first()).toBeVisible();
+    await expect(page.locator('.hawk-modal-counter')).toContainText('matching result');
 
     await page.keyboard.press('ArrowDown');
     const selected = page.locator('.hawk-result-item.is-selected');
@@ -56,10 +84,8 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(page).toHaveURL(new RegExp(targetHref.replace(/\/$/, '') + '/?$'));
   });
 
-  test('Tab focus is trapped inside the modal: Shift+Tab from the input wraps to the last stop', async ({
-    page,
-  }) => {
-    await page.locator('[data-search-trigger]').click();
+  test('Tab focus is trapped inside the modal: Shift+Tab from the input wraps to the last stop', async ({ page }) => {
+    await page.locator('[data-search-trigger]').first().click();
     const input = page.locator('.hawk-modal-input');
     await expect(input).toBeFocused();
 
@@ -75,12 +101,12 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
   });
 
   test('the density switcher changes and persists the layout across reopen', async ({ page }) => {
-    await page.locator('[data-search-trigger]').click();
+    await page.locator('[data-search-trigger]').first().click();
     await page.locator('.hawk-density-btn[data-density="compact"]').click();
     await expect(page.locator('.hawk-modal')).toHaveAttribute('data-hawk-density', 'compact');
 
     await page.keyboard.press('Escape');
-    await page.locator('[data-search-trigger]').click();
+    await page.locator('[data-search-trigger]').first().click();
     await expect(page.locator('.hawk-modal')).toHaveAttribute('data-hawk-density', 'compact');
 
     const stored = await page.evaluate(() => localStorage.getItem('hawk:density'));
