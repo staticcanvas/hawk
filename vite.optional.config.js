@@ -60,6 +60,19 @@ const stageOptionalAssets = {
     if (cssSource && existsSync(resolve(cssSource))) {
       cpSync(resolve(cssSource), resolve(destination, cssSource.split('/').pop()));
     }
+    // The docs dogfood the released TypeFlow adapter without depending on a CDN/network at
+    // runtime. The adapter keeps TypeFlow external in published bundles, while this one official
+    // package file is staged beside the docs assets and resolved through the import map below.
+    if (process.env.npm_config_mode === 'animation-typeflow') {
+      cpSync(
+        resolve('node_modules/@staticcanvas/typeflow/dist/typeflow.mjs'),
+        resolve(destination, 'typeflow.mjs')
+      );
+      cpSync(
+        resolve('node_modules/@staticcanvas/typeflow/dist/typeflow.mjs.map'),
+        resolve(destination, 'typeflow.mjs.map')
+      );
+    }
   },
 };
 

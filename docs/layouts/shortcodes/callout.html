@@ -1,0 +1,6 @@
+{{- $requested := lower (.Get "type" | default "info") -}}
+{{- $type := cond (in (slice "info" "success" "warning" "danger") $requested) $requested "info" -}}
+<aside class="callout callout--{{ $type }}" role="note">
+  {{- with .Get "title" }}<strong class="callout__title">{{ . }}</strong>{{ end -}}
+  <div class="callout__body">{{ .Inner | markdownify }}</div>
+</aside>

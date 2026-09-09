@@ -62,4 +62,3 @@ branding/dist
 mr.md
 # Repository-local rivet checkout managed by rivet.ps1
 /rivet/
-.rivet

@@ -1,0 +1,48 @@
+{{ $currentPage := . }}
+{{ $relatedPages := slice }}
+{{ $seen := dict $currentPage.RelPermalink true }}
+{{ $category := $currentPage.Params.category }}
+
+{{/* Prefer pages from the same content category. */}}
+{{ range site.RegularPages }}
+  {{ if and (eq .Params.category $category) (not (isset $seen .RelPermalink)) }}
+    {{ $relatedPages = $relatedPages | append . }}
+    {{ $seen = merge $seen (dict .RelPermalink true) }}
+  {{ end }}
+{{ end }}
+
+{{/* Fill sparse categories from the curated documentation menu order. */}}
+{{ range site.Menus.main }}
+  {{ with .Page }}
+    {{ if and (ne .Kind "home") (not (isset $seen .RelPermalink)) }}
+      {{ $relatedPages = $relatedPages | append . }}
+      {{ $seen = merge $seen (dict .RelPermalink true) }}
+    {{ end }}
+  {{ end }}
+  {{ range .Children }}
+    {{ with .Page }}
+      {{ if not (isset $seen .RelPermalink) }}
+        {{ $relatedPages = $relatedPages | append . }}
+        {{ $seen = merge $seen (dict .RelPermalink true) }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+<div class="toc-details" data-pagefind-ignore>
+  <div class="toc-meta">
+    <span>Last modified</span>
+    <time datetime="{{ $currentPage.Lastmod.Format "2006-01-02" }}">{{ $currentPage.Lastmod.Format "2 Jan 2006" }}</time>
+  </div>
+
+  {{ with first 3 $relatedPages }}
+  <section class="toc-related" aria-labelledby="toc-related-title">
+    <span class="toc-detail-title" id="toc-related-title">See also</span>
+    <ul>
+      {{ range . }}
+      <li><a href="{{ .RelPermalink }}">{{ .LinkTitle }}</a></li>
+      {{ end }}
+    </ul>
+  </section>
+  {{ end }}
+</div>

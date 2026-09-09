@@ -22,28 +22,60 @@ A theme is two things: a CSS file that defines `--hawk-*` custom properties scop
 `apply()` runs once when `HawkSearch` mounts. It doesn't inject the stylesheet — loading the CSS
 is the consumer's job, via a `<link>` tag or `import '@staticcanvas/hawk/theme-typeflow/css'`.
 
+## Light, dark, and Dark Reader
+
+The Typeflow theme is dark-first. It switches to its light palette when an ancestor has
+`data-theme="light"`; `data-theme="dark"` keeps the dark palette authoritative. If the host has
+not declared either value, Typeflow follows `prefers-color-scheme` automatically.
+
+Sites that already provide a complete light/dark theme can prevent Dark Reader from recoloring
+Hawk and the surrounding interface a second time:
+
+```html
+<meta name="color-scheme" content="dark light">
+<meta name="darkreader-lock">
+```
+
+Place both elements in `<head>` before stylesheets. Hawk's documentation uses this arrangement so
+the page, sticky header, search modal, and browser-native controls remain on the same palette.
+
 ## Token list
 
 `hawk.css` (structural, ships with core) reads every color through a `--hawk-*` custom property
 with a neutral fallback, so hawk renders — unstyled but usable — with zero theme loaded. A theme
 only needs to redefine tokens:
 
-**Color/chrome**: `--hawk-bg-canvas` · `--hawk-bg-surface` · `--hawk-bg-surface-elevated` ·
-`--hawk-border-subtle` · `--hawk-border-default` · `--hawk-border-strong` · `--hawk-text-primary`
-· `--hawk-text-secondary` · `--hawk-text-muted` · `--hawk-accent` · `--hawk-accent-dim` ·
-`--hawk-accent-glow` · `--hawk-accent-alt` · `--hawk-accent-alt-dim` · `--hawk-accent-alt-glow` ·
-`--hawk-backdrop` · `--hawk-preview-bg` · `--hawk-shadow` · `--hawk-radius`
-
-**Type**: `--hawk-font-family` · `--hawk-font-size-base`
-
-**Match highlighting**: `--hawk-mark-bg` (falls back to `--hawk-accent-glow`) · `--hawk-mark-color`
-· `--hawk-mark-weight` · `--hawk-mark-style`
-
-**Scrollbars** (results pane, preview pane, filter strip): `--hawk-scrollbar-thumb` (idle) ·
-`--hawk-scrollbar-thumb-active` (hover/scrolling — Blink/WebKit only, `scrollbar-color` has no
-separate hover state on Firefox/standards-track engines)
-
-**Powered-by attribution**: `--hawk-powered-by-color` · `--hawk-powered-by-opacity`
+| Group | Token | Controls |
+|---|---|---|
+| Canvas | `--hawk-bg-canvas` | Base canvas behind Hawk surfaces. |
+| Canvas | `--hawk-bg-surface` | Dialog, header, filters, footer, and result surfaces. |
+| Canvas | `--hawk-bg-surface-elevated` | Elevated controls and selected states. |
+| Border | `--hawk-border-subtle` | Internal separators and quiet outlines. |
+| Border | `--hawk-border-default` | Dialog and interactive-control borders. |
+| Border | `--hawk-border-strong` | Hover, focus, and stronger separators. |
+| Text | `--hawk-text-primary` | Titles and primary content. |
+| Text | `--hawk-text-secondary` | Descriptions and supporting content. |
+| Text | `--hawk-text-muted` | Hints, dates, and inactive controls. |
+| Accent | `--hawk-accent` | Primary interactive and selected-state color. |
+| Accent | `--hawk-accent-dim` | Low-emphasis accent surface. |
+| Accent | `--hawk-accent-glow` | Accent glow and default match background. |
+| Accent | `--hawk-accent-alt` | Secondary accent. |
+| Accent | `--hawk-accent-alt-dim` | Low-emphasis secondary accent surface. |
+| Accent | `--hawk-accent-alt-glow` | Secondary accent glow. |
+| Overlay | `--hawk-backdrop` | Viewport backdrop behind the dialog. |
+| Overlay | `--hawk-preview-bg` | Preview-column background. |
+| Shape | `--hawk-shadow` | Dialog shadow. |
+| Shape | `--hawk-radius` | Dialog corner radius. |
+| Typography | `--hawk-font-family` | Font stack used by Hawk. |
+| Typography | `--hawk-font-size-base` | Base type size. |
+| Match | `--hawk-mark-bg` | Highlight background; falls back to `--hawk-accent-glow`. |
+| Match | `--hawk-mark-color` | Highlighted text color. |
+| Match | `--hawk-mark-weight` | Highlighted text weight. |
+| Match | `--hawk-mark-style` | Highlighted text style. |
+| Scrollbar | `--hawk-scrollbar-thumb` | Idle results, preview, and filter scrollbar thumb. |
+| Scrollbar | `--hawk-scrollbar-thumb-active` | Active thumb in Blink/WebKit; Firefox has no separate hover state. |
+| Attribution | `--hawk-powered-by-color` | Powered-by link color. |
+| Attribution | `--hawk-powered-by-opacity` | Powered-by link opacity. |
 
 ## A JS-only theming path: `theme.tokens`
 

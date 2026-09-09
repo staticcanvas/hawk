@@ -15,45 +15,71 @@
  */
 
 [data-hawk-theme='typeflow'] {
-  --hawk-bg-canvas: #090d16;
-  --hawk-bg-surface: #0f172a;
-  --hawk-bg-surface-elevated: #1e293b;
-  --hawk-border-subtle: #1e293b;
-  --hawk-border-default: #253347;
-  --hawk-border-strong: #334155;
-  --hawk-text-primary: #f1f5f9;
-  --hawk-text-secondary: #94a3b8;
-  --hawk-text-muted: #64748b;
-  --hawk-accent: #38bdf8;
-  --hawk-accent-dim: rgba(56, 189, 248, 0.12);
-  --hawk-accent-glow: rgba(56, 189, 248, 0.25);
-  --hawk-accent-alt: #fb923c;
-  --hawk-accent-alt-dim: rgba(251, 146, 60, 0.12);
-  --hawk-accent-alt-glow: rgba(251, 146, 60, 0.25);
-  --hawk-backdrop: rgba(9, 13, 22, 0.8);
-  --hawk-preview-bg: rgba(9, 13, 22, 0.65);
-  --hawk-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--hawk-accent-dim);
+  --hawk-bg-canvas: #36454f;
+  --hawk-bg-surface: #2f3c45;
+  --hawk-bg-surface-elevated: #43545f;
+  --hawk-border-subtle: #4a5c67;
+  --hawk-border-default: #5a6c77;
+  --hawk-border-strong: #73858f;
+  --hawk-text-primary: #f4f8f7;
+  --hawk-text-secondary: #d0dcda;
+  --hawk-text-muted: #a6b7b4;
+  --hawk-accent: #20e3b2;
+  --hawk-accent-dim: rgba(32, 227, 178, 0.1);
+  --hawk-accent-glow: rgba(32, 227, 178, 0.2);
+  --hawk-accent-alt: #29ffc6;
+  --hawk-accent-alt-dim: rgba(41, 255, 198, 0.1);
+  --hawk-accent-alt-glow: rgba(41, 255, 198, 0.18);
+  --hawk-backdrop: rgba(26, 34, 39, 0.82);
+  --hawk-preview-bg: rgba(47, 60, 69, 0.78);
+  --hawk-shadow: 0 24px 64px rgba(10, 16, 19, 0.48), 0 0 0 1px var(--hawk-accent-dim);
   --hawk-radius: 14px;
 }
 
 [data-hawk-theme='typeflow'][data-theme='light'],
-[data-theme='light'] [data-hawk-theme='typeflow'] {
-  --hawk-bg-canvas: #f8fafc;
+[data-theme='light'] [data-hawk-theme='typeflow'],
+[data-darkreader-scheme='dimmed'] [data-hawk-theme='typeflow'] {
+  --hawk-bg-canvas: #f5faf8;
   --hawk-bg-surface: #ffffff;
-  --hawk-bg-surface-elevated: #f1f5f9;
-  --hawk-border-subtle: #e2e8f0;
-  --hawk-border-default: #cbd5e1;
-  --hawk-border-strong: #94a3b8;
-  --hawk-text-primary: #0f172a;
-  --hawk-text-secondary: #475569;
-  --hawk-text-muted: #94a3b8;
-  --hawk-accent: #0284c7;
-  --hawk-accent-dim: rgba(2, 132, 199, 0.1);
-  --hawk-accent-glow: rgba(2, 132, 199, 0.2);
-  --hawk-accent-alt: #ea580c;
-  --hawk-accent-alt-dim: rgba(234, 88, 12, 0.1);
-  --hawk-accent-alt-glow: rgba(234, 88, 12, 0.2);
+  --hawk-bg-surface-elevated: #e9f4f0;
+  --hawk-border-subtle: #dbe9e4;
+  --hawk-border-default: #c5dad3;
+  --hawk-border-strong: #8fb3a8;
+  --hawk-text-primary: #10211c;
+  --hawk-text-secondary: #45645b;
+  --hawk-text-muted: #6d8b82;
+  --hawk-accent: #008f6c;
+  --hawk-accent-dim: rgba(0, 143, 108, 0.09);
+  --hawk-accent-glow: rgba(0, 143, 108, 0.16);
+  --hawk-accent-alt: #00a77b;
+  --hawk-accent-alt-dim: rgba(0, 167, 123, 0.09);
+  --hawk-accent-alt-glow: rgba(0, 167, 123, 0.16);
   --hawk-backdrop: rgba(15, 23, 42, 0.35);
   --hawk-preview-bg: rgba(241, 245, 249, 0.75);
   --hawk-shadow: 0 24px 64px rgba(15, 23, 42, 0.18), 0 0 0 1px var(--hawk-accent-dim);
+}
+
+/* Follow the OS only when the host has not declared a theme. Explicit host state remains the
+   source of truth, while the Dark Reader marker exclusion prevents competing conversions. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]):not([data-darkreader-scheme]) [data-hawk-theme='typeflow'] {
+    --hawk-bg-canvas: #f5faf8;
+    --hawk-bg-surface: #ffffff;
+    --hawk-bg-surface-elevated: #e9f4f0;
+    --hawk-border-subtle: #dbe9e4;
+    --hawk-border-default: #c5dad3;
+    --hawk-border-strong: #8fb3a8;
+    --hawk-text-primary: #10211c;
+    --hawk-text-secondary: #45645b;
+    --hawk-text-muted: #6d8b82;
+    --hawk-accent: #008f6c;
+    --hawk-accent-dim: rgba(0, 143, 108, 0.09);
+    --hawk-accent-glow: rgba(0, 143, 108, 0.16);
+    --hawk-accent-alt: #00a77b;
+    --hawk-accent-alt-dim: rgba(0, 167, 123, 0.09);
+    --hawk-accent-alt-glow: rgba(0, 167, 123, 0.16);
+    --hawk-backdrop: rgba(15, 23, 42, 0.35);
+    --hawk-preview-bg: rgba(241, 245, 249, 0.75);
+    --hawk-shadow: 0 24px 64px rgba(15, 23, 42, 0.18), 0 0 0 1px var(--hawk-accent-dim);
+  }
 }

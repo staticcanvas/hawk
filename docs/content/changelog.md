@@ -13,6 +13,9 @@ in the repository, following [Keep a Changelog](https://keepachangelog.com/en/1.
 pre-1.0 and hasn't cut a tagged release yet — the versions there track `package.json`'s history,
 not published tags.
 
+- **Unreleased** — Hugo frontmatter mapping into Pagefind metadata/filters/sorts, configurable
+  date and tag rows beneath result descriptions, indented anchor results, and independently
+  configurable density/Escape header controls.
 - **0.5.2** — fixed a real, confirmed reflected-XSS vulnerability (the typed search query reached
   `innerHTML` unescaped via `strings.noResults`).
 - **0.5.1** — a real search-results race condition (`#searchGeneration`), a modal-chrome

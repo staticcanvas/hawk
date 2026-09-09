@@ -31,11 +31,48 @@ back into `stop()`, which runs before every preview re-render and on `destroy()`
 
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
-import { createHawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
-import TypeFlow from '@staticcanvas/typeflow';
+import { HawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
 
-HawkSearch.registerAnimation('typeflow', createHawkAnimationTypeflow(TypeFlow));
+HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
 new HawkSearch({ index: '/pagefind/', animation: 'typeflow' });
+```
+
+The adapter imports the released `@staticcanvas/typeflow` package directly. For advanced
+configuration, `createHawkAnimationTypeflow(TypeFlow, options)` remains available as a factory.
+
+### TypeFlow reveal styles
+
+The factory accepts complete TypeFlow configuration objects for `title`, `anchorTitle`,
+`content`, and the rotating placeholder's nested `typeConfig` and `eraseConfig`.
+
+| Style | Supported surfaces | Behaviour |
+|---|---|---|
+| `char` | Type | Character-by-character reveal. |
+| `word` | Type | Word-by-word reveal. |
+| `scramble` | Type and erase | Resolves text through a configurable glyph set. |
+| `fade-trail` | Type and erase | Adds a trailing opacity ramp. |
+| `word-fade` | Type and erase | Fades words without changing their final layout. |
+| `float-in-top`, `float-in-bottom` | Type and erase | Moves words vertically while changing opacity. |
+| `float-in-left`, `float-in-right` | Type and erase | Moves words horizontally while changing opacity. |
+| `zoom-in-space` | Type and erase | Uses perspective depth and scale. |
+| `end`, `start`, `center`, `fade`, `instant` | Erase | Additional erase-only strategies. |
+
+```js
+import TypeFlow from '@staticcanvas/typeflow';
+import { createHawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
+
+const animation = createHawkAnimationTypeflow(TypeFlow, {
+  title: { typeStyle: 'word-fade', direction: 'center' },
+  anchorTitle: { typeStyle: 'zoom-in-space', wordOrder: 'random' },
+  content: { typeStyle: 'float-in-bottom', wordMotionDistance: 18 },
+  rotate: {
+    typeConfig: { typeStyle: 'fade-trail' },
+    eraseConfig: { eraseStyle: 'float-in-top' },
+  },
+});
+
+HawkSearch.registerAnimation('typeflow-spatial', animation);
+new HawkSearch({ index: '/pagefind/', animation: 'typeflow-spatial' });
 ```
 
 Omit `animation` to prefer `'typeflow'` when it's registered, falling back to `'instant'`

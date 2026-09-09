@@ -1,0 +1,67 @@
+{{ define "main" }}
+<div class="doc-page doc-page--no-toc theme-gallery-page">
+  <article class="doc-article">
+    {{ partial "pagefind-frontmatter.html" . }}
+    <header class="doc-header">
+      {{ partial "breadcrumbs.html" . }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+
+    <div class="theme-gallery" id="theme-gallery" aria-live="polite"></div>
+    <p class="theme-gallery-status" id="theme-gallery-status">Choose a profile to open its isolated search preview.</p>
+  </article>
+</div>
+
+<script type="module">
+  import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
+  import { HawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
+  import {
+    HAWK_GALLERY_THEMES,
+    createHawkDocsTheme,
+    getHawkGalleryTheme,
+  } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
+
+  HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
+  const gallery = document.getElementById('theme-gallery');
+  const status = document.getElementById('theme-gallery-status');
+  let activePreview = null;
+
+  gallery.innerHTML = HAWK_GALLERY_THEMES.map((theme) => `
+    <button class="theme-gallery-card" type="button" data-gallery-theme="${theme.id}">
+      <span class="theme-gallery-card__swatches" aria-hidden="true">
+        <i style="--swatch:${theme.tokens['--hawk-bg-surface']}"></i>
+        <i style="--swatch:${theme.tokens['--hawk-accent']}"></i>
+        <i style="--swatch:${theme.tokens['--hawk-accent-alt']}"></i>
+      </span>
+      <strong>${theme.label}</strong>
+      <span>${theme.description}</span>
+      <code>${theme.params.position} · ${theme.params.density} · ${theme.revealAnimation} · ${theme.colorModes.join('/')}</code>
+    </button>
+  `).join('');
+
+  gallery.addEventListener('click', (event) => {
+    const card = event.target.closest('[data-gallery-theme]');
+    if (!card) return;
+    const definition = getHawkGalleryTheme(card.dataset.galleryTheme);
+    if (!definition) return;
+
+    activePreview?.destroy();
+    activePreview = new HawkSearch({
+      index: document.body.dataset.hawkIndex,
+      triggerSelector: '[data-gallery-trigger-unused]',
+      theme: createHawkDocsTheme(`gallery-${definition.id}`, definition.tokens),
+      animation: 'typeflow',
+      params: definition.params,
+      revealAnimation: definition.revealAnimation,
+      rotatingPlaceholders: [`Search with ${definition.label}...`],
+      contentSelector: '.doc-article',
+      hotkeys: { open: false, slash: false, escape: true },
+    });
+    gallery.querySelectorAll('[aria-pressed]').forEach((item) => item.removeAttribute('aria-pressed'));
+    card.setAttribute('aria-pressed', 'true');
+    status.textContent = `${definition.label} preview active.`;
+    activePreview.open();
+  });
+</script>
+{{ end }}

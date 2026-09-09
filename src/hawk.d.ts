@@ -36,6 +36,13 @@ export interface HawkPin {
   isAnchor: boolean;
 }
 
+export interface HawkRecentlyViewedItem {
+  url: string;
+  title: string;
+  isAnchor: boolean;
+  viewedAt: string;
+}
+
 export interface HawkState {
   open: boolean;
   query: string;
@@ -43,6 +50,8 @@ export interface HawkState {
   matches: HawkMatch[];
   pageCount: number;
   pins: HawkPin[];
+  recentlyViewed: HawkRecentlyViewedItem[];
+  secondColumnEnabled: boolean;
   activeTab: string;
   error: Error | null;
 }
@@ -81,6 +90,7 @@ export interface HawkStrings {
   entries?: (count: number) => string;
   unavailable?: string;
   unavailableCounter?: string;
+  recentlyViewedTab?: string;
 }
 
 export interface HawkTriggerConfig {
@@ -104,8 +114,16 @@ export interface HawkSearchConfig {
   includeAllTab?: boolean;
   defaultTab?: string;
   pagefindOptions?: Record<string, unknown>;
+  pagefindInitOptions?: Record<string, unknown>;
+  pagefindMergeIndexes?: Array<{ bundlePath: string; options?: Record<string, unknown> }>;
   categoryFilterName?: string;
   maxResults?: number;
+  showResultDate?: boolean;
+  resultDateMetaKey?: string;
+  showResultTags?: boolean;
+  resultTagsMetaKey?: string;
+  headerControls?: false | { density?: boolean; escape?: boolean };
+  excludePages?: string | string[];
   contentSelector?: string;
   disableDefaultMarkdownStyles?: boolean;
   hotkeys?: { open?: boolean; slash?: boolean; escape?: boolean };
@@ -119,6 +137,10 @@ export interface HawkSearchConfig {
   enablePins?: boolean;
   pinStorageKey?: string;
   maxPins?: number;
+  enableRecentlyViewed?: boolean;
+  recentlyViewedStorageKey?: string;
+  maxRecentlyViewed?: number;
+  enableSecondColumn?: boolean;
   inlineFilters?: boolean;
   previewSections?: boolean;
   previewSectionSelector?: string;

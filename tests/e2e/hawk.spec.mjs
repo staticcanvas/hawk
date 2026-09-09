@@ -28,6 +28,61 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(modal).toBeHidden();
   });
 
+  test('documentation code blocks expose a working copy control', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: async (text) => {
+            window.__copiedCode = text;
+          },
+        },
+      });
+    });
+    await page.goto('getting-started/index.html');
+
+    const copyButton = page.locator('.code-copy-btn').first();
+    await expect(copyButton).toBeVisible();
+    await copyButton.click();
+    await expect(copyButton).toHaveText('Copied');
+    await expect.poll(() => page.evaluate(() => window.__copiedCode)).toContain('npm install');
+  });
+
+  test('docs, modal, tables, and playground do not overflow phone or tablet viewports', async ({ page }) => {
+    for (const width of [360, 768]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('guides/theming/index.html');
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await expect(page.locator('.doc-content table').first()).toBeVisible();
+
+      await page.locator('[data-search-trigger]').first().click();
+      const dialogBox = await page.locator('.hawk-modal-dialog').boundingBox();
+      expect(dialogBox.width).toBeLessThanOrEqual(width);
+      await page.keyboard.press('Escape');
+
+      await page.goto('playground/index.html');
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+
+      await page.goto('themes/index.html');
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    }
+  });
+
+  test('theme gallery mounts one isolated profile at a time', async ({ page }) => {
+    await page.goto('themes/index.html');
+    const cards = page.locator('[data-gallery-theme]');
+    await expect(cards).toHaveCount(3);
+
+    await cards.nth(1).click();
+    await expect(page.locator('.hawk-modal:visible')).toHaveCount(1);
+    await expect(cards.nth(1)).toHaveAttribute('aria-pressed', 'true');
+    await page.keyboard.press('Escape');
+
+    await cards.nth(2).click();
+    await expect(page.locator('.hawk-modal:visible')).toHaveCount(1);
+    await expect(cards.nth(2)).toHaveAttribute('aria-pressed', 'true');
+  });
+
   test('typing a real query returns a real result with a working preview', async ({ page }) => {
     await page.locator('[data-search-trigger]').first().click();
     await page.locator('.hawk-modal-input').fill('pagefind');
@@ -42,6 +97,36 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
 
     // The preview pane renders real fetched page content, not just Pagefind's excerpt.
     await expect(page.locator('.hawk-preview-content')).not.toHaveText('');
+  });
+
+  test('frontmatter metadata reaches real Pagefind results beneath the description', async ({ page }) => {
+    await page.locator('[data-search-trigger]').first().click();
+    await page.locator('.hawk-modal-input').fill('frontmatter');
+    await expect(page.locator('.hawk-modal-counter')).toContainText('matching result');
+
+    const result = page.locator('.hawk-result-item[href*="pagefind-setup"]').first();
+    await expect(result).toBeVisible();
+    await expect(result.locator('.hawk-result-date')).toHaveText(/^\d{4}-\d{2}-\d{2}$/);
+    await expect(result.locator('.hawk-result-tag')).toContainText(['Pagefind', 'metadata', 'frontmatter']);
+    await expect(result.locator('.hawk-result-desc + .hawk-result-meta')).toBeVisible();
+  });
+
+  test('anchor results are visually identified as indented subpages', async ({ page }) => {
+    await page.locator('[data-search-trigger]').first().click();
+    await page.locator('.hawk-modal-input').fill('frontmatter');
+    await expect(page.locator('.hawk-modal-counter')).toContainText('matching result');
+    await expect(page.locator('.hawk-result-item--subpage').first()).toBeVisible();
+  });
+
+  test('the configured home page exclusion removes it from the real Pagefind listing', async ({ page }) => {
+    await page.locator('[data-search-trigger]').first().click();
+    await expect(page.locator('.hawk-modal-counter')).toContainText('entries');
+
+    const paths = await page.locator('.hawk-result-item').evaluateAll((items) =>
+      items.map((item) => new URL(item.href).pathname)
+    );
+    expect(paths).not.toContain('/public-e2e/');
+    expect(paths).not.toContain('/public-e2e/index.html');
   });
 
   test('the results pane actually scrolls a long list instead of silently clipping it', async ({ page }) => {

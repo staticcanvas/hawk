@@ -23,10 +23,18 @@ category: Reference
 | `categories` | `string[]` | — | Shorthand for `tabs`: one tab per category name, each filtering on `categoryFilterName`. Ignored if `tabs` is given. |
 | `includeAllTab` | `boolean` | `true` | Prepends a filterless "All" tab to `tabs`/`categories`/the auto-derived list. |
 | `defaultTab` | `string` | `'all'` | Tab id active on open. Falls back to `'all'` (with a console warning) if it matches no resolved tab. |
-| `pagefindOptions` | `object` | `{}` | Raw options merged into every `search()`/`debouncedSearch()` call (`sort`, `ranking`, `language`, ...). A tab's own `pagefindOptions` overrides this per-tab. |
+| `pagefindOptions` | `object` | `{}` | Raw options merged into every `search()`/`debouncedSearch()` call, primarily `filters` and `sort`. A tab's own `pagefindOptions` overrides this per-tab. |
+| `pagefindInitOptions` | `object` | `{}` | Options passed to Pagefind before initialization, including excerpt length, exact diacritics, ranking defaults, highlighting, cache tags, index weight, and worker behavior. |
+| `pagefindMergeIndexes` | `{ bundlePath, options? }[]` | `[]` | Additional Pagefind bundles merged before filters and tabs are derived. Cross-origin indexes require CORS headers. |
 | `inlineFilters` | `boolean` | `false` | Parses `dimension:value` tokens out of the typed query as filters. See [Inline filter syntax](#inline-filter-syntax). |
 | `categoryFilterName` | `string` | `'category'` | The Pagefind filter dimension used for the auto-derived tabs and the `categories` shorthand. |
 | `maxResults` | `number` | `18` | Maximum rendered result rows. |
+| `showResultDate` | `boolean` | `true` | Shows `meta[resultDateMetaKey]` beneath each result excerpt when present. |
+| `resultDateMetaKey` | `string` | `'date'` | Pagefind metadata key used for result dates. |
+| `showResultTags` | `boolean` | `true` | Shows comma-separated `meta[resultTagsMetaKey]` values as tags beneath each result excerpt. Also controls the `meta.section` tag. |
+| `resultTagsMetaKey` | `string` | `'tags'` | Pagefind metadata key used for result tags. |
+| `headerControls` | `false \| { density?, escape? }` | both enabled | Controls the density group and Escape button. `false` leaves a minimal header containing only the search input. |
+| `excludePages` | `string \| string[]` | `[]` | Page URLs or paths omitted from results. Query strings, hashes, and trailing slashes are ignored; excluding a page excludes its section results too. |
 | `contentSelector` | `string` | `'[data-pagefind-body]'` | Selects the preview pane's content from a fetched result page. See [Rich preview content](#rich-preview-content). |
 | `disableDefaultMarkdownStyles` | `boolean` | `false` | Opts out of hawk.css's own preview-content prose rules. See [Theming](#theming). |
 | `previewSections` | `boolean` | `false` | Renders a page-level match's preview as clickable heading+excerpt rows instead of the full page dump. See [Section-outline previews](#section-outline-previews). |
@@ -45,9 +53,27 @@ category: Reference
 | `enablePins` | `boolean` | `true` | Lets a visitor pin a result. See [Pins](#pins). |
 | `pinStorageKey` | `string` | `'hawk:pins'` | `localStorage` key pins persist to. |
 | `maxPins` | `number` | `20` | Caps the number of pins; pinning past the cap is a silent no-op. |
+| `enableRecentlyViewed` | `boolean` | `true` | Persists selected results and adds a synthetic Recently viewed tab after the first selection. |
+| `recentlyViewedStorageKey` | `string` | `'hawk:recently-viewed'` | `localStorage` key used for recently viewed entries. |
+| `maxRecentlyViewed` | `number` | `10` | Maximum recently viewed entries retained, newest first. |
+| `enableSecondColumn` | `boolean` | `true` | Enables the preview pane. Set `false` to keep the search modal single-column at every width and density. |
 | `onOpen` | `(query) => void` | — | Called when the modal opens. |
 | `onClose` | `() => void` | — | Called when the modal closes. |
 | `onSelect` | `(item) => void` | — | Called when a result is clicked or Enter-selected. |
+
+### Excluding pages
+
+Use one path for the common case, or an array for several pages:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  excludePages: ['/', '/internal/', '/legacy.html'],
+});
+```
+
+Matching is by page path and ignores the origin, query string, hash, and trailing slash. That
+means excluding `/guides/` also removes Pagefind results such as `/guides/#installation`.
 
 ### `params` defaults
 
@@ -63,6 +89,67 @@ category: Reference
   allowDensityToggle: true,
 }
 ```
+
+### Complete constructor defaults
+
+The configuration table above is authoritative. This condensed object provides a copyable view
+of every behavioral default that does not depend on the generated instance id or runtime plugin
+registration:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  triggerSelector: '[data-search-trigger]',
+  params: {
+    scale: 1,
+    position: 'top-center',
+    offset: { x: '1rem', y: '6vh' },
+    alignment: 'stretch',
+    columns: 2,
+    breakpoint: 768,
+    density: 'medium',
+    allowDensityToggle: true,
+  },
+  includeAllTab: true,
+  defaultTab: 'all',
+  pagefindOptions: {},
+  categoryFilterName: 'category',
+  maxResults: 18,
+  showResultDate: true,
+  resultDateMetaKey: 'date',
+  showResultTags: true,
+  resultTagsMetaKey: 'tags',
+  headerControls: { density: true, escape: true },
+  excludePages: [],
+  contentSelector: '[data-pagefind-body]',
+  disableDefaultMarkdownStyles: false,
+  inlineFilters: false,
+  previewSections: false,
+  previewSectionSelector: 'h2, h3',
+  previewSectionExcerptLength: 140,
+  enableSecondColumn: true,
+  defaultPreviewTitle: '',
+  revealAnimation: 'scale-fade',
+  resultsReveal: true,
+  resultsRevealDirection: 'up',
+  resultsRevealStagger: 22,
+  eagerResults: true,
+  showPoweredBy: true,
+  poweredByHref: 'https://pagefind.app/',
+  enablePins: true,
+  pinStorageKey: 'hawk:pins',
+  maxPins: 20,
+  enableRecentlyViewed: true,
+  recentlyViewedStorageKey: 'hawk:recently-viewed',
+  maxRecentlyViewed: 10,
+  hotkeys: { open: true, slash: true, escape: true },
+});
+```
+
+`theme` defaults to the registered `typeflow` theme when available. `animation` follows the same
+rule for the TypeFlow driver and otherwise uses `instant`. Options without a meaningful default,
+including `tabs`, `tabsUrl`, `categories`, `defaultPreviewUrl`, `rotatingPlaceholders`, and
+callbacks, are omitted from the object.
 
 ### Tabs
 
@@ -294,10 +381,27 @@ prose under a single heading is better served leaving `previewSections` off.
 ## Metadata
 
 Every match carries `meta: Record<string, string>` — Pagefind's full `data.meta` object for that
-page (sub_results/anchors reuse their parent page's `meta`, so it's consistent whichever row you
-look at). If `meta.section` is present, it renders as a badge on the result row and, once
-selected, the preview header — nothing to configure, it's opt-in by presence in your Pagefind
-metadata the same way `data-pagefind-meta="section:Guides"` already works.
+page (sub-results/anchors reuse their parent page's `meta`, so it is consistent whichever row
+you select). `meta.date` renders below the excerpt by default. Comma-separated `meta.tags`
+values render beside it as tags, with `meta.section` included when present. Anchor/sub-result
+rows are indented beneath page rows.
+
+Both display groups are optional and their source keys are configurable:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  showResultDate: true,
+  resultDateMetaKey: 'published',
+  showResultTags: true,
+  resultTagsMetaKey: 'topics',
+});
+```
+
+Set either `showResultDate` or `showResultTags` to `false` to hide that group without
+removing its values from `HawkMatch.meta`. See
+[Pagefind setup — Mapping frontmatter into Pagefind]({{< relref "/guides/pagefind-setup" >}}#mapping-frontmatter-into-pagefind)
+for Hugo layout examples.
 
 `state.pageCount` is the number of distinct pages among the current matches (as opposed to the
 flattened row count, which includes anchor/section sub-results) — passed as a second argument to
@@ -311,6 +415,43 @@ prepended to the tab list the moment at least one pin exists, and removed the mo
 is — selecting it lists pins directly (no Pagefind call) and clears any typed query, since it
 isn't a search scope. `state.pins` is the current list, for a custom pinned-items UI instead of
 (or alongside) the built-in tab.
+
+## Recently viewed
+
+Recently viewed history is enabled by default. Selecting a result by click or Enter stores
+`{url, title, isAnchor, viewedAt}` in `localStorage`, moves repeat selections to the front, and
+keeps only `maxRecentlyViewed` entries. Once history exists, Hawk prepends a synthetic
+"Recently viewed" tab beside Pinned; selecting it lists the stored entries directly without a
+Pagefind request.
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  enableRecentlyViewed: true,
+  recentlyViewedStorageKey: 'docs:recently-viewed',
+  maxRecentlyViewed: 8,
+});
+```
+
+Set `enableRecentlyViewed: false` to disable recording, storage access, and the synthetic tab.
+Entries matching `excludePages` are neither recorded nor displayed. The current stored list is
+available as `state.recentlyViewed`.
+
+## Preview column
+
+The second column is enabled by default. Disable it when the result list should occupy the full
+dialog at every viewport and density:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  enableSecondColumn: false,
+});
+```
+
+`params.columns` still controls the normal one/two-column layout. `enableSecondColumn: false` is
+the stronger setting: it hides the preview pane and forces the results layout to one column even
+when `params.columns` is `2`.
 
 ## Rotating placeholder
 
@@ -366,6 +507,7 @@ interface HawkStrings {
   unavailableCounter: string;      // 'Search unavailable'
   poweredBy: string;               // 'Search powered by Pagefind'
   pinnedTab: string;               // 'Pinned'
+  recentlyViewedTab: string;       // 'Recently viewed'
   pinAction: string;               // 'Pin'
   unpinAction: string;             // 'Unpin'
 }
@@ -378,8 +520,8 @@ ignored.
 
 ## Modal reveal animations
 
-`config.revealAnimation` selects how the modal opens and closes — one of 5 built-in names, or
-`false` for today's instant show/hide:
+`config.revealAnimation` selects how the modal opens and closes: fade, scale-fade, slide-down,
+blur-zoom, spring, a custom animation name, or `false` for an instant show/hide:
 
 | Name | Feel |
 | --- | --- |
@@ -387,7 +529,7 @@ ignored.
 | `'scale-fade'` (default) | The command-palette standard (Linear/Raycast/VS Code Quick Open): the dialog fades in while easing up from a slight scale-down. |
 | `'slide-down'` | The dialog drops in from just above its resting position (Alfred/Spotlight-top style). |
 | `'blur-zoom'` | The backdrop's blur ramps up from 0 alongside its fade, while the dialog eases in from a slight zoomed-in scale — reads as the surface "materializing". |
-| `'spring'` | The bounciest of the 5 (the Arc-browser/macOS spring feel): the dialog's scale overshoots past 1 before settling. Exits with a plain scale-fade — no bounce on the way out. |
+| `'spring'` | The dialog's scale overshoots past 1 before settling. It exits with a scale-fade. |
 
 ```js
 new HawkSearch({
@@ -426,6 +568,8 @@ with `revealDuration` to match your own timing; an unrecognized name otherwise d
     matches: HawkMatch[];       // { title, url, excerpt, isAnchor, meta }
     pageCount: number;
     pins: { url: string; title: string; isAnchor: boolean }[];
+    recentlyViewed: { url: string; title: string; isAnchor: boolean; viewedAt: string }[];
+    secondColumnEnabled: boolean;
     activeTab: string;
     error: Error | null;        // set when Pagefind failed to load, or a search call rejected
   }
@@ -441,7 +585,8 @@ with `revealDuration` to match your own timing; an unrecognized name otherwise d
 
 - `@staticcanvas/hawk/theme-typeflow` — `HawkThemeTypeflow`
 - `@staticcanvas/hawk/theme-typeflow/css` — the stylesheet
-- `@staticcanvas/hawk/animation-typeflow` — `createHawkAnimationTypeflow(TypeFlow, options?)`
+- `@staticcanvas/hawk/animation-typeflow` — ready-to-use `HawkAnimationTypeflow`, plus
+  `createHawkAnimationTypeflow(TypeFlow, options?)` for custom configuration
 - `@staticcanvas/hawk/debug` — `createHawkDebug(hawk, options?)`
 - `@staticcanvas/hawk/metrics` — `createHawkMetrics(hawk, options?)`
 

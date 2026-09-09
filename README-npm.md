@@ -11,9 +11,9 @@ npm install @staticcanvas/hawk
 npm install --save-dev pagefind
 ```
 
-`pagefind` and `@staticcanvas/typeflow` are optional peer dependencies — `pagefind` is required
-at runtime (hawk has nothing to search without an index), `@staticcanvas/typeflow` only if you
-use the typeflow animation driver.
+`pagefind` is a package dependency and is required to build the search index.
+`@staticcanvas/typeflow` is an optional peer dependency used only by the TypeFlow animation
+driver.
 
 ## Quick start
 
@@ -24,6 +24,15 @@ npx pagefind --site <your-built-site-dir>
 Mark your page's main content region with `data-pagefind-body` and any chrome (nav/header/footer)
 you don't want indexed with `data-pagefind-ignore` before running the command above — see
 `scripts/pagefind-index.mjs` for the full recipe.
+
+Frontmatter is not read directly by Pagefind. Emit it from the site layout as metadata, filters,
+or sort values:
+
+```html
+<span hidden data-pagefind-meta="date" data-pagefind-sort="date">2026-09-09</span>
+<span hidden data-pagefind-filter="tag">Pagefind</span>
+<span hidden data-pagefind-meta="tags">Pagefind, Search</span>
+```
 
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
@@ -36,6 +45,9 @@ new HawkSearch({
   index: '/pagefind/',
   triggerSelector: '[data-search-trigger]',
   theme: 'typeflow',
+  showResultDate: true,
+  showResultTags: true,
+  headerControls: false,
 });
 ```
 
