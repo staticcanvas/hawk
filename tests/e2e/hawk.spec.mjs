@@ -48,9 +48,39 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect.poll(() => page.evaluate(() => window.__copiedCode)).toContain('npm install');
   });
 
+  test('the homepage release line and logo-title lockup use the compact centered hero', async ({ page }) => {
+    const release = page.locator('.hero-release');
+    const titleRow = page.locator('.hero-title-row');
+    const logo = titleRow.locator('.hero-logo');
+    const title = titleRow.locator('.hero-title');
+
+    await expect(release).toHaveText(`Version v0.11.0 released · MIT License`);
+    await expect(logo).toBeVisible();
+    await expect(title).toHaveText('hawk.js');
+
+    const layout = await page.evaluate(() => {
+      const hero = document.querySelector('.hero');
+      const row = document.querySelector('.hero-title-row').getBoundingClientRect();
+      const logoBox = document.querySelector('.hero-logo').getBoundingClientRect();
+      const titleBox = document.querySelector('.hero-title').getBoundingClientRect();
+      return {
+        paddingTop: Number.parseFloat(getComputedStyle(hero).paddingTop),
+        rowCenter: row.left + (row.width / 2),
+        viewportCenter: window.innerWidth / 2,
+        verticallyAligned: Math.abs((logoBox.top + logoBox.height / 2) - (titleBox.top + titleBox.height / 2)),
+      };
+    });
+    expect(layout.paddingTop).toBeLessThanOrEqual(24);
+    expect(Math.abs(layout.rowCenter - layout.viewportCenter)).toBeLessThanOrEqual(2);
+    expect(layout.verticallyAligned).toBeLessThanOrEqual(2);
+  });
+
   test('docs, modal, tables, and playground do not overflow phone or tablet viewports', async ({ page }) => {
     for (const width of [360, 768]) {
       await page.setViewportSize({ width, height: 900 });
+      await page.goto('index.html');
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+
       await page.goto('guides/theming/index.html');
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
       await expect(page.locator('.doc-content table').first()).toBeVisible();
