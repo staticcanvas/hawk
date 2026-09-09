@@ -75,6 +75,28 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     expect(layout.verticallyAligned).toBeLessThanOrEqual(2);
   });
 
+  test('the homepage search-model gallery renders its data manifest and scroll controls', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 900 });
+    await page.goto('index.html');
+
+    const gallery = page.locator('[data-search-gallery]');
+    const track = gallery.locator('[data-gallery-track]');
+    const cards = track.locator('.showcase-card');
+    const previous = gallery.locator('[data-gallery-scroll="previous"]');
+    const next = gallery.locator('[data-gallery-scroll="next"]');
+    await expect(cards).toHaveCount(4);
+    await expect(cards.first().locator('img')).toHaveAttribute('src', /assets\/compact\.png$/);
+    await expect.poll(() => cards.first().locator('img').evaluate((image) => image.naturalWidth)).toBeGreaterThan(0);
+    expect((await next.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    await expect(previous).toBeDisabled();
+    await expect(next).toBeEnabled();
+
+    await next.click();
+    await expect.poll(() => track.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
+    await expect(previous).toBeEnabled();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+  });
+
   test('docs, modal, tables, and playground do not overflow phone or tablet viewports', async ({ page }) => {
     for (const width of [360, 768]) {
       await page.setViewportSize({ width, height: 900 });

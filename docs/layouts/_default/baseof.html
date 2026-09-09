@@ -264,6 +264,40 @@
     document.addEventListener('scroll', (event) => markScrolling(event.target), { capture: true, passive: true });
     window.addEventListener('scroll', () => markScrolling(document.documentElement), { passive: true });
 
+    // ── Homepage search-model gallery ─────────────────────────────────────────────────────
+    document.querySelectorAll('[data-search-gallery]').forEach((gallery) => {
+      const track = gallery.querySelector('[data-gallery-track]');
+      const buttons = Array.from(gallery.querySelectorAll('[data-gallery-scroll]'));
+      if (!track || !buttons.length) return;
+
+      const updateGalleryControls = () => {
+        const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+        buttons.forEach((button) => {
+          const atStart = track.scrollLeft <= 1;
+          const atEnd = track.scrollLeft >= maxScroll - 1;
+          button.disabled = button.dataset.galleryScroll === 'previous' ? atStart : atEnd;
+        });
+      };
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const card = track.querySelector('.showcase-card');
+          const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
+          const step = (card?.getBoundingClientRect().width || track.clientWidth) + gap;
+          track.scrollBy({
+            left: button.dataset.galleryScroll === 'previous' ? -step : step,
+            behavior: reduceMotion ? 'auto' : 'smooth',
+          });
+        });
+      });
+      track.addEventListener('scroll', updateGalleryControls, { passive: true });
+      if ('ResizeObserver' in window) {
+        new ResizeObserver(updateGalleryControls).observe(track);
+      } else {
+        window.addEventListener('resize', updateGalleryControls, { passive: true });
+      }
+      updateGalleryControls();
+    });
+
     // ── Install tabs ──────────────────────────────────────────────────────────────────────
     document.querySelectorAll('[data-install-tabs]').forEach((tabs) => {
       const tabList = tabs.querySelector('[role="tablist"]');

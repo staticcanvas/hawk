@@ -5,23 +5,6 @@ category: Overview
 hero:
   tagline: Pagefind-backed <strong>command-palette search</strong> you can <em>make match your site</em> — theme it, tab it, pin it, or use the defaults.
   install: npm install @staticcanvas/hawk
-showcases:
-  - id: compact
-    label: Density
-    title: Compact
-    body: A focused single-column result list for smaller surfaces.
-  - id: medium
-    label: Density
-    title: Medium
-    body: Balanced spacing with results and live page preview side by side.
-  - id: tabbed
-    label: Navigation
-    title: Tabbed
-    body: Curated and filtered collections remain visible at a glance.
-  - id: pinned
-    label: Recall
-    title: Pinned
-    body: Saved and recently viewed pages stay close without another search.
 features:
   - title: Pagefind-backed
     body: Chunked, lazily-loaded index with typo tolerance, scaling past a hand-rolled in-browser scorer — hawk owns the UI, Pagefind owns ranking.
