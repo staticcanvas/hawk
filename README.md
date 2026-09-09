@@ -1,21 +1,21 @@
 <div align="left">
 
-![Hawk Banner](https://example.invalid/hawk-banner.svg)
+![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/hawk-banner.svg)
 
-[![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/hawk)
-[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.10.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
-[![documentation](https://img.shields.io/badge/docs-online-0087af?style=flat-square&logo=gitbook&logoColor=ffffff)](https://staticcanvas.gitlab.io/hawk)
-[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
+[![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk)
+[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.11.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
+[![documentation](https://img.shields.io/badge/docs-online-2c3e50?style=flat-square&logo=gitbook&logoColor=4ca1af)](https://staticcanvas.gitlab.io/hawk)
+[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
-[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/hawk/-/releases/permalink/latest)
-[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://gitlab.com/staticcanvas/hawk/-/tags)
+[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/releases/permalink/latest)
+[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/tags)
 
-[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/hawk)
-[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://www.npmjs.com/package/@staticcanvas/hawk)
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://www.npmjs.com/package/@staticcanvas/hawk)
+[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://www.npmjs.com/package/@staticcanvas/hawk)
 
-[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://jsr.io/%40staticcanvas/hawk)
-[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%231c1c1c&color=%230087af&logoColor=%23ffffff)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://jsr.io/%40staticcanvas/hawk)
+[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
 
 [![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.10.0/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
@@ -46,6 +46,7 @@ interfaces.
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Frontmatter, metadata, and filters](#frontmatter-metadata-and-filters)
 - [Theming](#theming)
 - [Animation Drivers](#animation-drivers)
 - [API Reference](#api-reference)
@@ -87,8 +88,11 @@ interfaces.
   rotating example-query placeholder in the search input).
 - Structured inline filter syntax (`inlineFilters: true`): typing `category:Guides responsive`
   parses out a Pagefind filter and searches only the remaining text.
-- Result/page metadata: every match carries Pagefind's full `meta` object; `meta.section` renders
-  as a badge; `state.pageCount` tracks distinct pages separately from the flattened row count.
+- Result/page metadata: every match carries Pagefind's full `meta` object, with configurable
+  date/tag rows beneath excerpts; anchor results are visually indented beneath
+  their parent page; `state.pageCount` tracks distinct pages separately from the flattened row count.
+- Configurable search-header controls: show or hide the Fit/Medium/Compact group and Escape
+  button independently, or use `headerControls: false` for a minimal search-bar-only header.
 - Pin system: a pin toggle on every result, persisted to `localStorage`, surfaced as a synthetic
   "Pinned" tab once at least one exists.
 - A built-in trigger element (`config.trigger`, `kind: 'minimal' | 'compact' | 'default'`) for
@@ -103,11 +107,13 @@ interfaces.
 ```bash
 npm install @staticcanvas/hawk
 npm install --save-dev pagefind
+# Optional: the official TypeFlow animation driver
+npm install @staticcanvas/typeflow
 ```
 
 `pagefind` is a real dependency (hawk has nothing to search without an index).
-`@staticcanvas/typeflow` is an optional peer dependency — only needed for the typeflow
-theme/animation driver instead of the built-in unstyled/instant ones.
+`@staticcanvas/typeflow` is an optional peer dependency — only needed when importing Hawk's
+official TypeFlow animation adapter. Hawk core and the TypeFlow visual theme remain independent.
 
 ## Usage
 
@@ -124,11 +130,14 @@ Mount hawk against it:
 import { HawkSearch } from '@staticcanvas/hawk';
 import '@staticcanvas/hawk/theme-typeflow/css';
 import { HawkThemeTypeflow } from '@staticcanvas/hawk/theme-typeflow';
+import { HawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
 
 HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
 
 const search = new HawkSearch({
   index: '/pagefind/',
+  excludePages: ['/'], // omit the home page and all of its section results
   triggerSelector: '[data-search-trigger]',
   theme: 'typeflow',
   params: { scale: 1, position: 'top-center', columns: 2, breakpoint: 768, density: 'medium' },
@@ -139,6 +148,9 @@ const search = new HawkSearch({
   defaultTab: 'guides',
   defaultPreviewUrl: '/getting-started/',
   inlineFilters: true,
+  showResultDate: true,
+  showResultTags: true,
+  headerControls: { density: true, escape: true },
   rotatingPlaceholders: ['Try "tabs"...', 'Try "theming"...'],
   enablePins: true,
 });
@@ -155,6 +167,42 @@ syntax](docs/content/guides/pagefind-setup.md),
 [theming](docs/content/guides/theming.md),
 [animation plugins and the rotating placeholder](docs/content/guides/animation-plugins.md), and
 [pins, the built-in trigger, and attribution](docs/content/guides/pins-and-embedding.md).
+
+## Frontmatter, metadata, and filters
+
+Pagefind indexes generated HTML, so framework frontmatter must be emitted by the site's layout.
+`data-pagefind-meta` returns values on `HawkMatch.meta`; `data-pagefind-filter` makes values
+filterable; and `data-pagefind-sort` makes values sortable.
+
+```html
+<article data-pagefind-body>
+  <span hidden data-pagefind-meta="author">Ada Lovelace</span>
+  <span hidden data-pagefind-meta="date" data-pagefind-sort="date">2026-09-09</span>
+  <span hidden data-pagefind-filter="tag">Pagefind</span>
+  <span hidden data-pagefind-meta="tags">Pagefind, Search</span>
+  <!-- rendered page content -->
+</article>
+```
+
+Dates and comma-separated tags render beneath result descriptions by default when the metadata
+exists. They can be renamed or independently hidden without removing the metadata from search
+results:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  resultDateMetaKey: 'published',
+  resultTagsMetaKey: 'topics',
+  showResultDate: false,
+  showResultTags: true,
+  headerControls: false, // minimal header: search input only
+});
+```
+
+See the [frontmatter mapping guide](docs/content/guides/pagefind-setup.md#mapping-frontmatter-into-pagefind)
+and Pagefind's [metadata](https://pagefind.app/docs/metadata/),
+[filtering](https://pagefind.app/docs/filtering/), and
+[sorting](https://pagefind.app/docs/sorts/) documentation.
 
 ## Theming
 

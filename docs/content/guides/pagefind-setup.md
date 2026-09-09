@@ -3,6 +3,10 @@ title: Pagefind Setup
 description: The data-pagefind-body / data-pagefind-ignore scoping that makes match quality good.
 eyebrow: Guide
 category: Guides
+tags:
+  - Pagefind
+  - metadata
+  - frontmatter
 ---
 
 ## Scope the index before you run it
@@ -39,6 +43,113 @@ loads lazily (only once you actually open the search modal, and only the WASM/JS
 per session; per-query it fetches just the relevant index chunks and page fragments, not your
 entire site as one blob).
 
+## Browser configuration and additional indexes
+
+Use `pagefindInitOptions` for settings Pagefind must receive before initialization. Hawk passes
+these to `pagefind.options()` and then initializes the runtime before deriving filter tabs:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  pagefindInitOptions: {
+    excerptLength: 24,
+    exactDiacritics: false,
+    noWorker: false,
+    ranking: {
+      termFrequency: 1,
+      termSimilarity: 1,
+      pageLength: 0.75,
+      termSaturation: 1.4,
+      diacriticSimilarity: 0.8,
+      metaWeights: { title: 5 },
+    },
+  },
+  pagefindOptions: {
+    filters: { category: 'Guides' },
+    sort: { date: 'desc' },
+  },
+});
+```
+
+`pagefindOptions` remains the per-search layer and can be overridden by individual tabs. To
+search another Pagefind bundle, configure it before tab derivation:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  pagefindMergeIndexes: [
+    {
+      bundlePath: 'https://docs.example.com/pagefind',
+      options: { indexWeight: 0.65, mergeFilter: { source: 'External docs' } },
+    },
+  ],
+});
+```
+
+Cross-origin index hosts must return CORS headers. Pagefind automatically chooses the index that
+matches the document's `lang` attribute; a merged index can specify its own `language` option.
+
+If a page belongs in the index but should not appear in a particular Hawk instance, exclude it
+at runtime instead of changing the shared Pagefind build:
+
+```js
+new HawkSearch({ index: '/pagefind/', excludePages: ['/', '/internal/'] });
+```
+
+Use `data-pagefind-ignore` when content should never be indexed; use `excludePages` when the same
+index feeds multiple search experiences or a page should remain available for other consumers.
+
+## Mapping frontmatter into Pagefind
+
+Pagefind reads the generated HTML, not the source frontmatter. A layout must print each
+frontmatter value into a Pagefind attribute inside the page's `data-pagefind-body` region.
+
+| Attribute | Purpose | Available through Hawk |
+| --- | --- | --- |
+| `data-pagefind-meta="key"` | Returns the element text as `result.data().meta[key]`. | Every `HawkMatch.meta`; dates and tags can render beneath result excerpts. |
+| `data-pagefind-filter="key"` | Adds the element text as a filter value. | Auto-derived tabs, explicit tab filters, and inline filters. |
+| `data-pagefind-sort="key"` | Adds the element text as a sortable value. | `pagefindOptions.sort` and `HawkTab.sort`. |
+
+For a Hugo page, a layout can map common frontmatter fields like this:
+
+```go-html-template
+<article data-pagefind-body>
+  <span hidden data-pagefind-meta="author">{{ .Params.author }}</span>
+  <span hidden data-pagefind-meta="date" data-pagefind-sort="date">
+    {{ .Lastmod.Format "2006-01-02" }}
+  </span>
+
+  {{ range .Params.tags }}
+  <span hidden data-pagefind-filter="tag">{{ . }}</span>
+  {{ end }}
+  <span hidden data-pagefind-meta="tags">{{ delimit .Params.tags ", " }}</span>
+
+  {{ .Content }}
+</article>
+```
+
+Hawk's docs use
+`docs/layouts/partials/pagefind-frontmatter.html` as the single mapping point for
+`category`/`categories`, `author`/`authors`, `tags`, and `.Lastmod`. Repeating a
+filter element creates separate filter values; the combined comma-separated `tags` metadata
+value is only for result-row display.
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  showResultDate: true,
+  resultDateMetaKey: 'date',
+  showResultTags: true,
+  resultTagsMetaKey: 'tags',
+});
+```
+
+Set `showResultDate: false` or `showResultTags: false` independently when that metadata
+should remain available through `HawkMatch.meta` but not appear in the results column.
+See Pagefind's [metadata](https://pagefind.app/docs/metadata/),
+[filtering](https://pagefind.app/docs/filtering/), and
+[sorting](https://pagefind.app/docs/sorts/) references for attribute behavior.
+
 ## Category filters (tabs)
 
 Hawk's filter pills — rendered as a proper ARIA tablist, Left/Right/Home/End to move between
@@ -47,15 +158,18 @@ category list to maintain, and no hawk-side config for a new tab to show up: fla
 marking a filter dimension anywhere inside its `data-pagefind-body` region:
 
 ```html
-<article data-pagefind-filter="category:Guides">...</article>
+<article>
+  <span hidden data-pagefind-filter="category">Guides</span>
+  ...
+</article>
 ```
 
 A page isn't limited to one tab — add more than one marker to flag it for several:
 
 ```html
 <article>
-  <span hidden data-pagefind-filter="category:Guides"></span>
-  <span hidden data-pagefind-filter="category:Reference"></span>
+  <span hidden data-pagefind-filter="category">Guides</span>
+  <span hidden data-pagefind-filter="category">Reference</span>
   ...
 </article>
 ```

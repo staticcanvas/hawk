@@ -1,0 +1,65 @@
+{{ $page := . }}
+{{ $categories := slice }}
+{{ with $page.Params.category }}
+  {{ if reflect.IsSlice . }}
+    {{ range . }}{{ $categories = $categories | append . }}{{ end }}
+  {{ else }}
+    {{ $categories = $categories | append . }}
+  {{ end }}
+{{ end }}
+{{ with $page.Params.categories }}
+  {{ if reflect.IsSlice . }}
+    {{ range . }}{{ $categories = $categories | append . }}{{ end }}
+  {{ else }}
+    {{ $categories = $categories | append . }}
+  {{ end }}
+{{ end }}
+{{ $categories = $categories | uniq }}
+
+{{ range $categories }}
+<span hidden data-pagefind-filter="category">{{ . }}</span>
+{{ end }}
+{{ with $categories }}
+<span hidden data-pagefind-meta="category">{{ delimit . ", " }}</span>
+{{ end }}
+
+<span hidden data-pagefind-meta="date" data-pagefind-sort="date">{{ $page.Lastmod.Format "2006-01-02" }}</span>
+
+{{ $authors := slice }}
+{{ with $page.Params.author }}
+  {{ if reflect.IsSlice . }}
+    {{ range . }}{{ $authors = $authors | append . }}{{ end }}
+  {{ else }}
+    {{ $authors = $authors | append . }}
+  {{ end }}
+{{ end }}
+{{ with $page.Params.authors }}
+  {{ if reflect.IsSlice . }}
+    {{ range . }}{{ $authors = $authors | append . }}{{ end }}
+  {{ else }}
+    {{ $authors = $authors | append . }}
+  {{ end }}
+{{ end }}
+{{ $authors = $authors | uniq }}
+{{ range $authors }}
+<span hidden data-pagefind-filter="author">{{ . }}</span>
+{{ end }}
+{{ with $authors }}
+<span hidden data-pagefind-meta="author">{{ delimit . ", " }}</span>
+{{ end }}
+
+{{ $tags := slice }}
+{{ with $page.Params.tags }}
+  {{ if reflect.IsSlice . }}
+    {{ range . }}{{ $tags = $tags | append . }}{{ end }}
+  {{ else }}
+    {{ $tags = $tags | append . }}
+  {{ end }}
+{{ end }}
+{{ $tags = $tags | uniq }}
+{{ with $tags }}
+  {{ range . }}
+<span hidden data-pagefind-filter="tag">{{ . }}</span>
+  {{ end }}
+<span hidden data-pagefind-meta="tags">{{ delimit . ", " }}</span>
+{{ end }}

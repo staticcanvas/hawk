@@ -2,6 +2,8 @@
 <html lang="{{ site.Language.Lang }}">
 <head>
   <meta charset="utf-8">
+  <meta name="color-scheme" content="dark light">
+  <meta name="darkreader-lock">
   <script>
     // Runs synchronously before first paint (inline, before any stylesheet) so a returning
     // visitor's stored light-mode choice never flashes dark-then-light. Kept deliberately tiny
@@ -9,8 +11,8 @@
     (function () {
       try {
         var stored = localStorage.getItem('hawk-docs:theme');
-        var theme = stored || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-        if (theme === 'light') document.documentElement.dataset.theme = 'light';
+        var theme = stored || 'dark';
+        document.documentElement.dataset.theme = theme;
       } catch (e) {
         // private browsing / storage disabled — falls back to the default dark theme below.
       }
@@ -19,14 +21,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ if not .IsHome }}{{ .Title }} · {{ end }}{{ site.Title }}</title>
   <meta name="description" content="{{ .Description | default site.Params.description }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Rubik+Spray+Paint&amp;family=Unbounded:wght@600;700&amp;display=swap">
   <link rel="icon" href="{{ "assets/branding/hawk-logo.svg" | relURL }}">
   <link rel="stylesheet" href="{{ "webutil/libs/hawk.css" | relURL }}">
   <link rel="stylesheet" href="{{ "webutil/libs/hawk-theme-typeflow.css" | relURL }}">
   <link rel="stylesheet" href="{{ "assets/docs.css" | relURL }}">
   {{ if eq .Type "playground" }}<link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}">{{ end }}
+  <script type="importmap">
+    { "imports": { "@staticcanvas/typeflow": "{{ "webutil/libs/typeflow.mjs" | relURL }}" } }
+  </script>
 </head>
-<body data-hawk-index="{{ "pagefind/" | relURL }}" data-hawk-theme="typeflow">
+<body{{ if .IsHome }} class="site-home"{{ end }} data-hawk-index="{{ "pagefind/" | relURL }}" data-hawk-theme="typeflow">
 
+  {{ if not .IsHome }}
   <header class="site-header" data-pagefind-ignore>
     <div class="shell header-inner">
       <a class="brand" href="{{ "" | relURL }}" aria-label="hawk home">
@@ -75,13 +84,14 @@
       </div>
     </div>
   </header>
+  {{ end }}
 
   <div class="{{ if not .IsHome }}shell {{ end }}page-shell{{ if .IsHome }} page-shell--home{{ end }}" data-pagefind-body>
     {{ if .IsHome }}
       {{ block "main" . }}{{ end }}
     {{ else }}
-      <div class="docs-layout">
-        {{ partial "sidebar.html" . }}
+      <div class="docs-layout{{ if eq .Type "playground" }} docs-layout--playground{{ end }}">
+        {{ if ne .Type "playground" }}{{ partial "sidebar.html" . }}{{ end }}
         <div class="docs-main">
           {{ block "main" . }}{{ end }}
         </div>
@@ -90,8 +100,24 @@
   </div>
 
   <footer class="site-footer" data-pagefind-ignore>
-    <div class="shell">
-      <p>Hawk · <a href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab</a> · <a href="{{ site.Params.github }}" target="_blank" rel="noreferrer">GitHub</a> · MIT</p>
+    <div class="shell footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="{{ "" | relURL }}">hawk.js</a>
+        <p>Command-palette search for static documentation sites.</p>
+        <span>v{{ site.Params.version }} · MIT</span>
+      </div>
+      <nav class="footer-column" aria-label="Documentation links">
+        <strong>Documentation</strong>
+        <a href="{{ "getting-started/" | relURL }}">Get started</a>
+        <a href="{{ "api/" | relURL }}">API reference</a>
+        <a href="{{ "playground/" | relURL }}">Playground</a>
+      </nav>
+      <nav class="footer-column" aria-label="Project links">
+        <strong>Project</strong>
+        <a href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab</a>
+        <a href="{{ site.Params.github }}" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="{{ "changelog/" | relURL }}">Changelog</a>
+      </nav>
     </div>
   </footer>
 
@@ -138,43 +164,29 @@
   <script type="module">
     import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
     import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
+    import { HawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
+    import { createHawkDocsSearchConfig } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
 
     HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+    HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
 
     const categories = {{ $categories | jsonify | safeJS }};
     const categoryDefaults = {{ $categoryDefaults | jsonify | safeJS }};
     // A working example of HawkTab.accentColor, documented in api.md's Tabs section — one color
     // per category, so the filter row itself hints at "which tab" before you even read the label.
-    const accentColors = { Guides: '#38bdf8', Reference: '#a78bfa', Resources: '#fb923c' };
+    const accentColors = { Guides: '#20e3b2', Reference: '#0cebeb', Resources: '#7ee8c6', Tools: '#29ffc6' };
 
-    new HawkSearch({
+    new HawkSearch(createHawkDocsSearchConfig({
       index: document.body.dataset.hawkIndex,
-      theme: 'typeflow',
-      // .doc-article wraps single.html and list.html pages alike (see both templates) —
-      // narrower than the default [data-pagefind-body], so the preview pane doesn't also
-      // pull in the sibling .doc-toc/.doc-sidebar chrome.
-      contentSelector: '.doc-article',
-      tabs: [
-        ...categories.map((name) => {
-          const fallback = categoryDefaults[name];
-          return {
-            id: name.toLowerCase(),
-            label: name,
-            filter: { category: name },
-            ...(accentColors[name] ? { accentColor: accentColors[name] } : {}),
-            ...(fallback ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title } : {}),
-          };
-        }),
-        // A curated/sorted tab, not a category filter — every page carries a data-pagefind-sort
-        // ="date" marker (single.html/list.html) this reads via the sort shorthand. A working
-        // example of HawkTab.sort, documented in api.md's "A curated/sorted tab".
-        { id: 'recent', label: 'Recently updated', sort: { date: 'desc' }, accentColor: '#34d399' },
+      excludePages: [
+        {{ ("" | relURL) | jsonify | safeJS }},
+        {{ ("404.html" | relURL) | jsonify | safeJS }},
+        {{ ("playground/" | relURL) | jsonify | safeJS }},
       ],
-      // Every guide/reference page here has real H2/H3 structure — a section-row outline scans
-      // faster than the full page dump for a page-level match (a real query match within one
-      // section still shows that section in full, unaffected — see previewSections' own docs).
-      previewSections: true,
-    });
+      categories,
+      categoryDefaults,
+      accentColors,
+    }));
 
     // ── Theme toggle ──────────────────────────────────────────────────────────────────────
     // Reuses hawk-theme-typeflow.css's existing [data-theme='light'] token overrides (already
@@ -187,18 +199,141 @@
     const themeToggle = document.querySelector('.theme-toggle');
     const applyTheme = (theme) => {
       document.documentElement.dataset.theme = theme;
-      themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
+      if (themeToggle) themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
     };
-    themeToggle.addEventListener('click', () => {
-      const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-      applyTheme(next);
-      try {
-        localStorage.setItem('hawk-docs:theme', next);
-      } catch (e) {
-        // private browsing / storage disabled — the choice still applies this session.
-      }
-    });
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
+        applyTheme(next);
+        try {
+          localStorage.setItem('hawk-docs:theme', next);
+        } catch (e) {
+          // private browsing / storage disabled — the choice still applies this session.
+        }
+      });
+    }
     applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ── Site-wide scrollbar activity ─────────────────────────────────────────────────────
+    const scrollbarTimers = new WeakMap();
+    const markScrolling = (target) => {
+      const scrollable = target === document ? document.documentElement : target;
+      if (!(scrollable instanceof Element)) return;
+      scrollable.dataset.siteScrolling = 'true';
+      clearTimeout(scrollbarTimers.get(scrollable));
+      scrollbarTimers.set(scrollable, setTimeout(() => {
+        scrollable.dataset.siteScrolling = 'false';
+      }, 550));
+    };
+    document.addEventListener('scroll', (event) => markScrolling(event.target), { capture: true, passive: true });
+    window.addEventListener('scroll', () => markScrolling(document.documentElement), { passive: true });
+
+    // ── Install tabs ──────────────────────────────────────────────────────────────────────
+    document.querySelectorAll('[data-install-tabs]').forEach((tabs) => {
+      const tabList = tabs.querySelector('[role="tablist"]');
+      const tabButtons = Array.from(tabList.querySelectorAll('[role="tab"]'));
+      const activateTab = (nextTab, focus = false) => {
+        tabButtons.forEach((tab) => {
+          const selected = tab === nextTab;
+          tab.setAttribute('aria-selected', String(selected));
+          tab.tabIndex = selected ? 0 : -1;
+          document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
+        });
+        if (focus) nextTab.focus();
+      };
+      tabButtons.forEach((tab, index) => {
+        tab.addEventListener('click', () => activateTab(tab));
+        tab.addEventListener('keydown', (event) => {
+          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+          event.preventDefault();
+          const nextIndex = event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+              ? tabButtons.length - 1
+              : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabButtons.length) % tabButtons.length;
+          activateTab(tabButtons[nextIndex], true);
+        });
+      });
+    });
+
+    // ── Scroll-aware table of contents ────────────────────────────────────────────────────
+    const toc = document.querySelector('.doc-toc');
+    if (toc) {
+      const tocLinks = Array.from(toc.querySelectorAll('a[href^="#"]'));
+      const headingLinks = tocLinks
+        .map((link) => ({ link, heading: document.getElementById(decodeURIComponent(link.hash.slice(1))) }))
+        .filter(({ heading }) => heading);
+      const setCurrentHeading = (id) => {
+        headingLinks.forEach(({ link }) => {
+          if (decodeURIComponent(link.hash.slice(1)) === id) {
+            link.setAttribute('aria-current', 'location');
+            link.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
+          } else {
+            link.removeAttribute('aria-current');
+          }
+        });
+      };
+      if (headingLinks.length && 'IntersectionObserver' in window) {
+        const visibleHeadings = new Map();
+        const tocObserver = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) visibleHeadings.set(entry.target.id, entry.boundingClientRect.top);
+            else visibleHeadings.delete(entry.target.id);
+          });
+          const current = [...visibleHeadings.entries()].sort((a, b) => a[1] - b[1])[0];
+          if (current) setCurrentHeading(current[0]);
+        }, { rootMargin: '-12% 0px -72% 0px', threshold: [0, 1] });
+        headingLinks.forEach(({ heading }) => tocObserver.observe(heading));
+        setCurrentHeading(headingLinks[0].heading.id);
+      }
+    }
+
+    // ── Code-block copy controls ─────────────────────────────────────────────────────────
+    const copyText = async (text) => {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+      const fallback = document.createElement('textarea');
+      fallback.value = text;
+      fallback.setAttribute('readonly', '');
+      fallback.style.position = 'fixed';
+      fallback.style.opacity = '0';
+      document.body.appendChild(fallback);
+      fallback.select();
+      const copied = document.execCommand('copy');
+      fallback.remove();
+      if (!copied) throw new Error('Copy command failed');
+    };
+    document.querySelectorAll('.doc-content .highlight').forEach((block) => {
+      const code = block.querySelector('pre code');
+      if (!code || block.querySelector('.code-copy-btn')) return;
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'code-copy-btn';
+      button.textContent = 'Copy';
+      button.setAttribute('aria-label', 'Copy code');
+      button.addEventListener('click', async () => {
+        clearTimeout(button._copyResetTimer);
+        try {
+          await copyText(code.textContent);
+          button.textContent = 'Copied';
+          button.dataset.state = 'copied';
+          button.setAttribute('aria-label', 'Code copied');
+        } catch (error) {
+          button.textContent = 'Copy failed';
+          button.dataset.state = 'error';
+          button.setAttribute('aria-label', 'Code copy failed');
+        }
+        button._copyResetTimer = setTimeout(() => {
+          button.textContent = 'Copy';
+          button.removeAttribute('data-state');
+          button.setAttribute('aria-label', 'Copy code');
+        }, 1800);
+      });
+      block.appendChild(button);
+    });
 
     // ── Scroll-reveal ─────────────────────────────────────────────────────────────────────
     // Fades/slides [data-reveal] elements in as they enter the viewport. Skips everything
@@ -206,7 +341,6 @@
     // or if IntersectionObserver isn't available at all — a static page is a correct fallback
     // for either case, not a broken one.
     const revealTargets = document.querySelectorAll('[data-reveal]');
-    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (revealTargets.length && !reduceMotion && 'IntersectionObserver' in window) {
       const observer = new IntersectionObserver(
         (entries) => {

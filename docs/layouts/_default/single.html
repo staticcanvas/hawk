@@ -11,17 +11,12 @@
   data-pagefind-filter marker, and Pagefind aggregates all of them, so the page shows up under
   every tab it's flagged for.
 */}}
-{{ $categories := slice }}
-{{ with .Params.category }}{{ $categories = $categories | append . }}{{ end }}
-{{ range .Params.categories }}{{ $categories = $categories | append . }}{{ end }}
 <div class="doc-page{{ if or (eq (len .TableOfContents) 0) .Params.noToc }} doc-page--no-toc{{ end }}">
 
   {{/* ── Left: article column ───────────────────────────────── */}}
   <article class="doc-article">
-    {{ range $categories }}<span hidden data-pagefind-filter="category:{{ . }}"></span>{{ end }}
-    {{/* Powers the docs site's own "Recently updated" tab (see baseof.html) — a working example
-         of HawkTab.sort, documented in api.md's "A curated/sorted tab". */}}
-    <span hidden data-pagefind-sort="date">{{ .Lastmod.Format "2006-01-02" }}</span>
+    {{ partial "pagefind-frontmatter.html" . }}
+    {{ partial "breadcrumbs.html" . }}
     <header class="doc-header">
       {{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}
       <h1>{{ .Title }}</h1>
@@ -31,6 +26,7 @@
     <div class="doc-content">
       {{ .Content }}
     </div>
+    {{ partial "page-nav.html" . }}
   </article>
 
   {{/* ── Right: sticky table of contents ───────────────────── */}}
@@ -38,6 +34,7 @@
   <aside class="doc-toc" aria-label="On this page">
     <span class="toc-title">On this page</span>
     {{ .TableOfContents }}
+    {{ partial "toc-details.html" . }}
   </aside>
   {{ end }}
 

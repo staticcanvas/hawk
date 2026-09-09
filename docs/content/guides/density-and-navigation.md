@@ -33,6 +33,35 @@ persists to `localStorage` (`hawk:density`) and is read back on the next constru
 `config.params.density` is set explicitly, which always wins over a stored preference. Set
 `allowDensityToggle: false` to fix density via config only and hide the switcher.
 
+### Minimal and configurable header controls
+
+`headerControls` controls the two groups to the right of the search input. Pass `false` for
+a minimal header containing only the search bar:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  headerControls: false,
+});
+```
+
+Or control the groups independently:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  headerControls: {
+    density: false, // hide Fit / Medium / Compact
+    escape: true,   // keep the Escape close button
+  },
+});
+```
+
+`params.allowDensityToggle: false` continues to disable density switching and therefore wins
+even when `headerControls.density` is `true`. Hiding the Escape button does not disable the
+Escape keyboard shortcut; use `hotkeys.escape: false` when the keyboard behavior must also be
+disabled.
+
 ## Two-pane keyboard navigation
 
 The modal's Tab order is: search input → filter tabs → results pane → preview pane → close. Both

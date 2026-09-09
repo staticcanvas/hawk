@@ -10,11 +10,13 @@ category: Guides
 ```bash
 npm install @staticcanvas/hawk
 npm install --save-dev pagefind
+# Optional: the official TypeFlow animation driver
+npm install @staticcanvas/typeflow
 ```
 
 `pagefind` is a real dependency — hawk has nothing to search without an index, so it's installed
-automatically. `@staticcanvas/typeflow` is an optional peer dependency, only needed if you use the
-typeflow theme/animation driver instead of the built-in unstyled/instant ones.
+automatically. `@staticcanvas/typeflow` is an optional peer dependency, only needed when you
+import Hawk's official TypeFlow animation adapter.
 
 ## Build an index
 
@@ -35,13 +37,16 @@ That writes a `pagefind/` folder into `dist/` containing the index and a small r
 import { HawkSearch } from '@staticcanvas/hawk';
 import '@staticcanvas/hawk/theme-typeflow/css';
 import { HawkThemeTypeflow } from '@staticcanvas/hawk/theme-typeflow';
+import { HawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
 
 HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
+HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
 
 const search = new HawkSearch({
   index: '/pagefind/',
   triggerSelector: '[data-search-trigger]',
   theme: 'typeflow',
+  animation: 'typeflow',
 });
 ```
 

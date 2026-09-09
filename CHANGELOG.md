@@ -8,6 +8,29 @@ tagged release yet — the versions below track `package.json`'s history, not pu
 
 ### Added
 
+- Frontmatter-to-Pagefind mapping in the Hugo docs for category, author, tags, and last-modified
+  date metadata/filter/sort values.
+- Result-row date and tag metadata with configurable keys and independent visibility controls;
+  Pagefind anchor/sub-results are now indented beneath their parent page.
+- `headerControls` can hide the density switcher and Escape button independently, or hide both
+  for a minimal search-input-only header.
+- Recently viewed search history, persisted in `localStorage` and exposed through a synthetic
+  tab after the first result selection. Configure it with `enableRecentlyViewed`,
+  `recentlyViewedStorageKey`, and `maxRecentlyViewed`.
+- `enableSecondColumn` controls whether the preview pane is available; it defaults to `true` and
+  forces a single results column when disabled.
+- `excludePages` provides a small, URL-based result exclusion list; excluding a page also omits
+  its Pagefind section/anchor matches. Hawk's own docs use it to keep the home page out of search.
+- The TypeFlow animation adapter now integrates the released `@staticcanvas/typeflow` 0.34 line
+  directly and exports a ready-to-use `HawkAnimationTypeflow` driver; the configurable factory
+  remains available. Its typed configuration and playground now expose character, word,
+  scramble, fade-trail, word-fade, directional float, spatial zoom, and expanded erase styles
+  across titles, preview content, and rotating placeholders.
+- The Typeflow theme now follows `prefers-color-scheme` when its host has no explicit
+  `data-theme` selection, while preserving explicit light/dark and Dark Reader scheme state.
+- `pagefindInitOptions` and `pagefindMergeIndexes` expose Pagefind browser configuration,
+  ranking, cache/worker controls, and multi-index search before Hawk derives its tabs.
+
 - **`@staticcanvas/hawk/debug`** — optional, non-invasive console diagnostics for a `HawkSearch`
   instance (opens/closes/query changes/settled results/tab switches/pin changes/errors), routed
   through `@staticcanvas/logcad` when installed, else a styled `console.*` fallback.

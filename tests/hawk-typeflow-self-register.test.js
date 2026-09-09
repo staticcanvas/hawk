@@ -29,8 +29,7 @@ describe('typeflow theme/animation self-registration', () => {
     hawk.destroy();
   });
 
-  it('hawk-animation-typeflow self-registers only once window.TypeFlow is already present', async () => {
-    window.TypeFlow = { type: vi.fn(), rotate: vi.fn() };
+  it('hawk-animation-typeflow self-registers its official TypeFlow-backed driver', async () => {
     await import('../src/hawk-animation-typeflow.js');
     expect(HawkSearch.animations.has('typeflow')).toBe(true);
   });

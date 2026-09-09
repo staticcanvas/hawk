@@ -7,9 +7,11 @@
 <section class="hero">
   <div class="shell hero-inner">
     <img class="hero-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="56" height="56">
-    {{ with .Params.hero.eyebrow }}<span class="hero-eyebrow">{{ . }}</span>{{ end }}
-    <h1 class="hero-title">{{ .Title }}</h1>
-    <p class="hero-tagline">{{ .Params.hero.tagline | default .Description }}</p>
+    <div class="hero-title-row">
+      <h1 class="hero-title">hawk.js</h1>
+      <span class="version-tag">v{{ site.Params.version }}</span>
+    </div>
+    <p class="hero-tagline">{{ .Params.hero.tagline | default .Description | safeHTML }}</p>
 
     <div class="hero-actions">
       <a class="btn btn-primary" href="{{ "getting-started/" | relURL }}">Get started</a>
@@ -17,26 +19,71 @@
         <span>Try the search</span>
         <kbd>Ctrl+K</kbd>
       </button>
-      <a class="btn btn-ghost" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">View source</a>
+      <a class="btn btn-source" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z" transform="translate(0 2)"/></svg>
+        View source
+      </a>
     </div>
 
-    {{ with .Params.hero.install }}
-    <div class="hero-install">
-      <span class="hero-install-prompt" aria-hidden="true">$</span>
-      <code>{{ . }}</code>
+    <div class="install-tabs" data-install-tabs>
+      <div class="install-tabs__list" role="tablist" aria-label="Install Hawk">
+        <button type="button" role="tab" id="install-tab-npm" aria-controls="install-panel-npm" aria-selected="true">npm</button>
+        <button type="button" role="tab" id="install-tab-pnpm" aria-controls="install-panel-pnpm" aria-selected="false" tabindex="-1">pnpm</button>
+        <button type="button" role="tab" id="install-tab-bun" aria-controls="install-panel-bun" aria-selected="false" tabindex="-1">bun</button>
+        <button type="button" role="tab" id="install-tab-jsdelivr" aria-controls="install-panel-jsdelivr" aria-selected="false" tabindex="-1">jsDelivr</button>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-npm" aria-labelledby="install-tab-npm">
+        <span class="hero-install-prompt" aria-hidden="true">$</span><code>npm install @staticcanvas/hawk</code>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-pnpm" aria-labelledby="install-tab-pnpm" hidden>
+        <span class="hero-install-prompt" aria-hidden="true">$</span><code>pnpm add @staticcanvas/hawk</code>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-bun" aria-labelledby="install-tab-bun" hidden>
+        <span class="hero-install-prompt" aria-hidden="true">$</span><code>bun add @staticcanvas/hawk</code>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-jsdelivr" aria-labelledby="install-tab-jsdelivr" hidden>
+        <code>https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.mjs</code>
+      </div>
     </div>
-    {{ end }}
   </div>
 </section>
 
 {{ if .Params.features }}
 <section class="shell feature-section">
-  <h2>Features</h2>
+  <header class="section-heading">
+    <h2>Search that belongs to your site.</h2>
+  </header>
+  {{ with .Params.showcases }}
+  <div class="feature-showcase" data-reveal-group>
+    {{ range . }}
+    {{ $showcase := . }}
+    <figure class="showcase-card" data-reveal>
+      <div class="showcase-card__media">
+        {{ with $showcase.image }}
+        <img src="{{ . | relURL }}" alt="Hawk {{ $showcase.title }} search layout">
+        {{ else }}
+        <div class="showcase-placeholder" data-layout="{{ $showcase.id }}" role="img" aria-label="Screenshot placeholder for {{ $showcase.title }} mode">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        {{ end }}
+      </div>
+      <figcaption>
+        <span>{{ $showcase.label }}</span>
+        <strong>{{ $showcase.title }}</strong>
+        <p>{{ $showcase.body }}</p>
+      </figcaption>
+    </figure>
+    {{ end }}
+  </div>
+  {{ end }}
   <div class="feature-grid" data-reveal-group>
-    {{ range .Params.features }}
+    {{ range $index, $feature := .Params.features }}
     <article class="feature-card" data-reveal>
-      <h3>{{ .title }}</h3>
-      <p>{{ .body }}</p>
+      <div class="feature-card__heading">
+        <span class="feature-index" aria-hidden="true">{{ printf "%02d" (add $index 1) }}</span>
+        <h3>{{ $feature.title }}</h3>
+      </div>
+      <p>{{ $feature.body }}</p>
     </article>
     {{ end }}
   </div>
@@ -44,12 +91,21 @@
 {{ end }}
 
 <section class="shell guides-section">
-  <h2>Guides</h2>
+  <header class="section-heading section-heading--row">
+    <div>
+      <h2>Guides</h2>
+    </div>
+    <a href="{{ "guides/" | relURL }}">View all guides <span aria-hidden="true">&rarr;</span></a>
+  </header>
   <div class="card-grid" data-reveal-group>
-    {{ range where site.RegularPages "Section" "guides" }}
+    {{ range $index, $guide := where site.RegularPages "Section" "guides" }}
     <a class="guide-card" data-reveal href="{{ .Permalink }}">
-      <h3>{{ .Title }}</h3>
-      {{ with .Description }}<p>{{ . }}</p>{{ end }}
+      <span class="guide-card__index" aria-hidden="true">{{ printf "%02d" (add $index 1) }}</span>
+      <div>
+        <h3>{{ $guide.Title }}</h3>
+        {{ with $guide.Description }}<p>{{ . }}</p>{{ end }}
+      </div>
+      <span class="guide-card__arrow" aria-hidden="true">&rarr;</span>
     </a>
     {{ end }}
   </div>

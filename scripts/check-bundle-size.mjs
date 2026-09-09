@@ -19,7 +19,9 @@ const bundlePath = `dist/${packageName}/dist/${packageName}.min.js`;
 // Raised 9KB -> 10KB: previewSections (section-outline previews), the 5 built-in modal reveal
 // animations (config.revealAnimation), and per-tab default previews left ~115 bytes of headroom
 // under 9KB — too tight for the next real feature to land without immediately re-raising this.
-const maxGzipBytes = 10 * 1024;
+// Raised 10KB -> 11KB: configurable result dates/tags, hierarchical subpage styling, and
+// independently configurable density/Escape header controls add requested UI capability.
+const maxGzipBytes = 11 * 1024;
 const bundle = readFileSync(bundlePath);
 const gzipBytes = gzipSync(bundle).byteLength;
 
