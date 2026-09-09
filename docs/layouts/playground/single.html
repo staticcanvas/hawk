@@ -240,6 +240,8 @@
           <legend>Layout</legend>
           <label>scale <select id="pg-scale" class="pg-select">
             <option value="0.8">0.8&times;</option>
+            <option value="0.94">0.94&times;</option>
+            <option value="0.96">0.96&times;</option>
             <option value="1" selected>1&times;</option>
             <option value="1.2">1.2&times;</option>
           </select></label>
@@ -419,6 +421,7 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
   import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
   import {
     createHawkDocsTheme,
+    getHawkGalleryTheme,
     HAWK_PLAYGROUND_TYPEFLOW_PRESET,
   } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
 
@@ -456,6 +459,23 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
   setValue('pg-tf-rotate-type-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.speed);
   setValue('pg-tf-rotate-erase-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.eraseStyle);
   setValue('pg-tf-rotate-erase-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.speed);
+
+  const requestedPresetId = new URLSearchParams(window.location.search).get('preset');
+  const requestedPreset = requestedPresetId ? getHawkGalleryTheme(requestedPresetId) : null;
+  if (requestedPreset) {
+    document.querySelector('input[name="pg-theme"][value="typeflow"]').checked = true;
+    document.querySelectorAll('[data-hawk-token]').forEach((input) => { input.value = ''; });
+    for (const [token, value] of Object.entries(requestedPreset.tokens)) {
+      const input = Array.from(document.querySelectorAll('[data-hawk-token]'))
+        .find((candidate) => candidate.dataset.hawkToken === token);
+      if (input) input.value = value;
+    }
+    setValue('pg-position', requestedPreset.params.position);
+    setValue('pg-density', requestedPreset.params.density);
+    setValue('pg-scale', requestedPreset.params.scale);
+    setValue('pg-reveal-animation', requestedPreset.revealAnimation);
+  }
+
   const jsonValue = (id, fallback) => {
     const field = document.getElementById(id);
     try {
@@ -800,7 +820,12 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
     }
     search = new HawkSearch(currentHawkConfig(resolvedAnimation));
 
-    statusEl.textContent = `Mounted — animation: ${resolvedAnimation}, theme: ${radio('pg-theme')}.${fallbackNote}`;
+    const presetNote = requestedPreset
+      ? `, preset: ${requestedPreset.label}`
+      : requestedPresetId
+        ? `, unknown preset ignored: ${requestedPresetId}`
+        : '';
+    statusEl.textContent = `Mounted — animation: ${resolvedAnimation}, theme: ${radio('pg-theme')}${presetNote}.${fallbackNote}`;
     applyDiagnostics();
     refreshCodeSnippet();
   }

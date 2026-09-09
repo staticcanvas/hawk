@@ -71,7 +71,10 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
   test('theme gallery mounts one isolated profile at a time', async ({ page }) => {
     await page.goto('themes/index.html');
     const cards = page.locator('[data-gallery-theme]');
+    const playgroundLinks = page.locator('.theme-gallery-playground');
     await expect(cards).toHaveCount(3);
+    await expect(playgroundLinks).toHaveCount(3);
+    await expect(playgroundLinks.nth(1)).toHaveAttribute('href', /playground\/?\?preset=pastel-dusk$/);
 
     await cards.nth(1).click();
     await expect(page.locator('.hawk-modal:visible')).toHaveCount(1);
@@ -81,6 +84,18 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await cards.nth(2).click();
     await expect(page.locator('.hawk-modal:visible')).toHaveCount(1);
     await expect(cards.nth(2)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  test('a gallery preset hydrates the editable playground controls', async ({ page }) => {
+    await page.goto('playground/index.html?preset=paper-mint');
+
+    await expect(page.locator('#pg-status')).toContainText('preset: Paper mint');
+    await expect(page.locator('#pg-position')).toHaveValue('center');
+    await expect(page.locator('#pg-density')).toHaveValue('fit');
+    await expect(page.locator('#pg-scale')).toHaveValue('0.94');
+    await expect(page.locator('#pg-reveal-animation')).toHaveValue('fade');
+    await expect(page.locator('[data-hawk-token="--hawk-accent"]')).toHaveValue('#008f6c');
+    await expect(page.locator('[data-hawk-token="--hawk-bg-canvas"]')).toHaveValue('#f5faf8');
   });
 
   test('typing a real query returns a real result with a working preview', async ({ page }) => {
