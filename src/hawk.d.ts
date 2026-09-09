@@ -96,6 +96,7 @@ export interface HawkStrings {
 export interface HawkTriggerConfig {
   kind?: 'minimal' | 'compact' | 'default';
   container: string | HTMLElement;
+  icon?: string;
 }
 
 export interface HawkSearchConfig {

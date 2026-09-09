@@ -17,7 +17,7 @@ features:
   - title: Modal reveal animations
     body: Open/close animations include <strong>fade, scale-fade, slide-down, blur-zoom, and spring</strong>, plus a custom animation or none. Motion is <em>instant under reduced motion</em>.
   - title: Fit, medium, or compact
-    body: An in-modal <strong>density switcher</strong> persists the visitor's choice alongside <em>scale, position, and column</em> parameters.
+    body: An in-modal <strong>density switcher</strong> persists the visitor's choice alongside <em>auto viewport-scaled modals</em>, position offsets, and column layouts.
   - title: Keyboard-first
     body: A <strong>modal focus trap</strong>, two-pane Tab navigation, arrow-key movement, Escape, and <em>Ctrl/Cmd+K</em> are included.
   - title: Pins and inline filters

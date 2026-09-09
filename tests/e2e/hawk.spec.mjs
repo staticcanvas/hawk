@@ -107,7 +107,7 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
   });
 
   test('docs, modal, tables, and playground do not overflow phone or tablet viewports', async ({ page }) => {
-    for (const width of [360, 768]) {
+    for (const width of [360, 390, 768, 1024]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('index.html');
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
