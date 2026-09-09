@@ -97,6 +97,15 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
   });
 
+  test('homepage capability cards use title initials and semantic emphasis', async ({ page }) => {
+    const cards = page.locator('.feature-card');
+    await expect(cards).toHaveCount(9);
+    await expect(cards.locator('.feature-index')).toHaveText(['P', 'T', 'T', 'R', 'M', 'F', 'K', 'P', 'Z']);
+    await expect(cards.locator('p strong')).toHaveCount(9);
+    await expect(cards.locator('p em')).toHaveCount(9);
+    await expect(cards.locator('.feature-index').first()).toHaveCSS('font-family', /Rubik Spray Paint/);
+  });
+
   test('docs, modal, tables, and playground do not overflow phone or tablet viewports', async ({ page }) => {
     for (const width of [360, 768]) {
       await page.setViewportSize({ width, height: 900 });
