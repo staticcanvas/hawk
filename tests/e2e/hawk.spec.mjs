@@ -70,6 +70,28 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     }
   });
 
+  test('the mobile table of contents is a native disclosure with breakpoint state recovery', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 900 });
+    await page.goto('api/index.html');
+
+    const disclosure = page.locator('[data-toc-disclosure]');
+    const summary = disclosure.locator('summary');
+    await expect(disclosure).toBeVisible();
+    await expect(disclosure).not.toHaveAttribute('open', '');
+    expect((await summary.boundingBox()).height).toBeGreaterThanOrEqual(44);
+
+    await summary.click();
+    await expect(disclosure).toHaveAttribute('open', '');
+    await expect(disclosure.locator('a[href^="#"]').first()).toBeVisible();
+
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await expect(disclosure).toHaveAttribute('open', '');
+    await expect(summary).toBeHidden();
+
+    await page.setViewportSize({ width: 360, height: 900 });
+    await expect(disclosure).not.toHaveAttribute('open', '');
+  });
+
   test('theme gallery mounts one isolated profile at a time', async ({ page }) => {
     await page.goto('themes/index.html');
     const cards = page.locator('[data-gallery-theme]');
