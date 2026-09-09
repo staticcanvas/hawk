@@ -2047,6 +2047,13 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
   gap: var(--site-space-md);
 }
 
+.theme-gallery-item {
+  display: grid;
+  min-width: 0;
+  grid-template-rows: 1fr auto;
+  gap: 0.55rem;
+}
+
 .theme-gallery-card {
   display: grid;
   min-width: 0;
@@ -2095,6 +2102,32 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
   color: var(--hawk-text-muted);
   font-size: 0.7rem;
   overflow-wrap: anywhere;
+}
+
+.theme-gallery-playground {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: var(--site-space-sm);
+  border: 1px solid var(--hawk-border-subtle);
+  border-radius: var(--site-radius-sm);
+  color: var(--hawk-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 150ms ease, color 150ms ease;
+}
+
+.theme-gallery-playground:hover,
+.theme-gallery-playground:focus-visible {
+  border-color: var(--hawk-accent);
+  color: var(--hawk-accent);
+}
+
+.theme-gallery-playground:focus-visible {
+  outline: 2px solid var(--hawk-accent);
+  outline-offset: 3px;
 }
 
 .theme-gallery-status {

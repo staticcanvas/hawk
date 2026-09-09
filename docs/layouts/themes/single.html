@@ -25,19 +25,23 @@
   HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
   const gallery = document.getElementById('theme-gallery');
   const status = document.getElementById('theme-gallery-status');
+  const playgroundUrl = '{{ "playground/" | relURL }}';
   let activePreview = null;
 
   gallery.innerHTML = HAWK_GALLERY_THEMES.map((theme) => `
-    <button class="theme-gallery-card" type="button" data-gallery-theme="${theme.id}">
-      <span class="theme-gallery-card__swatches" aria-hidden="true">
-        <i style="--swatch:${theme.tokens['--hawk-bg-surface']}"></i>
-        <i style="--swatch:${theme.tokens['--hawk-accent']}"></i>
-        <i style="--swatch:${theme.tokens['--hawk-accent-alt']}"></i>
-      </span>
-      <strong>${theme.label}</strong>
-      <span>${theme.description}</span>
-      <code>${theme.params.position} · ${theme.params.density} · ${theme.revealAnimation} · ${theme.colorModes.join('/')}</code>
-    </button>
+    <div class="theme-gallery-item">
+      <button class="theme-gallery-card" type="button" data-gallery-theme="${theme.id}">
+        <span class="theme-gallery-card__swatches" aria-hidden="true">
+          <i style="--swatch:${theme.tokens['--hawk-bg-surface']}"></i>
+          <i style="--swatch:${theme.tokens['--hawk-accent']}"></i>
+          <i style="--swatch:${theme.tokens['--hawk-accent-alt']}"></i>
+        </span>
+        <strong>${theme.label}</strong>
+        <span>${theme.description}</span>
+        <code>${theme.params.position} · ${theme.params.density} · ${theme.revealAnimation} · ${theme.colorModes.join('/')}</code>
+      </button>
+      <a class="theme-gallery-playground" href="${playgroundUrl}?preset=${encodeURIComponent(theme.id)}">Open in playground</a>
+    </div>
   `).join('');
 
   gallery.addEventListener('click', (event) => {
