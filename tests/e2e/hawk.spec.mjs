@@ -62,6 +62,8 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
 
       await page.goto('playground/index.html');
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+      await expect(page.locator('.page-shell--playground')).toHaveCount(1);
+      await expect(page.locator('.doc-page--playground .doc-header')).toHaveCount(0);
 
       await page.goto('themes/index.html');
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

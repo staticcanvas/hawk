@@ -166,6 +166,10 @@ a {
   padding-block: 0;
 }
 
+.page-shell--playground {
+  padding-block-start: 0;
+}
+
 /* ── Homepage hero ─────────────────────────────────────────── */
 .hero {
   position: relative;

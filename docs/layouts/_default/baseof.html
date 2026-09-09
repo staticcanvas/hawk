@@ -86,7 +86,7 @@
   </header>
   {{ end }}
 
-  <div class="{{ if not .IsHome }}shell {{ end }}page-shell{{ if .IsHome }} page-shell--home{{ end }}" data-pagefind-body>
+  <div class="{{ if not .IsHome }}shell {{ end }}page-shell{{ if .IsHome }} page-shell--home{{ else if eq .Type "playground" }} page-shell--playground{{ end }}" data-pagefind-body>
     {{ if .IsHome }}
       {{ block "main" . }}{{ end }}
     {{ else }}

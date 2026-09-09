@@ -208,10 +208,6 @@
 }
 
 /* ── Configurator workbench ─────────────────────────────────────────────── */
-.doc-page--playground .doc-header {
-  max-width: 72rem;
-}
-
 .pg-workbench {
   grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.72fr);
   gap: clamp(1rem, 2.5vw, 2.5rem);
