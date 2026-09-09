@@ -260,7 +260,20 @@
     // ── Scroll-aware table of contents ────────────────────────────────────────────────────
     const toc = document.querySelector('.doc-toc');
     if (toc) {
+      const tocDisclosure = toc.querySelector('[data-toc-disclosure]');
+      const tocBreakpoint = matchMedia('(max-width: 768px)');
+      const syncTocDisclosure = () => {
+        if (tocDisclosure) tocDisclosure.open = !tocBreakpoint.matches;
+      };
+      syncTocDisclosure();
+      tocBreakpoint.addEventListener('change', syncTocDisclosure);
+
       const tocLinks = Array.from(toc.querySelectorAll('a[href^="#"]'));
+      tocLinks.forEach((link) => {
+        link.addEventListener('click', () => {
+          if (tocDisclosure && tocBreakpoint.matches) tocDisclosure.open = false;
+        });
+      });
       const headingLinks = tocLinks
         .map((link) => ({ link, heading: document.getElementById(decodeURIComponent(link.hash.slice(1))) }))
         .filter(({ heading }) => heading);
