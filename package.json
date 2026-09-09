@@ -40,6 +40,11 @@
       "require": "./dist/hawk-metrics.cjs",
       "default": "./dist/hawk-metrics.js"
     },
+    "./icons": {
+      "types": "./src/hawk-icons.d.ts",
+      "import": "./src/hawk-icons.js",
+      "default": "./src/hawk-icons.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

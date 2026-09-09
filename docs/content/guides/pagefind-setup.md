@@ -128,11 +128,16 @@ For a Hugo page, a layout can map common frontmatter fields like this:
 </article>
 ```
 
-Hawk's docs use
-`docs/layouts/partials/pagefind-frontmatter.html` as the single mapping point for
-`category`/`categories`, `author`/`authors`, `tags`, and `.Lastmod`. Repeating a
-filter element creates separate filter values; the combined comma-separated `tags` metadata
-value is only for result-row display.
+### Attribute reference matrix
+
+Frontmatter fields map to Pagefind indexing attributes according to how Hawk and Pagefind consume them:
+
+| Frontmatter field | Formats supported | Pagefind HTML attribute | Role in Hawk |
+| --- | --- | --- | --- |
+| `category`, `categories` | String or array of strings | `data-pagefind-filter="category"`<br>`data-pagefind-meta="category"` | Filter & Metadata: powers auto-derived tabs, inline query filters (`category:Guides`), and `item.meta.category`. |
+| `author`, `authors` | String or array of strings | `data-pagefind-filter="author"`<br>`data-pagefind-meta="author"` | Filter & Metadata: filterable via inline queries (`author:Ada`) and accessible on `item.meta.author`. |
+| `date`, `.Lastmod` | ISO string (`YYYY-MM-DD`) | `data-pagefind-meta="date"`<br>`data-pagefind-sort="date"` | Metadata & Sort: renders beneath excerpts via `showResultDate` and enables chronology ordering via `sort: { date: 'desc' }`. |
+| `tags` | String or array of strings | `data-pagefind-filter="tag"`<br>`data-pagefind-meta="tags"` | Filter & Metadata: individual tags enable filtering (`tag:Metadata`), comma-delimited metadata enables result-item tag badges with deduplication. |
 
 ```js
 new HawkSearch({

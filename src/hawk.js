@@ -369,6 +369,7 @@ export class HawkSearch {
     this.#pagefind = null;
     this.#pagefindLoadPromise = null;
     this.#pagefindError = null;
+    this.#previewTitleController = null;
     this.#previewController = null;
     this.#previewKey = null;
     this.#fragmentCache = new Map();
@@ -396,6 +397,7 @@ export class HawkSearch {
   #pagefind;
   #pagefindLoadPromise;
   #pagefindError;
+  #previewTitleController;
   #previewController;
   #previewKey;
   #fragmentCache;
@@ -675,7 +677,8 @@ export class HawkSearch {
 
   #triggerMarkup(kind) {
     const s = this.strings;
-    const icon = `<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    const defaultIcon = `<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11L14.5 14.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    const icon = this.triggerConfig?.icon || defaultIcon;
     if (kind === 'minimal') {
       return icon;
     }
@@ -1032,6 +1035,7 @@ export class HawkSearch {
     if (url === this.#previewKey) {
       return;
     }
+    this.#stopPreviewAnimations();
     this.#previewKey = url;
     this.#previewEl.innerHTML = `
       <div class="hawk-preview-header"></div>
@@ -1040,7 +1044,7 @@ export class HawkSearch {
     `;
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
-    this.#animation.typeTitle(titleEl, title, { isAnchor: false });
+    this.#previewTitleController = this.#animation.typeTitle(titleEl, title, { isAnchor: false });
     this.#loadPreviewContent({ url, excerpt: '', isAnchor: false }, url, contentEl);
   }
 
@@ -1365,13 +1369,14 @@ export class HawkSearch {
   #resultMetaMarkup(item) {
     const dateValue = this.showResultDate ? item.meta?.[this.resultDateMetaKey] : '';
     const rawTags = this.showResultTags ? item.meta?.[this.resultTagsMetaKey] : '';
-    const tags = String(rawTags || '')
+    const parsedTags = String(rawTags || '')
       .split(',')
       .map((tag) => tag.trim())
       .filter(Boolean);
-    if (this.showResultTags && item.meta?.section && !tags.includes(item.meta.section)) {
-      tags.unshift(item.meta.section);
+    if (this.showResultTags && item.meta?.section) {
+      parsedTags.unshift(item.meta.section);
     }
+    const tags = Array.from(new Set(parsedTags));
     if (!dateValue && !tags.length) return '';
 
     const date = dateValue
@@ -1405,6 +1410,7 @@ export class HawkSearch {
       if (fallback.url) {
         this.#renderDefaultPreview(fallback.url, fallback.title);
       } else {
+        this.#stopPreviewAnimations();
         this.#previewKey = null;
         this.#previewEl.innerHTML = `<div class="hawk-preview-empty">${this.strings.previewEmpty}</div>`;
       }
@@ -1415,8 +1421,8 @@ export class HawkSearch {
     if (key === this.#previewKey) {
       return;
     }
+    this.#stopPreviewAnimations();
     this.#previewKey = key;
-    this.#animation.stop(this.#previewController);
 
     this.#previewEl.innerHTML = `
       <div class="hawk-preview-header">
@@ -1428,8 +1434,16 @@ export class HawkSearch {
     `;
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
-    this.#animation.typeTitle(titleEl, item.title, { isAnchor: item.isAnchor });
+    this.#previewTitleController = this.#animation.typeTitle(titleEl, item.title, { isAnchor: item.isAnchor });
     this.#loadPreviewContent(item, key, contentEl);
+  }
+
+  /** Stops both independently controlled preview animation surfaces. */
+  #stopPreviewAnimations() {
+    this.#animation.stop(this.#previewTitleController);
+    this.#animation.stop(this.#previewController);
+    this.#previewTitleController = null;
+    this.#previewController = null;
   }
 
   /**
@@ -1828,7 +1842,7 @@ export class HawkSearch {
 
   /** Removes the modal from the DOM and detaches listeners. */
   destroy() {
-    this.#animation.stop(this.#previewController);
+    this.#stopPreviewAnimations();
     if (this.#placeholderController) {
       this.#animation.stop(this.#placeholderController);
     }

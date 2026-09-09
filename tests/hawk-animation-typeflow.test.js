@@ -60,6 +60,23 @@ describe('createHawkAnimationTypeflow', () => {
     );
   });
 
+  it('renders title and HTML content immediately when reduced motion is requested', async () => {
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
+    const title = document.createElement('h3');
+    const content = document.createElement('div');
+
+    const titleController = HawkAnimationTypeflow.typeTitle(title, 'Reduced motion title');
+    const contentController = HawkAnimationTypeflow.typeContent(
+      content,
+      '<p>Rendered <strong>without delay</strong>.</p>'
+    );
+
+    expect(title.textContent).toBe('Reduced motion title');
+    expect(content.innerHTML).toContain('<strong>without delay</strong>');
+    await expect(titleController.promise).resolves.toEqual(expect.objectContaining({ completed: true }));
+    await expect(contentController.promise).resolves.toEqual(expect.objectContaining({ completed: true }));
+  });
+
   it('an explicit options override still wins over the respectReducedMotion default', () => {
     const TypeFlow = mockTypeFlow();
     const driver = createHawkAnimationTypeflow(TypeFlow, {

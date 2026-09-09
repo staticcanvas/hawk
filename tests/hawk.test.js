@@ -1231,6 +1231,116 @@ describe('result/page metadata', () => {
     hawk.destroy();
   });
 
+  it('suppresses duplicate tags when section and tags overlap or tags repeat', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: {
+              title: 'Dup Page',
+              section: 'Guides',
+              tags: 'Guides, API, API, Guides',
+            },
+            url: '/dup/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'dup';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const row = document.querySelector('.hawk-result-item');
+    const tags = Array.from(row.querySelectorAll('.hawk-result-tag'), (t) => t.textContent);
+    expect(tags).toEqual(['Guides', 'API']); // duplicates suppressed
+    hawk.destroy();
+  });
+
+  it('escapes special characters in date and tag values safely in HTML', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: {
+              title: 'Escaped Page',
+              date: '2026-09-10"><script>alert(1)</script>',
+              tags: '<b>XSS</b>, "quoted"',
+            },
+            url: '/escaped/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'esc';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const row = document.querySelector('.hawk-result-item');
+    expect(row.querySelector('script')).toBeNull();
+    expect(row.querySelector('b')).toBeNull();
+    expect(row.querySelector('.hawk-result-date').getAttribute('datetime')).toBe('2026-09-10"><script>alert(1)</script>');
+    expect(row.querySelector('.hawk-result-date').textContent).toBe('2026-09-10"><script>alert(1)</script>');
+    expect(row.innerHTML).toContain('&lt;b&gt;XSS&lt;/b&gt;');
+    hawk.destroy();
+  });
+
+  it('passes date sorting options to Pagefind when sort option or tab sort is configured', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({ results: [] }),
+    });
+    const hawk = new HawkSearch({
+      pagefind,
+      pagefindOptions: { sort: { date: 'desc' } },
+    });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'sorted';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith('sorted', expect.objectContaining({
+      sort: { date: 'desc' },
+    }));
+    hawk.destroy();
+  });
+
+  it('renders without error when date or tag metadata keys are completely missing or null', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'Missing Meta Page' },
+            url: '/missing/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'missing';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const row = document.querySelector('.hawk-result-item');
+    expect(row.querySelector('.hawk-result-meta')).toBeNull();
+    expect(row.querySelector('.hawk-result-date')).toBeNull();
+    expect(row.querySelector('.hawk-result-tag')).toBeNull();
+    hawk.destroy();
+  });
+
   it('indents Pagefind sub-results beneath their parent page', async () => {
     const hawk = await hawkWithResults();
     const rows = document.querySelectorAll('.hawk-result-item');
@@ -1654,6 +1764,67 @@ describe('category tabs (keyboard + ARIA)', () => {
 
 describe('rich preview content', () => {
   const htmlPage = (bodyInner) => `<!doctype html><html><body>${bodyInner}</body></html>`;
+
+  it('stops the previous title animation and ignores stale content when selection changes quickly', async () => {
+    let resolveFirstPage;
+    let resolveSecondPage;
+    fetch.mockImplementation((url) => new Promise((resolve) => {
+      if (url === '/first/') resolveFirstPage = resolve;
+      else resolveSecondPage = resolve;
+    }));
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({ meta: { title: 'First page' }, url: '/first/', excerpt: 'first', sub_results: [] }),
+          resultFor({ meta: { title: 'Second page' }, url: '/second/', excerpt: 'second', sub_results: [] }),
+        ],
+      }),
+    });
+    const titleControllers = [];
+    const contentControllers = [];
+    const animation = {
+      typeTitle: vi.fn(() => {
+        const controller = { stop: vi.fn() };
+        titleControllers.push(controller);
+        return controller;
+      }),
+      typeContent: vi.fn((element, html) => {
+        element.innerHTML = html;
+        const controller = { stop: vi.fn() };
+        contentControllers.push(controller);
+        return controller;
+      }),
+      rotatePlaceholder() { return null; },
+      stop(controller) { controller?.stop(); },
+    };
+    const hawk = new HawkSearch({ pagefind, animation });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'page';
+    input.dispatchEvent(new Event('input'));
+    await vi.waitFor(() => expect(document.querySelectorAll('.hawk-result-item')).toHaveLength(2));
+
+    document.querySelectorAll('.hawk-result-item')[1].dispatchEvent(new Event('mouseenter', { bubbles: true }));
+    expect(titleControllers[0].stop).toHaveBeenCalledOnce();
+
+    resolveSecondPage({
+      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>second page content</p></main>')),
+    });
+    await vi.waitFor(() => expect(animation.typeContent).toHaveBeenCalledOnce());
+    expect(document.querySelector('.hawk-preview-content').textContent).toContain('second page content');
+
+    resolveFirstPage({
+      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>stale first page content</p></main>')),
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(animation.typeContent).toHaveBeenCalledOnce();
+    expect(document.querySelector('.hawk-preview-content').textContent).not.toContain('stale first page content');
+
+    hawk.destroy();
+    expect(titleControllers[1].stop).toHaveBeenCalledOnce();
+    expect(contentControllers[0].stop).toHaveBeenCalledOnce();
+  });
 
   it('fetches the result page and injects only the contentSelector region', async () => {
     fetch.mockResolvedValue({
