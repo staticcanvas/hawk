@@ -53,14 +53,29 @@
   <header class="section-heading">
     <h2>Search that belongs to your site.</h2>
   </header>
-  {{ with .Params.showcases }}
-  <div class="feature-showcase" data-reveal-group>
+  {{ with site.Data.search_gallery.items }}
+  <section class="search-gallery" aria-labelledby="search-gallery-title" data-search-gallery>
+    <header class="search-gallery__header">
+      <div>
+        <span>Search layouts</span>
+        <h3 id="search-gallery-title">Configured Hawk models</h3>
+      </div>
+      <div class="search-gallery__controls" aria-label="Scroll search layout gallery">
+        <button type="button" data-gallery-scroll="previous" aria-controls="search-gallery-track" aria-label="Previous search layout">
+          <span aria-hidden="true">&larr;</span>
+        </button>
+        <button type="button" data-gallery-scroll="next" aria-controls="search-gallery-track" aria-label="Next search layout">
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+    </header>
+    <div class="search-gallery__track" id="search-gallery-track" tabindex="0" data-gallery-track data-reveal-group>
     {{ range . }}
     {{ $showcase := . }}
     <figure class="showcase-card" data-reveal>
       <div class="showcase-card__media">
         {{ with $showcase.image }}
-        <img src="{{ . | relURL }}" alt="Hawk {{ $showcase.title }} search layout">
+        <img src="{{ . | relURL }}" alt="{{ $showcase.alt | default (printf "Hawk %s search layout" $showcase.title) }}">
         {{ else }}
         <div class="showcase-placeholder" data-layout="{{ $showcase.id }}" role="img" aria-label="Screenshot placeholder for {{ $showcase.title }} mode">
           <span></span><span></span><span></span><span></span>
@@ -74,7 +89,8 @@
       </figcaption>
     </figure>
     {{ end }}
-  </div>
+    </div>
+  </section>
   {{ end }}
   <div class="feature-grid" data-reveal-group>
     {{ range $index, $feature := .Params.features }}
