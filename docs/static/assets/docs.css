@@ -1125,9 +1125,9 @@ body {
 
 .feature-index {
   color: var(--hawk-accent, var(--site-green));
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
+  font-family: 'Rubik Spray Paint', 'Hanken Grotesk', system-ui, sans-serif;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 0.8;
 }
 
 .feature-card h3 {
@@ -1137,6 +1137,23 @@ body {
 
 .feature-card p {
   font-size: 0.88rem;
+}
+
+.feature-card p strong {
+  color: #c4a7e7;
+  font-weight: 650;
+}
+
+.feature-card p em {
+  color: #ebbcba;
+}
+
+:root[data-theme='light'] .feature-card p strong {
+  color: #6f4b8b;
+}
+
+:root[data-theme='light'] .feature-card p em {
+  color: #8a4954;
 }
 
 .card-grid {

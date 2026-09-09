@@ -7,23 +7,23 @@ hero:
   install: npm install @staticcanvas/hawk
 features:
   - title: Pagefind-backed
-    body: Chunked, lazily-loaded index with typo tolerance, scaling past a hand-rolled in-browser scorer — hawk owns the UI, Pagefind owns ranking.
+    body: A <strong>chunked, lazily-loaded index</strong> with typo tolerance — Hawk owns the interface while <em>Pagefind preserves ranking</em>.
   - title: Tabs, curated or auto-derived
-    body: Auto-derived category pills by default, explicit tabs with full Pagefind filter power, a sort-based listing tab (e.g. "Recently updated"), or a tab list loaded from a JSON file.
+    body: Use <strong>auto-derived category pills</strong>, explicit Pagefind filters, a sorted listing such as <em>Recently updated</em>, or tabs loaded from JSON.
   - title: Themeable to the token
-    body: Every color, font, and scrollbar is a --hawk-* custom property. Ship a CSS file, or a few tokens inline with theme.tokens — no fork required.
+    body: Colors, fonts, and scrollbars use <strong>--hawk-* custom properties</strong>. Supply CSS or <em>theme.tokens</em> without modifying Hawk source.
   - title: Real page previews
-    body: The preview pane fetches and renders the actual matched page — headings, code blocks, tables — not a short excerpt. A page-level match can break into a scannable section outline instead of a full dump.
+    body: The preview pane fetches the <strong>matched page content</strong>, including headings, code, and tables. Page matches can render as a <em>section outline</em>.
   - title: Modal reveal animations
-    body: Open/close animations include fade, scale-fade, slide-down, blur-zoom, spring, a custom animation, or none. Motion is instant when reduced motion is requested.
+    body: Open/close animations include <strong>fade, scale-fade, slide-down, blur-zoom, and spring</strong>, plus a custom animation or none. Motion is <em>instant under reduced motion</em>.
   - title: Fit, medium, or compact
-    body: An in-modal density switcher, persisted per visitor, on top of scale/position/columns layout params.
+    body: An in-modal <strong>density switcher</strong> persists the visitor's choice alongside <em>scale, position, and column</em> parameters.
   - title: Keyboard-first
-    body: A real focus trap, two-pane Tab navigation, arrow-key scrolling, Ctrl/Cmd+K — accessible by default, not bolted on after the fact.
+    body: A <strong>modal focus trap</strong>, two-pane Tab navigation, arrow-key movement, Escape, and <em>Ctrl/Cmd+K</em> are included.
   - title: Pins and inline filters
-    body: Visitors pin results for later, or type category:Guides directly into the search box — Pagefind's own filtering, exposed as a typed shortcut.
+    body: Visitors can <strong>pin results</strong> or type <em>category:Guides</em> to apply Pagefind filtering from the query field.
   - title: Zero-config to start
-    body: One constructor call, a Pagefind index, and a trigger element get you a working search. Typeflow's typewriter and a built-in trigger button are opt-in.
+    body: Start with <strong>one constructor call</strong>, a Pagefind index, and a trigger. The TypeFlow driver and <em>built-in trigger</em> remain optional.
 ---
 
 This site's own search box (top of every page, or Ctrl+K) is hawk searching itself — there's no
