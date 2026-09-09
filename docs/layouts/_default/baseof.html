@@ -38,10 +38,29 @@
   {{ if not .IsHome }}
   <header class="site-header" data-pagefind-ignore>
     <div class="shell header-inner">
-      <a class="brand" href="{{ "" | relURL }}" aria-label="hawk home">
-        <img class="brand-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="24" height="24">
-        <span class="brand-text">hawk</span>
-      </a>
+      <div class="header-start">
+        <details class="mobile-nav" data-mobile-nav>
+          <summary aria-label="Documentation menu">
+            <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M3 5h14M3 10h14M3 15h14" stroke-linecap="round" />
+            </svg>
+          </summary>
+          <nav class="mobile-nav-panel" aria-label="Mobile documentation sections">
+            {{ partial "menu-tree.html" (dict "page" . "menu" site.Menus.main) }}
+          </nav>
+        </details>
+
+        <a class="brand" href="{{ "" | relURL }}" aria-label="hawk home">
+          <img class="brand-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="24" height="24">
+          <span class="brand-text">hawk</span>
+        </a>
+
+        <nav class="header-shortcuts" aria-label="Documentation shortcuts">
+          <a href="{{ "getting-started/" | relURL }}">Get started</a>
+          <a href="{{ "playground/" | relURL }}">Playground</a>
+          <a href="{{ "api/" | relURL }}">API reference</a>
+        </nav>
+      </div>
 
       <button class="search-trigger-btn" type="button" data-search-trigger aria-label="Search documentation (Ctrl+K)">
         <span>Search docs...</span>
@@ -214,6 +233,22 @@
     }
     applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
     const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // ── Responsive documentation menu ────────────────────────────────────────────────────
+    const mobileNav = document.querySelector('[data-mobile-nav]');
+    if (mobileNav) {
+      const mobileNavBreakpoint = matchMedia('(max-width: 768px)');
+      const closeMobileNav = () => { mobileNav.open = false; };
+      closeMobileNav();
+      mobileNavBreakpoint.addEventListener('change', closeMobileNav);
+      mobileNav.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileNav));
+      mobileNav.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !mobileNav.open) return;
+        event.preventDefault();
+        closeMobileNav();
+        mobileNav.querySelector('summary').focus();
+      });
+    }
 
     // ── Site-wide scrollbar activity ─────────────────────────────────────────────────────
     const scrollbarTimers = new WeakMap();

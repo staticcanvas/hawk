@@ -92,6 +92,32 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(disclosure).not.toHaveAttribute('open', '');
   });
 
+  test('the mobile documentation menu replaces the logo and resets across breakpoints', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 900 });
+    await page.goto('getting-started/index.html');
+
+    const menu = page.locator('[data-mobile-nav]');
+    const summary = menu.locator('summary');
+    await expect(page.locator('.header-start > .brand')).toBeHidden();
+    await expect(summary).toBeVisible();
+    expect((await summary.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    await summary.click();
+    await expect(menu).toHaveAttribute('open', '');
+    await expect(menu.locator('a', { hasText: 'Playground' })).toBeVisible();
+    await expect(menu.locator('a', { hasText: 'API reference' })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(360);
+
+    await page.keyboard.press('Escape');
+    await expect(menu).not.toHaveAttribute('open', '');
+    await expect(summary).toBeFocused();
+
+    await summary.click();
+    await page.setViewportSize({ width: 1024, height: 900 });
+    await expect(menu).not.toHaveAttribute('open', '');
+    await expect(summary).toBeHidden();
+    await expect(page.locator('.header-shortcuts a')).toHaveText(['Get started', 'Playground', 'API reference']);
+  });
+
   test('theme gallery mounts one isolated profile at a time', async ({ page }) => {
     await page.goto('themes/index.html');
     const cards = page.locator('[data-gallery-theme]');

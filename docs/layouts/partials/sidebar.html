@@ -5,20 +5,5 @@
   not string-matching URLs by hand.
 */}}
 <nav class="doc-sidebar" aria-label="Documentation sections" data-pagefind-ignore>
-  <ul class="sidebar-list">
-    {{ range site.Menus.main }}
-    <li class="sidebar-item">
-      <a href="{{ .URL | relURL }}"{{ if $.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
-      {{ if .Children }}
-      <ul class="sidebar-sublist">
-        {{ range .Children }}
-        <li class="sidebar-subitem">
-          <a href="{{ .URL | relURL }}"{{ if $.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
-        </li>
-        {{ end }}
-      </ul>
-      {{ end }}
-    </li>
-    {{ end }}
-  </ul>
+  {{ partial "menu-tree.html" (dict "page" . "menu" site.Menus.main) }}
 </nav>
