@@ -12,12 +12,14 @@
       "id": "medium",
       "label": "Density",
       "title": "Medium",
+      "image": "assets/full.png",
       "body": "Results and a fetched page preview displayed side by side."
     },
     {
       "id": "tabbed",
       "label": "Navigation",
       "title": "Tabbed",
+      "image": "assets/medium.png",
       "body": "Pagefind filters exposed as persistent collection tabs."
     },
     {

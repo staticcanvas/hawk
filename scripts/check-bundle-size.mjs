@@ -21,7 +21,9 @@ const bundlePath = `dist/${packageName}/dist/${packageName}.min.js`;
 // under 9KB — too tight for the next real feature to land without immediately re-raising this.
 // Raised 10KB -> 11KB: configurable result dates/tags, hierarchical subpage styling, and
 // independently configurable density/Escape header controls add requested UI capability.
-const maxGzipBytes = 11 * 1024;
+// Raised 11KB -> 12KB: the opt-in discovery row adds three independently configurable,
+// accessible link groups plus indexed-result extraction and same-origin URL normalization.
+const maxGzipBytes = 12 * 1024;
 const bundle = readFileSync(bundlePath);
 const gzipBytes = gzipSync(bundle).byteLength;
 

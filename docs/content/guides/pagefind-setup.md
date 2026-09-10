@@ -104,11 +104,11 @@ index feeds multiple search experiences or a page should remain available for ot
 Pagefind reads the generated HTML, not the source frontmatter. A layout must print each
 frontmatter value into a Pagefind attribute inside the page's `data-pagefind-body` region.
 
-| Attribute | Purpose | Available through Hawk |
-| --- | --- | --- |
-| `data-pagefind-meta="key"` | Returns the element text as `result.data().meta[key]`. | Every `HawkMatch.meta`; dates and tags can render beneath result excerpts. |
-| `data-pagefind-filter="key"` | Adds the element text as a filter value. | Auto-derived tabs, explicit tab filters, and inline filters. |
-| `data-pagefind-sort="key"` | Adds the element text as a sortable value. | `pagefindOptions.sort` and `HawkTab.sort`. |
+| Attribute                    | Purpose                                                | Available through Hawk                                                     |
+| ---------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------- |
+| `data-pagefind-meta="key"`   | Returns the element text as `result.data().meta[key]`. | Every `HawkMatch.meta`; dates and tags can render beneath result excerpts. |
+| `data-pagefind-filter="key"` | Adds the element text as a filter value.               | Auto-derived tabs, explicit tab filters, and inline filters.               |
+| `data-pagefind-sort="key"`   | Adds the element text as a sortable value.             | `pagefindOptions.sort` and `HawkTab.sort`.                                 |
 
 For a Hugo page, a layout can map common frontmatter fields like this:
 
@@ -132,12 +132,12 @@ For a Hugo page, a layout can map common frontmatter fields like this:
 
 Frontmatter fields map to Pagefind indexing attributes according to how Hawk and Pagefind consume them:
 
-| Frontmatter field | Formats supported | Pagefind HTML attribute | Role in Hawk |
-| --- | --- | --- | --- |
-| `category`, `categories` | String or array of strings | `data-pagefind-filter="category"`<br>`data-pagefind-meta="category"` | Filter & Metadata: powers auto-derived tabs, inline query filters (`category:Guides`), and `item.meta.category`. |
-| `author`, `authors` | String or array of strings | `data-pagefind-filter="author"`<br>`data-pagefind-meta="author"` | Filter & Metadata: filterable via inline queries (`author:Ada`) and accessible on `item.meta.author`. |
-| `date`, `.Lastmod` | ISO string (`YYYY-MM-DD`) | `data-pagefind-meta="date"`<br>`data-pagefind-sort="date"` | Metadata & Sort: renders beneath excerpts via `showResultDate` and enables chronology ordering via `sort: { date: 'desc' }`. |
-| `tags` | String or array of strings | `data-pagefind-filter="tag"`<br>`data-pagefind-meta="tags"` | Filter & Metadata: individual tags enable filtering (`tag:Metadata`), comma-delimited metadata enables result-item tag badges with deduplication. |
+| Frontmatter field        | Formats supported          | Pagefind HTML attribute                                              | Role in Hawk                                                                                                                                      |
+| ------------------------ | -------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `category`, `categories` | String or array of strings | `data-pagefind-filter="category"`<br>`data-pagefind-meta="category"` | Filter & Metadata: powers auto-derived tabs, inline query filters (`category:Guides`), and `item.meta.category`.                                  |
+| `author`, `authors`      | String or array of strings | `data-pagefind-filter="author"`<br>`data-pagefind-meta="author"`     | Filter & Metadata: filterable via inline queries (`author:Ada`) and accessible on `item.meta.author`.                                             |
+| `date`, `.Lastmod`       | ISO string (`YYYY-MM-DD`)  | `data-pagefind-meta="date"`<br>`data-pagefind-sort="date"`           | Metadata & Sort: renders beneath excerpts via `showResultDate` and enables chronology ordering via `sort: { date: 'desc' }`.                      |
+| `tags`                   | String or array of strings | `data-pagefind-filter="tag"`<br>`data-pagefind-meta="tags"`          | Filter & Metadata: individual tags enable filtering (`tag:Metadata`), comma-delimited metadata enables result-item tag badges with deduplication. |
 
 ```js
 new HawkSearch({
@@ -151,6 +151,9 @@ new HawkSearch({
 
 Set `showResultDate: false` or `showResultTags: false` independently when that metadata
 should remain available through `HawkMatch.meta` but not appear in the results column.
+When `discoveryRow` is enabled, it consumes this same result contract: marked indexed excerpts
+provide query terms, `meta.title` and result URLs provide page links, and Pagefind `sub_results`
+provide heading fragments. It does not read source frontmatter or fetch pages to build the row.
 See Pagefind's [metadata](https://pagefind.app/docs/metadata/),
 [filtering](https://pagefind.app/docs/filtering/), and
 [sorting](https://pagefind.app/docs/sorts/) references for attribute behavior.

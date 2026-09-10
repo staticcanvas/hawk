@@ -27,6 +27,9 @@ disableKinds = ['taxonomy', 'term']
 [[module.mounts]]
   source = '../branding'
   target = 'static/assets/branding'
+[[module.mounts]]
+  source = '../theme-templates'
+  target = 'static/assets/theme-templates'
 
 [menu]
   [[menu.main]]

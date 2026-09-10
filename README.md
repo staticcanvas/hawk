@@ -91,6 +91,8 @@ interfaces.
 - Result/page metadata: every match carries Pagefind's full `meta` object, with configurable
   date/tag rows beneath excerpts; anchor results are visually indented beneath
   their parent page; `state.pageCount` tracks distinct pages separately from the flattened row count.
+- Optional discovery row: three independently configurable groups expose marked query terms,
+  related pages, and Pagefind heading deep links beneath the main results without changing ranking.
 - Configurable search-header controls: show or hide the Fit/Medium/Compact group and Escape
   button independently, or use `headerControls: false` for a minimal search-bar-only header.
 - Pin system: a pin toggle on every result, persisted to `localStorage`, surfaced as a synthetic

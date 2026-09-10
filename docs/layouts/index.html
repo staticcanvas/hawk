@@ -19,6 +19,7 @@
         <span>Try the search</span>
         <kbd>Ctrl+K</kbd>
       </button>
+      <a class="btn btn-secondary" href="{{ "playground/" | relURL }}">Playground</a>
       <a class="btn btn-source" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z" transform="translate(0 2)"/></svg>
         View source
@@ -56,7 +57,7 @@
   {{ with site.Data.search_gallery.items }}
   <section class="search-gallery" aria-labelledby="search-gallery-title" data-search-gallery>
     <header class="search-gallery__header">
-      <div>
+      <div class="search-gallery__title-group">
         <span>Search layouts</span>
         <h3 id="search-gallery-title">Configured Hawk models</h3>
       </div>
@@ -92,6 +93,10 @@
     </div>
   </section>
   {{ end }}
+  <header class="section-subheading feature-heading">
+    <span>Capabilities</span>
+    <h3>Hawk's features</h3>
+  </header>
   <div class="feature-grid" data-reveal-group>
     {{ range $index, $feature := .Params.features }}
     <article class="feature-card" data-reveal>
@@ -107,16 +112,15 @@
 {{ end }}
 
 <section class="shell guides-section">
-  <header class="section-heading section-heading--row">
-    <div>
-      <h2>Guides</h2>
-    </div>
-    <a href="{{ "guides/" | relURL }}">View all guides <span aria-hidden="true">&rarr;</span></a>
+  <header class="section-heading guides-heading">
+    <span>Documentation</span>
+    <h2>Guides</h2>
+    <a class="guides-all-link" href="{{ "guides/" | relURL }}">View all guides <span aria-hidden="true">&rarr;</span></a>
   </header>
   <div class="card-grid" data-reveal-group>
     {{ range $index, $guide := where site.RegularPages "Section" "guides" }}
     <a class="guide-card" data-reveal href="{{ .Permalink }}">
-      <span class="guide-card__index" aria-hidden="true">{{ printf "%02d" (add $index 1) }}</span>
+      <span class="guide-card__index" aria-hidden="true">{{ upper (substr $guide.Title 0 1) }}</span>
       <div>
         <h3>{{ $guide.Title }}</h3>
         {{ with $guide.Description }}<p>{{ . }}</p>{{ end }}
@@ -129,7 +133,11 @@
 
 {{ if .Content }}
 <section class="shell home-note">
-  {{ .Content }}
+  <aside class="home-note__comment" aria-label="About this demonstration">
+    <span aria-hidden="true">/*</span>
+    <div>{{ .Content }}</div>
+    <span aria-hidden="true">*/</span>
+  </aside>
 </section>
 {{ end }}
 {{ end }}

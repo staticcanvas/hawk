@@ -1,0 +1,42 @@
+{
+  "name": "Stingray",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#12181e",
+      "bgAlt": "#182027",
+      "bgElev": "#202a33",
+      "border": "#2b3844",
+      "text": "#dbe6ec",
+      "textMuted": "#8fa3ad",
+      "textFaint": "#55676f",
+      "selection": "#23414f",
+      "accent": "#2fd9e8"
+    },
+    "syntax": {
+      "comment": "#5a6d76",
+      "keyword": "#4fb8e0",
+      "string": "#7fe0c4",
+      "function": "#2fd9e8",
+      "variable": "#dbe6ec",
+      "constant": "#e0c97f",
+      "number": "#e0c97f",
+      "type": "#8fa8e0",
+      "operator": "#8fa3ad",
+      "tag": "#e07f9f",
+      "attribute": "#7fe0c4",
+      "punctuation": "#8fa3ad",
+      "error": "#e0596b",
+      "warning": "#e0c97f",
+      "info": "#4fb8e0",
+      "success": "#7fe0c4",
+      "deleted": "#c16471"
+    }
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "name": "Metro Dark",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": "https://staticcanvas.gitlab.com/hawk"
+  },
+  "colors": {
+    "ui": {
+      "bg": "#0e0e10",
+      "bgAlt": "#17171a",
+      "bgElev": "#202024",
+      "border": "#2c2c30",
+      "text": "#f2f2f2",
+      "textMuted": "#a6a6ab",
+      "textFaint": "#6b6b70",
+      "selection": "#2d3f5c",
+      "accent": "#2d89ef"
+    },
+    "syntax": {
+      "comment": "#6b6b70",
+      "keyword": "#2d73ff",
+      "string": "#60a917",
+      "function": "#1ba1e2",
+      "variable": "#f2f2f2",
+      "constant": "#f0a30a",
+      "number": "#f0a30a",
+      "type": "#00aba9",
+      "operator": "#ba31ff",
+      "tag": "#f00080",
+      "attribute": "#9850ff",
+      "punctuation": "#a6a6ab",
+      "error": "#f71600",
+      "warning": "#f0a30a",
+      "info": "#2d73ff",
+      "success": "#009000",
+      "deleted": "#f80039"
+    }
+  }
+}

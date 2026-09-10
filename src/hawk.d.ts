@@ -30,6 +30,17 @@ export interface HawkMatch {
   meta: Record<string, string>;
 }
 
+export interface HawkDiscoveryGroupConfig {
+  label?: string;
+  maxItems?: number;
+}
+
+export interface HawkDiscoveryRowConfig {
+  matches?: boolean | HawkDiscoveryGroupConfig;
+  pages?: boolean | HawkDiscoveryGroupConfig;
+  headings?: boolean | HawkDiscoveryGroupConfig;
+}
+
 export interface HawkPin {
   url: string;
   title: string;
@@ -82,6 +93,12 @@ export interface HawkStrings {
   hintClose?: string;
   previewEmpty?: string;
   previewLoading?: string;
+  discoveryLabel?: string;
+  discoveryMatches?: string;
+  discoveryPages?: string;
+  discoveryHeadings?: string;
+  discoveryEmpty?: string;
+  discoveryLoading?: string;
   sectionBadge?: string;
   untitled?: string;
   typeToSearch?: string;
@@ -146,6 +163,7 @@ export interface HawkSearchConfig {
   previewSections?: boolean;
   previewSectionSelector?: string;
   previewSectionExcerptLength?: number;
+  discoveryRow?: false | HawkDiscoveryRowConfig;
   revealAnimation?: 'fade' | 'scale-fade' | 'slide-down' | 'blur-zoom' | 'spring' | string | false;
   revealDuration?: number;
   resultsReveal?: boolean;

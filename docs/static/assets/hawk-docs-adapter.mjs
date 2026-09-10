@@ -86,6 +86,73 @@ export const HAWK_GALLERY_THEMES = Object.freeze([
   }),
 ]);
 
+export const HAWK_GALLERY_TEMPLATE_IDS = Object.freeze([
+  'afterglow',
+  'chartographer',
+  'metro-dark',
+  'metro-light',
+  'midnight-wave',
+  'minimal-dark',
+  'nightforge',
+  'pastel-shadow',
+  'stingray',
+  'subtle-sunset',
+]);
+
+/** Maps the shared palette-template contract to Hawk's complete theme-token contract. */
+export function createHawkGalleryThemeFromTemplate(id, template) {
+  const ui = template?.colors?.ui;
+  const syntax = template?.colors?.syntax;
+  if (!HAWK_GALLERY_TEMPLATE_IDS.includes(id) || !ui || !syntax) return null;
+  const alternateAccent = syntax.function === ui.accent ? syntax.string : syntax.function;
+  return Object.freeze({
+    id,
+    label: template.name,
+    description: `${template.name} uses ${template.mode} surfaces with a ${ui.accent} accent.`,
+    tokens: Object.freeze({
+      '--hawk-bg-canvas': ui.bg,
+      '--hawk-bg-surface': ui.bgAlt,
+      '--hawk-bg-surface-elevated': ui.bgElev,
+      '--hawk-border-subtle': ui.border,
+      '--hawk-border-default': ui.border,
+      '--hawk-border-strong': ui.textFaint,
+      '--hawk-text-primary': ui.text,
+      '--hawk-text-secondary': ui.textMuted,
+      '--hawk-text-muted': ui.textFaint,
+      '--hawk-accent': ui.accent,
+      '--hawk-accent-alt': alternateAccent,
+      '--hawk-accent-dim': ui.selection,
+      '--hawk-accent-glow': ui.selection,
+      '--hawk-accent-alt-dim': ui.selection,
+      '--hawk-accent-alt-glow': ui.selection,
+      '--hawk-backdrop': template.mode === 'light' ? 'rgb(26 26 26 / 0.28)' : 'rgb(0 0 0 / 0.72)',
+      '--hawk-preview-bg': ui.bgAlt,
+      '--hawk-mark-bg': ui.selection,
+      '--hawk-mark-color': ui.text,
+      '--hawk-scrollbar-thumb': ui.textFaint,
+      '--hawk-scrollbar-thumb-active': ui.accent,
+      '--hawk-powered-by-color': ui.textMuted,
+    }),
+    params: Object.freeze({ position: 'center', density: 'fit', scale: 0.96 }),
+    revealAnimation: 'fade',
+    colorModes: Object.freeze([template.mode]),
+    cssAsset: null,
+    license: Object.freeze({ ...template.license }),
+  });
+}
+
+/** Loads one allow-listed palette from the repository's theme-templates source directory. */
+export async function loadHawkGalleryTemplate(id, baseUrl) {
+  if (!HAWK_GALLERY_TEMPLATE_IDS.includes(id)) return null;
+  try {
+    const response = await fetch(`${baseUrl}${id}.json`);
+    if (!response.ok) return null;
+    return createHawkGalleryThemeFromTemplate(id, await response.json());
+  } catch {
+    return null;
+  }
+}
+
 /** Returns a mutable copy of one gallery definition for an isolated preview instance. */
 export function getHawkGalleryTheme(id) {
   const definition = HAWK_GALLERY_THEMES.find((theme) => theme.id === id);
@@ -96,6 +163,14 @@ export function getHawkGalleryTheme(id) {
     params: { ...definition.params },
     colorModes: [...definition.colorModes],
   };
+}
+
+/** Loads all gallery themes including built-in presets and palette templates. */
+export async function loadAllHawkGalleryThemes(templateBaseUrl = 'assets/theme-templates/') {
+  const templates = (await Promise.all(
+    HAWK_GALLERY_TEMPLATE_IDS.map((id) => loadHawkGalleryTemplate(id, templateBaseUrl))
+  )).filter(Boolean);
+  return [...HAWK_GALLERY_THEMES, ...templates];
 }
 
 /** Returns an isolated theme object for a docs application surface. */
@@ -126,9 +201,7 @@ export function createHawkDocsSearchConfig({
       label: name,
       filter: { category: name },
       ...(accentColors[name] ? { accentColor: accentColors[name] } : {}),
-      ...(fallback
-        ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title }
-        : {}),
+      ...(fallback ? { defaultPreviewUrl: fallback.url, defaultPreviewTitle: fallback.title } : {}),
     };
   });
   tabs.push({
@@ -146,6 +219,7 @@ export function createHawkDocsSearchConfig({
     contentSelector: '.doc-article',
     tabs,
     previewSections: true,
+    discoveryRow: {},
     ...overrides,
     params: { ...(overrides.params || {}) },
     hotkeys: { ...(overrides.hotkeys || {}) },

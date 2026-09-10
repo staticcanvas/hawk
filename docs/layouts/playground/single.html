@@ -22,11 +22,30 @@
             <strong>Live configuration</strong>
             <p class="pg-status" id="pg-status">Loading hawk...</p>
           </div>
-          <button class="pg-open-btn" type="button" data-playground-trigger aria-keyshortcuts="Control+Shift+K Meta+Shift+K">Open search preview <kbd aria-hidden="true">Ctrl+Shift+K</kbd></button>
+          <div class="pg-launchbar-actions">
+            <button class="pg-open-btn" type="button" data-playground-trigger aria-keyshortcuts="Control+Shift+K Meta+Shift+K">Open search preview <kbd aria-hidden="true">Ctrl+Shift+K</kbd></button>
+            <button class="pg-reset-btn" type="button" id="pg-reset-btn" title="Clear saved settings and restore defaults">Reset</button>
+          </div>
         </div>
 
         <fieldset>
           <legend>Theme</legend>
+          <label>preset <select id="pg-theme-preset" class="pg-select">
+            <option value="typeflow" selected>TypeFlow (default)</option>
+            <option value="pastel-dusk">Pastel dusk</option>
+            <option value="paper-mint">Paper mint</option>
+            <option value="afterglow">Afterglow</option>
+            <option value="chartographer">Chartographer</option>
+            <option value="metro-dark">Metro dark</option>
+            <option value="metro-light">Metro light</option>
+            <option value="midnight-wave">Midnight wave</option>
+            <option value="minimal-dark">Minimal dark</option>
+            <option value="nightforge">Nightforge</option>
+            <option value="pastel-shadow">Pastel shadow</option>
+            <option value="stingray">Stingray</option>
+            <option value="subtle-sunset">Subtle sunset</option>
+            <option value="none">none (unstyled)</option>
+          </select></label>
           <label><input type="radio" name="pg-theme" value="typeflow" checked> typeflow</label>
           <label><input type="radio" name="pg-theme" value="none"> none (unstyled)</label>
         </fieldset>
@@ -60,7 +79,13 @@
           <p class="pg-fieldset-note">Every value accepts any valid CSS color, including alpha and gradients.</p>
           <div class="pg-token-grid">
             {{ range $themeTokens }}
-            <label><span>{{ .name }}<code>{{ .token }}</code></span><input class="pg-text pg-token-input" type="text" data-hawk-token="{{ .token }}" value="{{ .value }}"></label>
+            <label>
+              <span>{{ .name }}<code>{{ .token }}</code></span>
+              <span class="pg-token-control">
+                <button class="pg-token-swatch" type="button" data-pickr-trigger aria-label="Choose {{ .name }} color"></button>
+                <input class="pg-text pg-token-input" type="text" data-hawk-token="{{ .token }}" value="{{ .value }}">
+              </span>
+            </label>
             {{ end }}
           </div>
         </fieldset>
@@ -291,6 +316,10 @@
           <label>tabs URL <input type="text" id="pg-tabs-url" value="" placeholder="/tabs.json" class="pg-text"></label>
           <label>default preview URL <input type="text" id="pg-preview-url" value="" class="pg-text"></label>
           <label>default preview title <input type="text" id="pg-preview-title" value="" class="pg-text"></label>
+          <label><input type="checkbox" id="pg-discovery-row" checked> discovery row</label>
+          <label><input type="checkbox" id="pg-discovery-matches" checked> discovery matches</label>
+          <label><input type="checkbox" id="pg-discovery-pages" checked> discovery pages</label>
+          <label><input type="checkbox" id="pg-discovery-headings" checked> discovery headings</label>
           <label>rotating prompts <input type="text" id="pg-placeholders" value="Search guides,Search API,Try inline filters" class="pg-text pg-text-wide"></label>
           <label class="pg-field-wide">excluded pages JSON <textarea id="pg-exclude-pages" class="pg-json" rows="3" spellcheck="false">["{{ "" | relURL }}", "{{ "404.html" | relURL }}", "{{ "playground/" | relURL }}"]</textarea></label>
           <label class="pg-field-wide">tabs JSON <textarea id="pg-tabs" class="pg-json" rows="4" spellcheck="false">[]</textarea></label>
@@ -411,12 +440,16 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
 <script src="{{ "webutil/libs/hawk-metrics.js" | relURL }}"></script>
 
 <script type="module">
+  import Pickr from '{{ "webutil/libs/pickr.min.mjs" | relURL }}';
   import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
   import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
   import {
     createHawkDocsTheme,
     getHawkGalleryTheme,
+    HAWK_GALLERY_THEMES,
     HAWK_PLAYGROUND_TYPEFLOW_PRESET,
+    loadAllHawkGalleryThemes,
+    loadHawkGalleryTemplate,
   } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
 
   HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
@@ -454,21 +487,121 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
   setValue('pg-tf-rotate-erase-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.eraseStyle);
   setValue('pg-tf-rotate-erase-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.speed);
 
-  const requestedPresetId = new URLSearchParams(window.location.search).get('preset');
-  const requestedPreset = requestedPresetId ? getHawkGalleryTheme(requestedPresetId) : null;
-  if (requestedPreset) {
-    document.querySelector('input[name="pg-theme"][value="typeflow"]').checked = true;
-    document.querySelectorAll('[data-hawk-token]').forEach((input) => { input.value = ''; });
-    for (const [token, value] of Object.entries(requestedPreset.tokens)) {
-      const input = Array.from(document.querySelectorAll('[data-hawk-token]'))
-        .find((candidate) => candidate.dataset.hawkToken === token);
-      if (input) input.value = value;
-    }
-    setValue('pg-position', requestedPreset.params.position);
-    setValue('pg-density', requestedPreset.params.density);
-    setValue('pg-scale', requestedPreset.params.scale);
-    setValue('pg-reveal-animation', requestedPreset.revealAnimation);
+  const tokenInputs = Array.from(document.querySelectorAll('[data-hawk-token]'));
+  const syncTokenSwatch = (input) => {
+    const swatch = input.closest('label')?.querySelector('[data-pickr-trigger]');
+    if (!swatch) return;
+    const value = input.value.trim();
+    swatch.style.setProperty('--pg-token-preview', value || 'transparent');
+    swatch.toggleAttribute('data-empty', !value);
+  };
+
+  let activePreset = null;
+  const allGalleryThemes = await loadAllHawkGalleryThemes('{{ "assets/theme-templates/" | relURL }}');
+  const themePresetSelect = document.getElementById('pg-theme-preset');
+  if (themePresetSelect && allGalleryThemes.length) {
+    themePresetSelect.innerHTML = [
+      ...allGalleryThemes.map((t) => `<option value="${t.id}">${t.label}</option>`),
+      '<option value="none">none (unstyled)</option>',
+    ].join('');
   }
+
+  function applyThemePreset(preset) {
+    if (!preset) return;
+    if (preset.id === 'none') {
+      const noneRadio = document.querySelector('input[name="pg-theme"][value="none"]');
+      if (noneRadio) noneRadio.checked = true;
+      activePreset = null;
+      return;
+    }
+    const typeflowRadio = document.querySelector('input[name="pg-theme"][value="typeflow"]');
+    if (typeflowRadio) typeflowRadio.checked = true;
+    tokenInputs.forEach((input) => { input.value = ''; });
+    if (preset.tokens) {
+      for (const [token, value] of Object.entries(preset.tokens)) {
+        const input = tokenInputs.find((candidate) => candidate.dataset.hawkToken === token);
+        if (input) {
+          input.value = value;
+          syncTokenSwatch(input);
+        }
+      }
+    }
+    if (preset.params) {
+      if (preset.params.position) setValue('pg-position', preset.params.position);
+      if (preset.params.density) setValue('pg-density', preset.params.density);
+      if (preset.params.scale) setValue('pg-scale', preset.params.scale);
+    }
+    if (preset.revealAnimation) {
+      setValue('pg-reveal-animation', preset.revealAnimation);
+    }
+    activePreset = preset;
+    if (themePresetSelect) themePresetSelect.value = preset.id;
+  }
+
+  const requestedPresetId = new URLSearchParams(window.location.search).get('preset') || 'typeflow';
+  const requestedPreset = allGalleryThemes.find((theme) => theme.id === requestedPresetId)
+    || getHawkGalleryTheme(requestedPresetId)
+    || await loadHawkGalleryTemplate(requestedPresetId, '{{ "assets/theme-templates/" | relURL }}');
+  if (requestedPreset) {
+    applyThemePreset(requestedPreset);
+  } else if (themePresetSelect) {
+    themePresetSelect.value = 'typeflow';
+  }
+
+  // Restore persisted settings on top of the preset so the user's last-used configuration
+  // survives a reload. Skip restore when a ?preset= param is explicitly in the URL — that
+  // signals a deliberate "open with this preset" link and should not be overridden by stale state.
+  if (!new URLSearchParams(window.location.search).has('preset')) {
+    restorePlaygroundState();
+    // Re-sync Pickr swatches whose values may have been overwritten by restorePlaygroundState().
+    tokenInputs.forEach(syncTokenSwatch);
+  }
+
+  const pickers = tokenInputs.map((input) => {
+    const trigger = input.closest('label')?.querySelector('[data-pickr-trigger]');
+    syncTokenSwatch(input);
+    const picker = Pickr.create({
+      el: trigger,
+      useAsButton: true,
+      theme: 'nano',
+      default: '#20e3b2',
+      defaultRepresentation: 'HEXA',
+      components: {
+        preview: true,
+        opacity: true,
+        hue: true,
+        interaction: {
+          hex: true,
+          rgba: true,
+          input: true,
+          cancel: true,
+          save: true,
+        },
+      },
+    });
+
+    const commitPickerColor = (color) => {
+      if (!color) return;
+      input.value = color.toHEXA().toString();
+      syncTokenSwatch(input);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+
+    picker
+      .on('show', () => {
+        // Pickr only parses solid colors. Invalid values (including CSS gradients) leave its
+        // previous selection intact until the user deliberately chooses a replacement color.
+        picker.setColor(input.value.trim(), true);
+      })
+      .on('change', commitPickerColor)
+      .on('save', (color) => {
+        commitPickerColor(color);
+        picker.hide();
+      });
+
+    input.addEventListener('input', () => syncTokenSwatch(input));
+    return picker;
+  });
 
   const jsonValue = (id, fallback) => {
     const field = document.getElementById(id);
@@ -487,6 +620,60 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
   let metricsController = null;
   let metricsTimer = null;
   let typeflowModule = null; // { TypeFlow, createHawkAnimationTypeflow }, cached once loaded
+
+  // ── Playground settings persistence ─────────────────────────────────────────────────────────
+  // All named control values are serialised to localStorage so the playground survives a reload
+  // with the same configuration the user left it in. Only ids that actually exist in the DOM are
+  // stored/restored, so adding controls in future doesn't break older saved state.
+  const PG_STORAGE_KEY = 'hawk:playground:settings';
+
+  function savePlaygroundState() {
+    try {
+      const state = {};
+      document.querySelectorAll('.pg-controls [id]').forEach((el) => {
+        if (el.type === 'radio') {
+          if (el.checked) state[`radio:${el.name}`] = el.value;
+        } else if (el.type === 'checkbox') {
+          state[el.id] = el.checked;
+        } else if (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' || el.type === 'text' || el.type === 'number' || el.type === 'url') {
+          state[el.id] = el.value;
+        }
+      });
+      localStorage.setItem(PG_STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // localStorage unavailable (private browsing, storage quota) — silent no-op.
+    }
+  }
+
+  function restorePlaygroundState() {
+    try {
+      const raw = localStorage.getItem(PG_STORAGE_KEY);
+      if (!raw) return;
+      const state = JSON.parse(raw);
+      for (const [key, value] of Object.entries(state)) {
+        if (key.startsWith('radio:')) {
+          const name = key.slice(6);
+          const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+          if (radio) radio.checked = true;
+        } else {
+          const el = document.getElementById(key);
+          if (!el) continue;
+          if (el.type === 'checkbox') {
+            el.checked = Boolean(value);
+          } else {
+            el.value = String(value);
+          }
+        }
+      }
+    } catch {
+      // Malformed stored JSON — ignore and use defaults.
+    }
+  }
+
+  document.getElementById('pg-reset-btn')?.addEventListener('click', () => {
+    try { localStorage.removeItem(PG_STORAGE_KEY); } catch { /* ignore */ }
+    window.location.reload();
+  });
 
   // The released TypeFlow peer is staged locally by hawk's docs build. The toggle still degrades
   // to 'instant' with a visible note if an incomplete/manual asset build omitted it. Only the *module* is cached — the
@@ -624,6 +811,13 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
       previewSections: checked('pg-preview-sections'),
       previewSectionSelector: val('pg-section-selector').trim() || 'h2, h3',
       previewSectionExcerptLength: Number(val('pg-section-excerpt')),
+      discoveryRow: checked('pg-discovery-row')
+        ? {
+            matches: checked('pg-discovery-matches'),
+            pages: checked('pg-discovery-pages'),
+            headings: checked('pg-discovery-headings'),
+          }
+        : false,
       enableSecondColumn: checked('pg-second-column'),
       disableDefaultMarkdownStyles: !checked('pg-default-markdown'),
       showPoweredBy: checked('pg-powered-by'),
@@ -814,15 +1008,25 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
     }
     search = new HawkSearch(currentHawkConfig(resolvedAnimation));
 
-    const presetNote = requestedPreset
-      ? `, preset: ${requestedPreset.label}`
-      : requestedPresetId
-        ? `, unknown preset ignored: ${requestedPresetId}`
-        : '';
+    const presetNote = activePreset
+      ? `, preset: ${activePreset.label}`
+      : '';
     statusEl.textContent = `Mounted — animation: ${resolvedAnimation}, theme: ${radio('pg-theme')}${presetNote}.${fallbackNote}`;
     applyDiagnostics();
     refreshCodeSnippet();
+    savePlaygroundState();
   }
+
+  themePresetSelect?.addEventListener('change', () => {
+    const selectedId = themePresetSelect.value;
+    if (selectedId === 'none') {
+      applyThemePreset({ id: 'none' });
+    } else {
+      const match = allGalleryThemes.find((t) => t.id === selectedId);
+      if (match) applyThemePreset(match);
+    }
+    mount();
+  });
 
   let mountDebounceTimer = null;
   function debouncedMount() {
@@ -862,6 +1066,10 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
       }
     }
   });
+
+  window.addEventListener('pagehide', () => {
+    pickers.forEach((picker) => picker.destroy());
+  }, { once: true });
 
   document.querySelectorAll('.pg-copy-btn').forEach((btn) => {
     btn.addEventListener('click', async () => {
