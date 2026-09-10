@@ -1,0 +1,42 @@
+{
+  "name": "Metro Light",
+  "variant": "original",
+  "mode": "light",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#fafafa",
+      "bgAlt": "#f1f1f1",
+      "bgElev": "#e6e6e6",
+      "border": "#d6d6d6",
+      "text": "#1a1a1a",
+      "textMuted": "#5c5c5c",
+      "textFaint": "#8c8c8c",
+      "selection": "#cfe2fb",
+      "accent": "#0050ef"
+    },
+    "syntax": {
+      "comment": "#767676",
+      "keyword": "#0050ef",
+      "string": "#008400",
+      "function": "#0e7aa2",
+      "variable": "#1a1a1a",
+      "constant": "#a76400",
+      "number": "#a76400",
+      "type": "#00726f",
+      "operator": "#7a00cc",
+      "tag": "#a8005c",
+      "attribute": "#4b00b3",
+      "punctuation": "#5c5c5c",
+      "error": "#c50f1f",
+      "warning": "#9d5d00",
+      "info": "#0050ef",
+      "success": "#008400",
+      "deleted": "#a20025"
+    }
+  }
+}

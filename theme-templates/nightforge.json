@@ -1,0 +1,42 @@
+{
+  "name": "Nightforge",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette, contrast-audited",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#141210",
+      "bgAlt": "#1b1815",
+      "bgElev": "#241f1a",
+      "border": "#332b23",
+      "text": "#ede4d8",
+      "textMuted": "#a89787",
+      "textFaint": "#6b5d4f",
+      "selection": "#3d2f22",
+      "accent": "#e0844a"
+    },
+    "syntax": {
+      "comment": "#726354",
+      "keyword": "#e0844a",
+      "string": "#c9a15a",
+      "function": "#e8a15f",
+      "variable": "#ede4d8",
+      "constant": "#d8622f",
+      "number": "#d8622f",
+      "type": "#b3866a",
+      "operator": "#a89787",
+      "tag": "#d8622f",
+      "attribute": "#e8a15f",
+      "punctuation": "#a89787",
+      "error": "#da4f39",
+      "warning": "#e0844a",
+      "info": "#c9a15a",
+      "success": "#8fa876",
+      "deleted": "#d05745"
+    }
+  }
+}

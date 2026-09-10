@@ -1,0 +1,42 @@
+{
+  "name": "Minimal Dark",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#16171a",
+      "bgAlt": "#1c1d21",
+      "bgElev": "#232428",
+      "border": "#2d2e33",
+      "text": "#d8d9dc",
+      "textMuted": "#8d8f96",
+      "textFaint": "#5a5c62",
+      "selection": "#2a3540",
+      "accent": "#6fb3d2"
+    },
+    "syntax": {
+      "comment": "#66686f",
+      "keyword": "#6fb3d2",
+      "string": "#9fb88f",
+      "function": "#6fb3d2",
+      "variable": "#d8d9dc",
+      "constant": "#c9a26d",
+      "number": "#c9a26d",
+      "type": "#8d9bc9",
+      "operator": "#8d8f96",
+      "tag": "#c98a8a",
+      "attribute": "#9fb88f",
+      "punctuation": "#8d8f96",
+      "error": "#d17d7d",
+      "warning": "#c9a26d",
+      "info": "#6fb3d2",
+      "success": "#9fb88f",
+      "deleted": "#b46d6d"
+    }
+  }
+}

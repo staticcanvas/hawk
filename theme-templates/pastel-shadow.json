@@ -1,0 +1,42 @@
+{
+  "name": "Pastel Shadow",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#221f2b",
+      "bgAlt": "#2a2635",
+      "bgElev": "#332e40",
+      "border": "#40394f",
+      "text": "#ece8f2",
+      "textMuted": "#b0a8c2",
+      "textFaint": "#766e8a",
+      "selection": "#3c3552",
+      "accent": "#c9a7f0"
+    },
+    "syntax": {
+      "comment": "#766e8a",
+      "keyword": "#c9a7f0",
+      "string": "#a8e0c4",
+      "function": "#8fc6f0",
+      "variable": "#ece8f2",
+      "constant": "#f4c98f",
+      "number": "#f4c98f",
+      "type": "#f0a7c9",
+      "operator": "#b0a8c2",
+      "tag": "#f0a7a7",
+      "attribute": "#a7d8f0",
+      "punctuation": "#b0a8c2",
+      "error": "#f28b8b",
+      "warning": "#f4c98f",
+      "info": "#8fc6f0",
+      "success": "#a8e0c4",
+      "deleted": "#d98b9a"
+    }
+  }
+}

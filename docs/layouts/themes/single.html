@@ -18,17 +18,24 @@
   import { HawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
   import {
     HAWK_GALLERY_THEMES,
+    HAWK_GALLERY_TEMPLATE_IDS,
     createHawkDocsTheme,
     getHawkGalleryTheme,
+    loadHawkGalleryTemplate,
   } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
 
   HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
   const gallery = document.getElementById('theme-gallery');
   const status = document.getElementById('theme-gallery-status');
   const playgroundUrl = '{{ "playground/" | relURL }}';
+  const templateUrl = '{{ "assets/theme-templates/" | relURL }}';
+  const templateThemes = (await Promise.all(
+    HAWK_GALLERY_TEMPLATE_IDS.map((id) => loadHawkGalleryTemplate(id, templateUrl))
+  )).filter(Boolean);
+  const galleryThemes = [...HAWK_GALLERY_THEMES, ...templateThemes];
   let activePreview = null;
 
-  gallery.innerHTML = HAWK_GALLERY_THEMES.map((theme) => `
+  gallery.innerHTML = galleryThemes.map((theme) => `
     <div class="theme-gallery-item">
       <button class="theme-gallery-card" type="button" data-gallery-theme="${theme.id}">
         <span class="theme-gallery-card__swatches" aria-hidden="true">
@@ -47,7 +54,8 @@
   gallery.addEventListener('click', (event) => {
     const card = event.target.closest('[data-gallery-theme]');
     if (!card) return;
-    const definition = getHawkGalleryTheme(card.dataset.galleryTheme);
+    const definition = galleryThemes.find((theme) => theme.id === card.dataset.galleryTheme)
+      || getHawkGalleryTheme(card.dataset.galleryTheme);
     if (!definition) return;
 
     activePreview?.destroy();

@@ -35,6 +35,15 @@ function stageWebUtilityAssets() {
       if (existsSync(resolve('src/hawk.css'))) {
         cpSync(resolve('src/hawk.css'), resolve(destination, 'hawk.css'));
       }
+      const pickrAssets = [
+        ['node_modules/@simonwep/pickr/dist/pickr.min.mjs', 'pickr.min.mjs'],
+        ['node_modules/@simonwep/pickr/dist/themes/nano.min.css', 'pickr-nano.min.css'],
+      ];
+      for (const [source, filename] of pickrAssets) {
+        if (existsSync(resolve(source))) {
+          cpSync(resolve(source), resolve(destination, filename));
+        }
+      }
       const brandingDestination = resolve('docs/static/webutil/assets/branding');
       mkdirSync(brandingDestination, { recursive: true });
       if (existsSync(resolve('branding/hawk-logo.svg'))) {
@@ -113,7 +122,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.js'],
-      exclude: ['**/node_modules/**', 'tests/**', 'src/hawk-theme-typeflow.js', 'src/hawk-animation-typeflow.js'],
+      exclude: [
+        '**/node_modules/**',
+        'tests/**',
+        'src/hawk-theme-typeflow.js',
+        'src/hawk-animation-typeflow.js',
+      ],
     },
   },
   plugins: [

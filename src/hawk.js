@@ -75,17 +75,27 @@ const DEFAULT_STRINGS = {
   hintClose: 'Close',
   previewEmpty: 'Type to search, or select a result to preview it here.',
   previewLoading: 'Loading…',
+  discoveryLabel: 'Discover related content',
+  discoveryMatches: 'Query matches',
+  discoveryPages: 'Related pages',
+  discoveryHeadings: 'Headings',
+  discoveryEmpty: 'No links available.',
+  discoveryLoading: 'Finding links…',
   sectionBadge: 'Section',
   untitled: 'Untitled',
   typeToSearch: 'Type to search',
   noResults: (query) => `No results${query ? ` for "${query}"` : ''}.`,
   matchingResults: (count, pageCount) => {
     const base = `${count} matching result${count === 1 ? '' : 's'}`;
-    return pageCount && pageCount !== count ? `${base} across ${pageCount} page${pageCount === 1 ? '' : 's'}` : base;
+    return pageCount && pageCount !== count
+      ? `${base} across ${pageCount} page${pageCount === 1 ? '' : 's'}`
+      : base;
   },
   entries: (count, pageCount) => {
     const base = `${count} entries`;
-    return pageCount && pageCount !== count ? `${base} across ${pageCount} page${pageCount === 1 ? '' : 's'}` : base;
+    return pageCount && pageCount !== count
+      ? `${base} across ${pageCount} page${pageCount === 1 ? '' : 's'}`
+      : base;
   },
   unavailable: 'Search is unavailable right now. Try again later.',
   unavailableCounter: 'Search unavailable',
@@ -260,6 +270,11 @@ export class HawkSearch {
    *   `previewSections`.
    * @param {number} [config.previewSectionExcerptLength=140] Max characters of a `previewSections` row's
    *   excerpt before truncating with an ellipsis.
+   * @param {false|{matches?: boolean|{label?: string, maxItems?: number}, pages?: boolean|{label?: string, maxItems?: number}, headings?: boolean|{label?: string, maxItems?: number}}} [config.discoveryRow=false]
+   *   Adds a third row spanning the result and preview columns. Its query-match, related-page,
+   *   and heading groups are derived in Pagefind result order from indexed excerpts, metadata,
+   *   URLs, and sub-results. Each group is enabled by default and can be disabled or configured
+   *   independently; `maxItems` defaults to 4 per group.
    * @param {object} [config.trigger] Renders hawk's own trigger button instead of requiring the consumer to
    *   build one — omit entirely to keep today's behavior (`triggerSelector` pointing at hand-built markup).
    * @param {'minimal'|'compact'|'default'} [config.trigger.kind='default'] `'minimal'`: icon only. `'compact'`:
@@ -303,7 +318,9 @@ export class HawkSearch {
     this.includeAllTab = config.includeAllTab !== false;
     this.pagefindOptions = config.pagefindOptions || {};
     this.pagefindInitOptions = config.pagefindInitOptions || {};
-    this.pagefindMergeIndexes = Array.isArray(config.pagefindMergeIndexes) ? config.pagefindMergeIndexes : [];
+    this.pagefindMergeIndexes = Array.isArray(config.pagefindMergeIndexes)
+      ? config.pagefindMergeIndexes
+      : [];
     this.maxResults = config.maxResults ?? 18;
     this.showResultDate = config.showResultDate !== false;
     this.resultDateMetaKey = config.resultDateMetaKey || 'date';
@@ -319,7 +336,9 @@ export class HawkSearch {
     };
     const excludedPages = Array.isArray(config.excludePages)
       ? config.excludePages
-      : config.excludePages ? [config.excludePages] : [];
+      : config.excludePages
+        ? [config.excludePages]
+        : [];
     this.excludePages = new Set(excludedPages.map((url) => this.#normalizePageUrl(url)));
     this.contentSelector = config.contentSelector || '[data-pagefind-body]';
     this.disableDefaultMarkdownStyles = config.disableDefaultMarkdownStyles || false;
@@ -337,13 +356,16 @@ export class HawkSearch {
     this.previewSections = config.previewSections || false;
     this.previewSectionSelector = config.previewSectionSelector || 'h2, h3';
     this.previewSectionExcerptLength = config.previewSectionExcerptLength ?? 140;
+    this.discoveryRow = this.#normalizeDiscoveryRow(config.discoveryRow);
     this.triggerConfig = config.trigger || null;
     this.hotkeys = { ...DEFAULT_HOTKEYS, ...config.hotkeys };
     this.strings = { ...DEFAULT_STRINGS, ...config.strings };
     this.defaultPreviewUrl = config.defaultPreviewUrl || null;
     this.defaultPreviewTitle = config.defaultPreviewTitle || '';
-    this.revealAnimation = config.revealAnimation === false ? false : config.revealAnimation || 'scale-fade';
-    this.revealDuration = config.revealDuration ?? REVEAL_ANIMATION_DURATIONS[this.revealAnimation] ?? 220;
+    this.revealAnimation =
+      config.revealAnimation === false ? false : config.revealAnimation || 'scale-fade';
+    this.revealDuration =
+      config.revealDuration ?? REVEAL_ANIMATION_DURATIONS[this.revealAnimation] ?? 220;
     this.resultsReveal = config.resultsReveal !== false;
     this.resultsRevealDirection = config.resultsRevealDirection || 'up';
     this.resultsRevealStagger = config.resultsRevealStagger ?? 22;
@@ -409,6 +431,7 @@ export class HawkSearch {
   #placeholderController;
   #resultsEl;
   #previewEl;
+  #discoveryEl;
   #filtersEl;
   #counterEl;
   #scrollBrightenTimers;
@@ -467,6 +490,29 @@ export class HawkSearch {
     return animation;
   }
 
+  /** Normalizes the opt-in discovery row while keeping each group independently configurable. */
+  #normalizeDiscoveryRow(config) {
+    if (!config) return null;
+    const row = config === true ? {} : config;
+    const group = (value) => {
+      if (value === false) return null;
+      const options = value && typeof value === 'object' ? value : {};
+      const configuredLimit = Number(options.maxItems);
+      return {
+        label: options.label || '',
+        maxItems:
+          Number.isFinite(configuredLimit) && configuredLimit >= 0
+            ? Math.floor(configuredLimit)
+            : 4,
+      };
+    };
+    return {
+      matches: group(row.matches),
+      pages: group(row.pages),
+      headings: group(row.headings),
+    };
+  }
+
   /**
    * Resolves `config.tabs`/`config.categories` into a normalized tab list, or `null` if neither
    * is configured (meaning: derive tabs from Pagefind's `filters()` once the index loads).
@@ -499,7 +545,9 @@ export class HawkSearch {
       filter: t.filter || null,
       // t.sort is sugar for pagefindOptions.sort — merged in rather than replacing the rest of
       // a tab's own pagefindOptions, so e.g. { sort, ranking } can both be set at once.
-      pagefindOptions: t.sort ? { ...(t.pagefindOptions || {}), sort: t.sort } : t.pagefindOptions || null,
+      pagefindOptions: t.sort
+        ? { ...(t.pagefindOptions || {}), sort: t.sort }
+        : t.pagefindOptions || null,
       defaultPreviewUrl: t.defaultPreviewUrl || null,
       defaultPreviewTitle: t.defaultPreviewTitle || '',
       accentColor: t.accentColor || null,
@@ -528,7 +576,10 @@ export class HawkSearch {
    * `config.strings.noResults` override too, not just the default.
    */
   #escapeHtml(str) {
-    return String(str).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
+    return String(str).replace(
+      /[&<>"']/g,
+      (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]
+    );
   }
 
   /**
@@ -542,8 +593,14 @@ export class HawkSearch {
     if (!tabs.some((t) => t.id === this.#currentTabId)) {
       // Not a misconfiguration warning when it's the Pinned tab dynamically appearing/disappearing
       // as pins are added/removed (#togglePin) — only for a genuinely unmatched defaultTab.
-      if (this.#currentTabId !== 'all' && this.#currentTabId !== PINNED_TAB_ID && this.#currentTabId !== RECENTLY_VIEWED_TAB_ID) {
-        console.warn(`HawkSearch: no tab with id "${this.#currentTabId}" (defaultTab); falling back to "all".`);
+      if (
+        this.#currentTabId !== 'all' &&
+        this.#currentTabId !== PINNED_TAB_ID &&
+        this.#currentTabId !== RECENTLY_VIEWED_TAB_ID
+      ) {
+        console.warn(
+          `HawkSearch: no tab with id "${this.#currentTabId}" (defaultTab); falling back to "all".`
+        );
       }
       this.#currentTabId = tabs.some((t) => t.id === 'all') ? 'all' : (tabs[0]?.id ?? 'all');
     }
@@ -568,9 +625,12 @@ export class HawkSearch {
     }
     this.#resultsEl = this.#root.querySelector('.hawk-results-pane');
     this.#previewEl = this.#root.querySelector('.hawk-preview-pane');
+    this.#discoveryEl = this.#root.querySelector('.hawk-discovery-row');
     this.#filtersEl = this.#root.querySelector('.hawk-modal-filters');
     this.#counterEl = this.#root.querySelector('.hawk-modal-counter');
-    [this.#resultsEl, this.#previewEl, this.#filtersEl].forEach((el) => this.#wireScrollBrighten(el));
+    [this.#resultsEl, this.#previewEl, this.#filtersEl, this.#discoveryEl]
+      .filter(Boolean)
+      .forEach((el) => this.#wireScrollBrighten(el));
 
     if (this.#theme) {
       this.#theme.apply(this.#root);
@@ -590,6 +650,7 @@ export class HawkSearch {
       this.#root.style.setProperty('--hawk-results-stagger', `${this.resultsRevealStagger}ms`);
     }
     this.#applyParams();
+    this.#renderDiscovery('empty');
     if (this.#tabsExplicit) {
       this.#applyDefaultTabAndRender(this.#withUtilityTabs(this.#tabs));
     }
@@ -649,7 +710,9 @@ export class HawkSearch {
         ? document.querySelector(this.triggerConfig.container)
         : this.triggerConfig.container;
     if (!target) {
-      console.warn(`HawkSearch: config.trigger.container "${this.triggerConfig.container}" not found — no built-in trigger rendered.`);
+      console.warn(
+        `HawkSearch: config.trigger.container "${this.triggerConfig.container}" not found — no built-in trigger rendered.`
+      );
       return;
     }
     const kind = this.triggerConfig.kind || 'default';
@@ -717,11 +780,16 @@ export class HawkSearch {
             }
           </div>
           <div class="hawk-modal-filters" role="tablist" aria-label="${s.filtersLabel}"></div>
-          <div class="hawk-modal-body" data-hawk-alignment="${this.params.alignment}">
+          <div class="hawk-modal-body" data-hawk-alignment="${this.params.alignment}" data-hawk-discovery="${Boolean(this.discoveryRow)}">
             <div class="hawk-results-pane" id="${this.id}-results" role="listbox" aria-live="polite" tabindex="0"></div>
             <aside class="hawk-preview-pane" aria-live="polite" aria-label="${s.previewLabel}" tabindex="0">
               <div class="hawk-preview-empty">${s.previewEmpty}</div>
             </aside>
+            ${
+              this.discoveryRow
+                ? `<section class="hawk-discovery-row" aria-label="${this.#escapeHtml(s.discoveryLabel)}" aria-live="polite"></section>`
+                : ''
+            }
           </div>
           <div class="hawk-modal-footer">
             <span class="hawk-hint">&uarr;&darr; ${s.hintNavigate}</span>
@@ -747,7 +815,9 @@ export class HawkSearch {
     this.#root.dataset.hawkPosition = position;
     this.#root.dataset.hawkDensity = density;
     this.#root.dataset.hawkSecondColumn = String(this.enableSecondColumn);
-    this.#root.querySelector('.hawk-modal-body').dataset.hawkColumns = String(this.enableSecondColumn ? columns : 1);
+    this.#root.querySelector('.hawk-modal-body').dataset.hawkColumns = String(
+      this.enableSecondColumn ? columns : 1
+    );
     this.#root.querySelectorAll('.hawk-density-btn').forEach((btn) => {
       const isActive = btn.dataset.density === density;
       btn.classList.toggle('active', isActive);
@@ -795,7 +865,8 @@ export class HawkSearch {
   /** Reads persisted pins. Never throws (private browsing, SSR, corrupt JSON, etc.). */
   #readPins() {
     try {
-      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(this.pinStorageKey) : null;
+      const raw =
+        typeof localStorage !== 'undefined' ? localStorage.getItem(this.pinStorageKey) : null;
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
     } catch {
@@ -806,7 +877,10 @@ export class HawkSearch {
   /** Reads the newest-first recently viewed list. Invalid or unavailable storage is empty. */
   #readRecentlyViewed() {
     try {
-      const raw = typeof localStorage !== 'undefined' ? localStorage.getItem(this.recentlyViewedStorageKey) : null;
+      const raw =
+        typeof localStorage !== 'undefined'
+          ? localStorage.getItem(this.recentlyViewedStorageKey)
+          : null;
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed.slice(0, this.maxRecentlyViewed) : [];
     } catch {
@@ -862,10 +936,27 @@ export class HawkSearch {
   #withUtilityTabs(tabs) {
     const utilityTabs = [];
     if (this.enablePins && this.#pins.some((pin) => !this.#isExcludedPage(pin.url))) {
-      utilityTabs.push({ id: PINNED_TAB_ID, label: this.strings.pinnedTab, filter: null, pagefindOptions: null, defaultPreviewUrl: null, defaultPreviewTitle: '' });
+      utilityTabs.push({
+        id: PINNED_TAB_ID,
+        label: this.strings.pinnedTab,
+        filter: null,
+        pagefindOptions: null,
+        defaultPreviewUrl: null,
+        defaultPreviewTitle: '',
+      });
     }
-    if (this.enableRecentlyViewed && this.#recentlyViewed.some((item) => !this.#isExcludedPage(item.url))) {
-      utilityTabs.push({ id: RECENTLY_VIEWED_TAB_ID, label: this.strings.recentlyViewedTab, filter: null, pagefindOptions: null, defaultPreviewUrl: null, defaultPreviewTitle: '' });
+    if (
+      this.enableRecentlyViewed &&
+      this.#recentlyViewed.some((item) => !this.#isExcludedPage(item.url))
+    ) {
+      utilityTabs.push({
+        id: RECENTLY_VIEWED_TAB_ID,
+        label: this.strings.recentlyViewedTab,
+        filter: null,
+        pagefindOptions: null,
+        defaultPreviewUrl: null,
+        defaultPreviewTitle: '',
+      });
     }
     return [...utilityTabs, ...tabs];
   }
@@ -911,7 +1002,13 @@ export class HawkSearch {
   #renderRecentlyViewedResults() {
     this.#matches = this.#recentlyViewed
       .filter((item) => !this.#isExcludedPage(item.url))
-      .map((item) => ({ title: item.title, url: item.url, excerpt: '', isAnchor: item.isAnchor, meta: {} }));
+      .map((item) => ({
+        title: item.title,
+        url: item.url,
+        excerpt: '',
+        isAnchor: item.isAnchor,
+        meta: {},
+      }));
     this.#pageCount = new Set(this.#matches.map((m) => m.url.split('#')[0])).size;
     this.#selectedIndex = this.#matches.length ? 0 : -1;
     this.#renderResults();
@@ -1006,6 +1103,7 @@ export class HawkSearch {
     this.#resultsEl.innerHTML = `<div class="hawk-empty hawk-load-error" role="alert">${this.strings.unavailable}</div>`;
     this.#resultsEl.removeAttribute('aria-activedescendant');
     this.#counterEl.textContent = this.strings.unavailableCounter;
+    this.#renderDiscovery('empty');
   }
 
   /**
@@ -1056,7 +1154,9 @@ export class HawkSearch {
    */
   async #fetchTabsUrl() {
     if (typeof fetch !== 'function') {
-      console.warn('HawkSearch: config.tabsUrl was set but fetch() isn\'t available in this environment — falling back to auto-derived tabs.');
+      console.warn(
+        "HawkSearch: config.tabsUrl was set but fetch() isn't available in this environment — falling back to auto-derived tabs."
+      );
       return null;
     }
     try {
@@ -1067,7 +1167,10 @@ export class HawkSearch {
       }
       return data;
     } catch (err) {
-      console.warn(`HawkSearch: failed to load config.tabsUrl ("${this.tabsUrl}") — falling back to auto-derived tabs.`, err);
+      console.warn(
+        `HawkSearch: failed to load config.tabsUrl ("${this.tabsUrl}") — falling back to auto-derived tabs.`,
+        err
+      );
       return null;
     }
   }
@@ -1104,7 +1207,11 @@ export class HawkSearch {
       categories = [];
     }
     this.#applyDefaultTabAndRender(
-      this.#withUtilityTabs(this.#normalizeTabs(categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } }))))
+      this.#withUtilityTabs(
+        this.#normalizeTabs(
+          categories.map((c) => ({ id: c, label: c, filter: { [this.categoryFilterName]: c } }))
+        )
+      )
     );
   }
 
@@ -1118,7 +1225,9 @@ export class HawkSearch {
         // value itself still gets its own minimal escape (not the innerHTML-wide trust boundary
         // config strings elsewhere rely on): a stray `"` in a dev-supplied color string would
         // otherwise break out of the style="" attribute, unlike interpolating into text content.
-        const style = tab.accentColor ? ` style="--hawk-tab-accent: ${String(tab.accentColor).replace(/"/g, '&quot;')}"` : '';
+        const style = tab.accentColor
+          ? ` style="--hawk-tab-accent: ${String(tab.accentColor).replace(/"/g, '&quot;')}"`
+          : '';
         return `<button type="button" class="hawk-filter-pill${isActive ? ' active' : ''}" data-filter="${tab.id}" role="tab" aria-selected="${isActive}" aria-controls="${this.id}-results" tabindex="${isActive ? 0 : -1}"${style}>${tab.label}</button>`;
       })
       .join('');
@@ -1200,7 +1309,8 @@ export class HawkSearch {
     const filters = {};
     const remainingQuery = query
       .replace(/(\w+):("[^"]*"|\S+)/g, (_match, dimension, rawValue) => {
-        const value = rawValue.startsWith('"') && rawValue.endsWith('"') ? rawValue.slice(1, -1) : rawValue;
+        const value =
+          rawValue.startsWith('"') && rawValue.endsWith('"') ? rawValue.slice(1, -1) : rawValue;
         if (filters[dimension] === undefined) {
           filters[dimension] = value;
         } else if (Array.isArray(filters[dimension])) {
@@ -1217,6 +1327,7 @@ export class HawkSearch {
 
   async #executeSearch(query) {
     this.#query = query;
+    this.#renderDiscovery('loading');
     // A search call resolving out of the order it started in is a real race, not a hypothetical
     // one: eagerResults' own empty-query listing (#afterPagefindReady, below) and a query typed
     // right after open() both call this before Pagefind's dynamic import has necessarily
@@ -1278,7 +1389,13 @@ export class HawkSearch {
         if (sub.url === data.url) continue;
         // sub_results don't carry their own meta — reuse the parent page's, so a section/category
         // badge is consistent whether the row is the page itself or one of its anchors.
-        flattened.push({ title: sub.title, url: sub.url, excerpt: sub.excerpt, isAnchor: true, meta: data.meta || {} });
+        flattened.push({
+          title: sub.title,
+          url: sub.url,
+          excerpt: sub.excerpt,
+          isAnchor: true,
+          meta: data.meta || {},
+        });
       }
       if (flattened.length >= this.maxResults) break;
     }
@@ -1309,8 +1426,11 @@ export class HawkSearch {
     if (!this.#matches.length) {
       this.#resultsEl.innerHTML = `<div class="hawk-empty">${this.strings.noResults(this.#escapeHtml(this.#query))}</div>`;
       this.#resultsEl.removeAttribute('aria-activedescendant');
-      this.#counterEl.textContent = this.#query ? this.strings.matchingResults(0, 0) : this.strings.typeToSearch;
+      this.#counterEl.textContent = this.#query
+        ? this.strings.matchingResults(0, 0)
+        : this.strings.typeToSearch;
       this.#renderPreview();
+      this.#renderDiscovery('empty');
       return;
     }
 
@@ -1364,6 +1484,94 @@ export class HawkSearch {
     });
 
     this.#renderPreview();
+    this.#renderDiscovery('ready');
+  }
+
+  /**
+   * Renders the optional discovery row exclusively from Pagefind's indexed result payload.
+   * Iteration order is unchanged, so the compact links preserve Pagefind's ranking.
+   */
+  #renderDiscovery(status) {
+    if (!this.#discoveryEl || !this.discoveryRow) return;
+    const enabledGroups = Object.entries(this.discoveryRow).filter(([, value]) => value);
+    if (!enabledGroups.length) {
+      this.#discoveryEl.hidden = true;
+      return;
+    }
+
+    this.#discoveryEl.hidden = false;
+    this.#discoveryEl.setAttribute('aria-busy', String(status === 'loading'));
+    if (status === 'loading') {
+      this.#discoveryEl.innerHTML = `<div class="hawk-discovery-status" role="status">${this.#escapeHtml(this.strings.discoveryLoading)}</div>`;
+      return;
+    }
+
+    const groups =
+      status === 'empty' ? { matches: [], pages: [], headings: [] } : this.#buildDiscoveryGroups();
+    const defaultLabels = {
+      matches: this.strings.discoveryMatches,
+      pages: this.strings.discoveryPages,
+      headings: this.strings.discoveryHeadings,
+    };
+    this.#discoveryEl.innerHTML = enabledGroups
+      .map(([name, config]) => {
+        const items = groups[name].slice(0, config.maxItems);
+        const links = items.length
+          ? `<ul class="hawk-discovery-list">${items
+              .map(
+                (item) => `
+              <li><a class="hawk-discovery-link" href="${this.#escapeHtml(this.#relativeDiscoveryUrl(item.url))}" aria-label="${this.#escapeHtml(`${item.label}: ${item.context}`)}">${this.#escapeHtml(item.label)}</a></li>`
+              )
+              .join('')}</ul>`
+          : `<p class="hawk-discovery-empty">${this.#escapeHtml(this.strings.discoveryEmpty)}</p>`;
+        return `<div class="hawk-discovery-group" data-hawk-discovery-group="${name}">
+          <h3 class="hawk-discovery-title">${this.#escapeHtml(config.label || defaultLabels[name])}</h3>
+          ${links}
+        </div>`;
+      })
+      .join('');
+  }
+
+  /** Produces stable, de-duplicated link groups without fetching or parsing source pages. */
+  #buildDiscoveryGroups() {
+    const groups = { matches: [], pages: [], headings: [] };
+    const seen = { matches: new Set(), pages: new Set(), headings: new Set() };
+    for (const item of this.#matches) {
+      const pageUrl = String(item.url || '').split('#')[0];
+      const pageTitle = item.meta?.title || (!item.isAnchor ? item.title : this.strings.untitled);
+
+      if (pageUrl && !seen.pages.has(pageUrl)) {
+        seen.pages.add(pageUrl);
+        groups.pages.push({ label: pageTitle, context: pageTitle, url: pageUrl });
+      }
+      if (item.isAnchor && item.url && !seen.headings.has(item.url)) {
+        seen.headings.add(item.url);
+        groups.headings.push({ label: item.title, context: pageTitle, url: item.url });
+      }
+
+      const holder = document.createElement('div');
+      holder.innerHTML = item.excerpt || '';
+      for (const mark of holder.querySelectorAll('mark')) {
+        const label = mark.textContent.trim().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+        const key = label.toLocaleLowerCase();
+        if (!label || seen.matches.has(key)) continue;
+        seen.matches.add(key);
+        groups.matches.push({ label, context: item.title || pageTitle, url: item.url });
+      }
+    }
+    return groups;
+  }
+
+  /** Converts same-origin Pagefind URLs to path-relative navigation targets, preserving fragments. */
+  #relativeDiscoveryUrl(value) {
+    try {
+      const url = new URL(String(value), document.baseURI);
+      return url.origin === window.location.origin
+        ? `${url.pathname}${url.search}${url.hash}`
+        : url.href;
+    } catch {
+      return String(value);
+    }
   }
 
   #resultMetaMarkup(item) {
@@ -1434,7 +1642,9 @@ export class HawkSearch {
     `;
     const titleEl = this.#previewEl.querySelector('.hawk-preview-title');
     const contentEl = this.#previewEl.querySelector('.hawk-preview-content');
-    this.#previewTitleController = this.#animation.typeTitle(titleEl, item.title, { isAnchor: item.isAnchor });
+    this.#previewTitleController = this.#animation.typeTitle(titleEl, item.title, {
+      isAnchor: item.isAnchor,
+    });
     this.#loadPreviewContent(item, key, contentEl);
   }
 
@@ -1544,7 +1754,13 @@ export class HawkSearch {
       const href = link.getAttribute('href');
       const s = sections.find((section) => `${basePath}#${section.slug}` === href);
       if (!s) return;
-      const selected = { title: s.title, url: href, excerpt: s.excerpt, isAnchor: true, meta: item.meta || {} };
+      const selected = {
+        title: s.title,
+        url: href,
+        excerpt: s.excerpt,
+        isAnchor: true,
+        meta: item.meta || {},
+      };
       this.#recordRecentlyViewed(selected);
       this.onSelect?.(selected);
     });
@@ -1719,6 +1935,7 @@ export class HawkSearch {
       this.#filtersEl.querySelector('.hawk-filter-pill[tabindex="0"]'),
       this.#resultsEl,
       ...(this.#isPreviewPaneReachable() ? [this.#previewEl] : []),
+      ...Array.from(this.#discoveryEl?.querySelectorAll('.hawk-discovery-link') || []),
     ].filter(Boolean);
   }
 
@@ -1747,7 +1964,14 @@ export class HawkSearch {
    * reduce` set — the single check `open()`/`close()` gate their reveal-animation branch on.
    */
   #revealAnimationActive() {
-    return Boolean(this.revealAnimation) && !(typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    return (
+      Boolean(this.revealAnimation) &&
+      !(
+        typeof window !== 'undefined' &&
+        typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      )
+    );
   }
 
   /** Opens the search modal and focuses the input. */
@@ -1833,7 +2057,10 @@ export class HawkSearch {
     const active = this.#isOpen && !this.#input.value;
     this.#inputWrap.dataset.hawkInputActive = String(!active);
     if (active && !this.#placeholderController) {
-      this.#placeholderController = this.#animation.rotatePlaceholder(this.#placeholderGhostEl, this.rotatingPlaceholders);
+      this.#placeholderController = this.#animation.rotatePlaceholder(
+        this.#placeholderGhostEl,
+        this.rotatingPlaceholders
+      );
     } else if (!active && this.#placeholderController) {
       this.#animation.stop(this.#placeholderController);
       this.#placeholderController = null;

@@ -28,7 +28,10 @@
   <link rel="stylesheet" href="{{ "webutil/libs/hawk.css" | relURL }}">
   <link rel="stylesheet" href="{{ "webutil/libs/hawk-theme-typeflow.css" | relURL }}">
   <link rel="stylesheet" href="{{ "assets/docs.css" | relURL }}">
-  {{ if eq .Type "playground" }}<link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}">{{ end }}
+  {{ if eq .Type "playground" }}
+  <link rel="stylesheet" href="{{ "webutil/libs/pickr-nano.min.css" | relURL }}">
+  <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}">
+  {{ end }}
   <script type="importmap">
     { "imports": { "@staticcanvas/typeflow": "{{ "webutil/libs/typeflow.mjs" | relURL }}" } }
   </script>
@@ -50,16 +53,11 @@
           </nav>
         </details>
 
-        <a class="brand" href="{{ "" | relURL }}" aria-label="hawk home">
+        <a class="brand" href="{{ "getting-started/" | relURL }}" aria-label="Hawk getting started">
           <img class="brand-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="24" height="24">
           <span class="brand-text">hawk</span>
         </a>
 
-        <nav class="header-shortcuts" aria-label="Documentation shortcuts">
-          <a href="{{ "getting-started/" | relURL }}">Get started</a>
-          <a href="{{ "playground/" | relURL }}">Playground</a>
-          <a href="{{ "api/" | relURL }}">API reference</a>
-        </nav>
       </div>
 
       <button class="search-trigger-btn" type="button" data-search-trigger aria-label="Search documentation (Ctrl+K)">
@@ -68,6 +66,12 @@
       </button>
 
       <div class="header-right">
+        <nav class="header-shortcuts" aria-label="Documentation shortcuts">
+          <a href="{{ "getting-started/" | relURL }}">Get started</a>
+          <a href="{{ "playground/" | relURL }}">Playground</a>
+          <a href="{{ "api/" | relURL }}">API reference</a>
+        </nav>
+
         {{/* Interior pages already carry the full site.Menus.main tree in sidebar.html —
              repeating it here (Overview, Get started, Guides, etc.) is pure duplication once
              that sidebar exists. Only the home page (no sidebar) needs a header nav, and even
@@ -125,6 +129,12 @@
         <p>Command-palette search for static documentation sites.</p>
         <span>v{{ site.Params.version }} · MIT</span>
       </div>
+      <nav class="footer-column" aria-label="Resource links">
+        <strong>Resources</strong>
+        <a href="{{ "guides/" | relURL }}">Guides</a>
+        <a href="{{ "themes/" | relURL }}">Theme gallery</a>
+        <a href="{{ "downloads/" | relURL }}">Downloads</a>
+      </nav>
       <nav class="footer-column" aria-label="Documentation links">
         <strong>Documentation</strong>
         <a href="{{ "getting-started/" | relURL }}">Get started</a>
@@ -183,11 +193,16 @@
   <script type="module">
     import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
     import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
-    import { HawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
+    import { createHawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
+    import TypeFlow from '{{ "webutil/libs/typeflow.mjs" | relURL }}';
     import { createHawkDocsSearchConfig } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
 
     HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
-    HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
+    HawkSearch.registerAnimation('typeflow', createHawkAnimationTypeflow(TypeFlow, {
+      title:       { speed: 5, cursor: '', typeStyle: 'float-in-left' },
+      anchorTitle: { speed: 5, cursor: '', typeStyle: 'float-in-bottom' },
+      content:     { speed: 5, cursor: '' },
+    }));
 
     const categories = {{ $categories | jsonify | safeJS }};
     const categoryDefaults = {{ $categoryDefaults | jsonify | safeJS }};
@@ -237,7 +252,7 @@
     // ── Responsive documentation menu ────────────────────────────────────────────────────
     const mobileNav = document.querySelector('[data-mobile-nav]');
     if (mobileNav) {
-      const mobileNavBreakpoint = matchMedia('(max-width: 768px)');
+      const mobileNavBreakpoint = matchMedia('(max-width: 960px)');
       const closeMobileNav = () => { mobileNav.open = false; };
       closeMobileNav();
       mobileNavBreakpoint.addEventListener('change', closeMobileNav);
@@ -296,6 +311,31 @@
         window.addEventListener('resize', updateGalleryControls, { passive: true });
       }
       updateGalleryControls();
+
+      // The splash gallery turns one card at a time like a vertical Rolodex. Any deliberate
+      // pointer or keyboard interaction stops autoplay so it never fights the reader.
+      const cards = Array.from(track.querySelectorAll('.showcase-card'));
+      let rolodexIndex = 0;
+      let rolodexTimer = null;
+      const stopRolodex = () => {
+        clearInterval(rolodexTimer);
+        rolodexTimer = null;
+      };
+      const turnRolodex = () => {
+        rolodexIndex = (rolodexIndex + 1) % cards.length;
+        const card = cards[rolodexIndex];
+        card.classList.remove('is-rolodex-turning');
+        void card.offsetWidth;
+        card.classList.add('is-rolodex-turning');
+        setTimeout(() => card.classList.remove('is-rolodex-turning'), 1000);
+        track.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+      };
+      if (!reduceMotion && cards.length > 1) {
+        rolodexTimer = setInterval(turnRolodex, 4200);
+        track.addEventListener('pointerdown', stopRolodex, { once: true });
+        track.addEventListener('keydown', stopRolodex, { once: true });
+        buttons.forEach((button) => button.addEventListener('pointerdown', stopRolodex, { once: true }));
+      }
     });
 
     // ── Install tabs ──────────────────────────────────────────────────────────────────────
@@ -330,7 +370,7 @@
     const toc = document.querySelector('.doc-toc');
     if (toc) {
       const tocDisclosure = toc.querySelector('[data-toc-disclosure]');
-      const tocBreakpoint = matchMedia('(max-width: 768px)');
+      const tocBreakpoint = matchMedia('(max-width: 960px)');
       const syncTocDisclosure = () => {
         if (tocDisclosure) tocDisclosure.open = !tocBreakpoint.matches;
       };

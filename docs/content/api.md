@@ -7,59 +7,60 @@ category: Reference
 
 ## `new HawkSearch(config)`
 
-| Option | Type | Default | Description |
-| --- | --- | --- | --- |
-| `index` | `string` | — | Base path to a Pagefind bundle. Required unless `pagefind` is given. |
-| `pagefind` | `object` | — | A pre-loaded Pagefind module, instead of dynamically importing one from `index`. |
-| `id` | `string` | `hawk-search-N` | DOM id for the modal root. |
-| `triggerSelector` | `string` | `'[data-search-trigger]'` | Elements that open the modal on click. |
-| `trigger` | `object` | — | Renders hawk's own trigger button instead of requiring hand-built markup. See [Built-in trigger](#built-in-trigger). |
-| `container` | `HTMLElement` | `document.body` | Where the modal is mounted. |
-| `params` | `object` | see below | Layout: `scale`, `position`, `offset`, `alignment`, `columns`, `breakpoint`, `density`, `allowDensityToggle`. |
-| `theme` | `string \| HawkTheme` | `'typeflow'` if registered | A registered theme name or a theme object. See [Theming](#theming). |
-| `animation` | `string \| HawkAnimationDriver \| false` | `'typeflow'` if registered, else `'instant'` | A registered driver name, a driver object, or `false` to force instant. |
-| `tabs` | `HawkTab[]` | derived from Pagefind `filters()` | Explicit tab list — see [Tabs](#tabs) below. Replaces auto-derivation entirely; renders synchronously on mount. Wins over `tabsUrl` if both are given. |
-| `tabsUrl` | `string` | — | Fetches a JSON file (same shape as `tabs`) once Pagefind loads, instead of the tab list living in the mount script. Ignored if `tabs`/`categories` is given. See [Loading tabs from JSON](#loading-tabs-from-json). |
-| `categories` | `string[]` | — | Shorthand for `tabs`: one tab per category name, each filtering on `categoryFilterName`. Ignored if `tabs` is given. |
-| `includeAllTab` | `boolean` | `true` | Prepends a filterless "All" tab to `tabs`/`categories`/the auto-derived list. |
-| `defaultTab` | `string` | `'all'` | Tab id active on open. Falls back to `'all'` (with a console warning) if it matches no resolved tab. |
-| `pagefindOptions` | `object` | `{}` | Raw options merged into every `search()`/`debouncedSearch()` call, primarily `filters` and `sort`. A tab's own `pagefindOptions` overrides this per-tab. |
-| `pagefindInitOptions` | `object` | `{}` | Options passed to Pagefind before initialization, including excerpt length, exact diacritics, ranking defaults, highlighting, cache tags, index weight, and worker behavior. |
-| `pagefindMergeIndexes` | `{ bundlePath, options? }[]` | `[]` | Additional Pagefind bundles merged before filters and tabs are derived. Cross-origin indexes require CORS headers. |
-| `inlineFilters` | `boolean` | `false` | Parses `dimension:value` tokens out of the typed query as filters. See [Inline filter syntax](#inline-filter-syntax). |
-| `categoryFilterName` | `string` | `'category'` | The Pagefind filter dimension used for the auto-derived tabs and the `categories` shorthand. |
-| `maxResults` | `number` | `18` | Maximum rendered result rows. |
-| `showResultDate` | `boolean` | `true` | Shows `meta[resultDateMetaKey]` beneath each result excerpt when present. |
-| `resultDateMetaKey` | `string` | `'date'` | Pagefind metadata key used for result dates. |
-| `showResultTags` | `boolean` | `true` | Shows comma-separated `meta[resultTagsMetaKey]` values as tags beneath each result excerpt. Also controls the `meta.section` tag. |
-| `resultTagsMetaKey` | `string` | `'tags'` | Pagefind metadata key used for result tags. |
-| `headerControls` | `false \| { density?, escape? }` | both enabled | Controls the density group and Escape button. `false` leaves a minimal header containing only the search input. |
-| `excludePages` | `string \| string[]` | `[]` | Page URLs or paths omitted from results. Query strings, hashes, and trailing slashes are ignored; excluding a page excludes its section results too. |
-| `contentSelector` | `string` | `'[data-pagefind-body]'` | Selects the preview pane's content from a fetched result page. See [Rich preview content](#rich-preview-content). |
-| `disableDefaultMarkdownStyles` | `boolean` | `false` | Opts out of hawk.css's own preview-content prose rules. See [Theming](#theming). |
-| `previewSections` | `boolean` | `false` | Renders a page-level match's preview as clickable heading+excerpt rows instead of the full page dump. See [Section-outline previews](#section-outline-previews). |
-| `previewSectionSelector` | `string` | `'h2, h3'` | Heading elements collected into rows when `previewSections` is on. Headings without an `id` are skipped (no anchor to link to). |
-| `previewSectionExcerptLength` | `number` | `140` | Max characters of a row's excerpt before truncating with `…`. |
-| `hotkeys` | `object` | `{ open: true, slash: true, escape: true }` | Enables/disables Ctrl/Cmd+K, `/`, and Escape. |
-| `strings` | `object` | see [Strings and localization](#strings-and-localization) | Overrides for any UI text. |
-| `defaultPreviewUrl` | `string` | — | Shows this page's content in the preview pane on mount, before any result is selected, and whenever the active tab has zero matches and doesn't define its own `defaultPreviewUrl`. Replaced the instant real results exist. |
-| `defaultPreviewTitle` | `string` | `''` | Title shown above `defaultPreviewUrl`'s content. |
-| `revealAnimation` | `'fade' \| 'scale-fade' \| 'slide-down' \| 'blur-zoom' \| 'spring' \| string \| false` | `'scale-fade'` | Modal open/close reveal. `false` disables it (instant show/hide). See [Modal reveal animations](#modal-reveal-animations). |
-| `revealDuration` | `number` | built-in per-name default | Milliseconds `close()` waits before actually hiding the modal, and the value written to `--hawk-reveal-duration`. |
-| `eagerResults` | `boolean` | `true` | Runs an empty-query search as soon as Pagefind loads, populating the results pane instead of leaving it on "Type to search". |
-| `rotatingPlaceholders` | `string[]` | — | Example queries cycled through the input's placeholder. See [Rotating placeholder](#rotating-placeholder). |
-| `showPoweredBy` | `boolean` | `true` | Shows a "Search powered by Pagefind" link in the modal footer. |
-| `poweredByHref` | `string` | `'https://pagefind.app/'` | Link target for the powered-by attribution. |
-| `enablePins` | `boolean` | `true` | Lets a visitor pin a result. See [Pins](#pins). |
-| `pinStorageKey` | `string` | `'hawk:pins'` | `localStorage` key pins persist to. |
-| `maxPins` | `number` | `20` | Caps the number of pins; pinning past the cap is a silent no-op. |
-| `enableRecentlyViewed` | `boolean` | `true` | Persists selected results and adds a synthetic Recently viewed tab after the first selection. |
-| `recentlyViewedStorageKey` | `string` | `'hawk:recently-viewed'` | `localStorage` key used for recently viewed entries. |
-| `maxRecentlyViewed` | `number` | `10` | Maximum recently viewed entries retained, newest first. |
-| `enableSecondColumn` | `boolean` | `true` | Enables the preview pane. Set `false` to keep the search modal single-column at every width and density. |
-| `onOpen` | `(query) => void` | — | Called when the modal opens. |
-| `onClose` | `() => void` | — | Called when the modal closes. |
-| `onSelect` | `(item) => void` | — | Called when a result is clicked or Enter-selected. |
+| Option                         | Type                                                                                   | Default                                                   | Description                                                                                                                                                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `index`                        | `string`                                                                               | —                                                         | Base path to a Pagefind bundle. Required unless `pagefind` is given.                                                                                                                                                         |
+| `pagefind`                     | `object`                                                                               | —                                                         | A pre-loaded Pagefind module, instead of dynamically importing one from `index`.                                                                                                                                             |
+| `id`                           | `string`                                                                               | `hawk-search-N`                                           | DOM id for the modal root.                                                                                                                                                                                                   |
+| `triggerSelector`              | `string`                                                                               | `'[data-search-trigger]'`                                 | Elements that open the modal on click.                                                                                                                                                                                       |
+| `trigger`                      | `object`                                                                               | —                                                         | Renders hawk's own trigger button instead of requiring hand-built markup. See [Built-in trigger](#built-in-trigger).                                                                                                         |
+| `container`                    | `HTMLElement`                                                                          | `document.body`                                           | Where the modal is mounted.                                                                                                                                                                                                  |
+| `params`                       | `object`                                                                               | see below                                                 | Layout: `scale`, `position`, `offset`, `alignment`, `columns`, `breakpoint`, `density`, `allowDensityToggle`.                                                                                                                |
+| `theme`                        | `string \| HawkTheme`                                                                  | `'typeflow'` if registered                                | A registered theme name or a theme object. See [Theming](#theming).                                                                                                                                                          |
+| `animation`                    | `string \| HawkAnimationDriver \| false`                                               | `'typeflow'` if registered, else `'instant'`              | A registered driver name, a driver object, or `false` to force instant.                                                                                                                                                      |
+| `tabs`                         | `HawkTab[]`                                                                            | derived from Pagefind `filters()`                         | Explicit tab list — see [Tabs](#tabs) below. Replaces auto-derivation entirely; renders synchronously on mount. Wins over `tabsUrl` if both are given.                                                                       |
+| `tabsUrl`                      | `string`                                                                               | —                                                         | Fetches a JSON file (same shape as `tabs`) once Pagefind loads, instead of the tab list living in the mount script. Ignored if `tabs`/`categories` is given. See [Loading tabs from JSON](#loading-tabs-from-json).          |
+| `categories`                   | `string[]`                                                                             | —                                                         | Shorthand for `tabs`: one tab per category name, each filtering on `categoryFilterName`. Ignored if `tabs` is given.                                                                                                         |
+| `includeAllTab`                | `boolean`                                                                              | `true`                                                    | Prepends a filterless "All" tab to `tabs`/`categories`/the auto-derived list.                                                                                                                                                |
+| `defaultTab`                   | `string`                                                                               | `'all'`                                                   | Tab id active on open. Falls back to `'all'` (with a console warning) if it matches no resolved tab.                                                                                                                         |
+| `pagefindOptions`              | `object`                                                                               | `{}`                                                      | Raw options merged into every `search()`/`debouncedSearch()` call, primarily `filters` and `sort`. A tab's own `pagefindOptions` overrides this per-tab.                                                                     |
+| `pagefindInitOptions`          | `object`                                                                               | `{}`                                                      | Options passed to Pagefind before initialization, including excerpt length, exact diacritics, ranking defaults, highlighting, cache tags, index weight, and worker behavior.                                                 |
+| `pagefindMergeIndexes`         | `{ bundlePath, options? }[]`                                                           | `[]`                                                      | Additional Pagefind bundles merged before filters and tabs are derived. Cross-origin indexes require CORS headers.                                                                                                           |
+| `inlineFilters`                | `boolean`                                                                              | `false`                                                   | Parses `dimension:value` tokens out of the typed query as filters. See [Inline filter syntax](#inline-filter-syntax).                                                                                                        |
+| `categoryFilterName`           | `string`                                                                               | `'category'`                                              | The Pagefind filter dimension used for the auto-derived tabs and the `categories` shorthand.                                                                                                                                 |
+| `maxResults`                   | `number`                                                                               | `18`                                                      | Maximum rendered result rows.                                                                                                                                                                                                |
+| `showResultDate`               | `boolean`                                                                              | `true`                                                    | Shows `meta[resultDateMetaKey]` beneath each result excerpt when present.                                                                                                                                                    |
+| `resultDateMetaKey`            | `string`                                                                               | `'date'`                                                  | Pagefind metadata key used for result dates.                                                                                                                                                                                 |
+| `showResultTags`               | `boolean`                                                                              | `true`                                                    | Shows comma-separated `meta[resultTagsMetaKey]` values as tags beneath each result excerpt. Also controls the `meta.section` tag.                                                                                            |
+| `resultTagsMetaKey`            | `string`                                                                               | `'tags'`                                                  | Pagefind metadata key used for result tags.                                                                                                                                                                                  |
+| `headerControls`               | `false \| { density?, escape? }`                                                       | both enabled                                              | Controls the density group and Escape button. `false` leaves a minimal header containing only the search input.                                                                                                              |
+| `excludePages`                 | `string \| string[]`                                                                   | `[]`                                                      | Page URLs or paths omitted from results. Query strings, hashes, and trailing slashes are ignored; excluding a page excludes its section results too.                                                                         |
+| `contentSelector`              | `string`                                                                               | `'[data-pagefind-body]'`                                  | Selects the preview pane's content from a fetched result page. See [Rich preview content](#rich-preview-content).                                                                                                            |
+| `disableDefaultMarkdownStyles` | `boolean`                                                                              | `false`                                                   | Opts out of hawk.css's own preview-content prose rules. See [Theming](#theming).                                                                                                                                             |
+| `previewSections`              | `boolean`                                                                              | `false`                                                   | Renders a page-level match's preview as clickable heading+excerpt rows instead of the full page dump. See [Section-outline previews](#section-outline-previews).                                                             |
+| `previewSectionSelector`       | `string`                                                                               | `'h2, h3'`                                                | Heading elements collected into rows when `previewSections` is on. Headings without an `id` are skipped (no anchor to link to).                                                                                              |
+| `previewSectionExcerptLength`  | `number`                                                                               | `140`                                                     | Max characters of a row's excerpt before truncating with `…`.                                                                                                                                                                |
+| `discoveryRow`                 | `false \| HawkDiscoveryRowConfig`                                                      | `false`                                                   | Adds a row spanning both columns with query matches, related pages, and heading deep links. See [Discovery row](#discovery-row).                                                                                             |
+| `hotkeys`                      | `object`                                                                               | `{ open: true, slash: true, escape: true }`               | Enables/disables Ctrl/Cmd+K, `/`, and Escape.                                                                                                                                                                                |
+| `strings`                      | `object`                                                                               | see [Strings and localization](#strings-and-localization) | Overrides for any UI text.                                                                                                                                                                                                   |
+| `defaultPreviewUrl`            | `string`                                                                               | —                                                         | Shows this page's content in the preview pane on mount, before any result is selected, and whenever the active tab has zero matches and doesn't define its own `defaultPreviewUrl`. Replaced the instant real results exist. |
+| `defaultPreviewTitle`          | `string`                                                                               | `''`                                                      | Title shown above `defaultPreviewUrl`'s content.                                                                                                                                                                             |
+| `revealAnimation`              | `'fade' \| 'scale-fade' \| 'slide-down' \| 'blur-zoom' \| 'spring' \| string \| false` | `'scale-fade'`                                            | Modal open/close reveal. `false` disables it (instant show/hide). See [Modal reveal animations](#modal-reveal-animations).                                                                                                   |
+| `revealDuration`               | `number`                                                                               | built-in per-name default                                 | Milliseconds `close()` waits before actually hiding the modal, and the value written to `--hawk-reveal-duration`.                                                                                                            |
+| `eagerResults`                 | `boolean`                                                                              | `true`                                                    | Runs an empty-query search as soon as Pagefind loads, populating the results pane instead of leaving it on "Type to search".                                                                                                 |
+| `rotatingPlaceholders`         | `string[]`                                                                             | —                                                         | Example queries cycled through the input's placeholder. See [Rotating placeholder](#rotating-placeholder).                                                                                                                   |
+| `showPoweredBy`                | `boolean`                                                                              | `true`                                                    | Shows a "Search powered by Pagefind" link in the modal footer.                                                                                                                                                               |
+| `poweredByHref`                | `string`                                                                               | `'https://pagefind.app/'`                                 | Link target for the powered-by attribution.                                                                                                                                                                                  |
+| `enablePins`                   | `boolean`                                                                              | `true`                                                    | Lets a visitor pin a result. See [Pins](#pins).                                                                                                                                                                              |
+| `pinStorageKey`                | `string`                                                                               | `'hawk:pins'`                                             | `localStorage` key pins persist to.                                                                                                                                                                                          |
+| `maxPins`                      | `number`                                                                               | `20`                                                      | Caps the number of pins; pinning past the cap is a silent no-op.                                                                                                                                                             |
+| `enableRecentlyViewed`         | `boolean`                                                                              | `true`                                                    | Persists selected results and adds a synthetic Recently viewed tab after the first selection.                                                                                                                                |
+| `recentlyViewedStorageKey`     | `string`                                                                               | `'hawk:recently-viewed'`                                  | `localStorage` key used for recently viewed entries.                                                                                                                                                                         |
+| `maxRecentlyViewed`            | `number`                                                                               | `10`                                                      | Maximum recently viewed entries retained, newest first.                                                                                                                                                                      |
+| `enableSecondColumn`           | `boolean`                                                                              | `true`                                                    | Enables the preview pane. Set `false` to keep the search modal single-column at every width and density.                                                                                                                     |
+| `onOpen`                       | `(query) => void`                                                                      | —                                                         | Called when the modal opens.                                                                                                                                                                                                 |
+| `onClose`                      | `() => void`                                                                           | —                                                         | Called when the modal closes.                                                                                                                                                                                                |
+| `onSelect`                     | `(item) => void`                                                                       | —                                                         | Called when a result is clicked or Enter-selected.                                                                                                                                                                           |
 
 ### Excluding pages
 
@@ -127,6 +128,7 @@ new HawkSearch({
   previewSections: false,
   previewSectionSelector: 'h2, h3',
   previewSectionExcerptLength: 140,
+  discoveryRow: false,
   enableSecondColumn: true,
   defaultPreviewTitle: '',
   revealAnimation: 'scale-fade',
@@ -151,16 +153,56 @@ rule for the TypeFlow driver and otherwise uses `instant`. Options without a mea
 including `tabs`, `tabsUrl`, `categories`, `defaultPreviewUrl`, `rotatingPlaceholders`, and
 callbacks, are omitted from the object.
 
+### Discovery row
+
+`discoveryRow` is opt-in. It renders one region beneath the results and preview panes and derives
+all links from the Pagefind result payload already loaded for the current query. Query matches use
+the indexed `<mark>` excerpts, related pages use result URLs and `meta.title`, and heading links use
+Pagefind `sub_results`. Items retain Pagefind order; Hawk does not rescore or fetch frontmatter.
+
+```js
+// docs/assets/search.js
+new HawkSearch({
+  index: '/pagefind/',
+  discoveryRow: {
+    matches: { label: 'Matched terms', maxItems: 4 },
+    pages: { maxItems: 3 },
+    headings: { maxItems: 5 },
+  },
+});
+```
+
+Each group accepts `false`, `true`, or an options object. Omitted groups are enabled. An enabled
+group with no links renders the localized `discoveryEmpty` state. While Pagefind is resolving, the
+region sets `aria-busy="true"` and exposes `discoveryLoading` through a status element. Links are
+normal anchors in the modal focus order; same-origin URLs are emitted as paths and retain query
+strings and fragments. Compact and breakpoint-driven single-column layouts stack the groups in
+the order `matches`, `pages`, `headings` and use 44px minimum link targets.
+
+```ts
+// src/hawk.d.ts
+interface HawkDiscoveryGroupConfig {
+  label?: string;
+  maxItems?: number; // non-negative integer; default 4
+}
+
+interface HawkDiscoveryRowConfig {
+  matches?: boolean | HawkDiscoveryGroupConfig;
+  pages?: boolean | HawkDiscoveryGroupConfig;
+  headings?: boolean | HawkDiscoveryGroupConfig;
+}
+```
+
 ### Tabs
 
 ```ts
 interface HawkTab {
-  id?: string;              // slug of label if omitted
+  id?: string; // slug of label if omitted
   label: string;
   filter?: Record<string, string | string[]>; // a raw Pagefind filters object, passed through verbatim
-  sort?: Record<string, 'asc' | 'desc'>;       // sugar for pagefindOptions.sort — see "A curated/sorted tab" below
-  pagefindOptions?: Record<string, unknown>;   // merged over the top-level pagefindOptions for this tab only
-  defaultPreviewUrl?: string;    // overrides config.defaultPreviewUrl while this tab is active
+  sort?: Record<string, 'asc' | 'desc'>; // sugar for pagefindOptions.sort — see "A curated/sorted tab" below
+  pagefindOptions?: Record<string, unknown>; // merged over the top-level pagefindOptions for this tab only
+  defaultPreviewUrl?: string; // overrides config.defaultPreviewUrl while this tab is active
   defaultPreviewTitle?: string;
 }
 ```
@@ -182,8 +224,20 @@ active. A tab without its own default falls back to the top-level one, then to t
 new HawkSearch({
   index: '/pagefind/',
   tabs: [
-    { id: 'guides', label: 'Guides', filter: { category: 'Guides' }, defaultPreviewUrl: '/guides/', defaultPreviewTitle: 'Guides' },
-    { id: 'reference', label: 'Reference', filter: { category: 'Reference' }, defaultPreviewUrl: '/api/', defaultPreviewTitle: 'API reference' },
+    {
+      id: 'guides',
+      label: 'Guides',
+      filter: { category: 'Guides' },
+      defaultPreviewUrl: '/guides/',
+      defaultPreviewTitle: 'Guides',
+    },
+    {
+      id: 'reference',
+      label: 'Reference',
+      filter: { category: 'Reference' },
+      defaultPreviewUrl: '/api/',
+      defaultPreviewTitle: 'API reference',
+    },
   ],
   defaultPreviewUrl: '/',
   defaultPreviewTitle: 'Hawk',
@@ -218,13 +272,13 @@ value, tagged with `data-pagefind-sort`:
 <span data-pagefind-sort="date" hidden>2026-08-30</span>
 ```
 
-The attribute's own value (`data-pagefind-sort="date"`) is the field *name* — match it to the key
+The attribute's own value (`data-pagefind-sort="date"`) is the field _name_ — match it to the key
 used in `sort: { date: 'desc' }`. See
 [Pagefind's own sort docs](https://pagefind.app/docs/sorts/) for the exact value format expected
 per field type — a re-index (`pagefind --site dist`, or hawk's own `pagefind:index` script) picks
 up a changed sort value the same way it picks up any other content change. Pagefind disables
 relevance ranking on a sorted search, so a `sort` tab reads best with an empty/no typed query — a
-visitor *browsing* a curated listing, not searching within it — which is exactly what `eagerResults`
+visitor _browsing_ a curated listing, not searching within it — which is exactly what `eagerResults`
 and a fresh tab switch already do (see [Rich preview content](#rich-preview-content)'s note on
 `search(null, ...)` for why an empty query works as "list everything" here rather than "match
 nothing").
@@ -305,7 +359,13 @@ color/font tweaks without writing a full CSS file:
 ```js
 new HawkSearch({
   index: '/pagefind/',
-  theme: { name: 'brand', apply(el) { el.dataset.hawkTheme = 'brand'; }, tokens: { '--hawk-accent': '#22d3ee' } },
+  theme: {
+    name: 'brand',
+    apply(el) {
+      el.dataset.hawkTheme = 'brand';
+    },
+    tokens: { '--hawk-accent': '#22d3ee' },
+  },
 });
 ```
 
@@ -344,7 +404,7 @@ wiki, forum posts), that content reaches the preview pane and result list unsani
 it the same way you'd treat rendering that content anywhere else on the page, and sanitize it at
 your own build/render step if it isn't already.
 
-This trust boundary is specifically about *your own site's content* — it doesn't extend to the
+This trust boundary is specifically about _your own site's content_ — it doesn't extend to the
 visitor's typed query. `strings.noResults(query)` is the one place the query reaches `innerHTML`;
 hawk HTML-escapes the `query` argument before calling it, so a query like `<img
 src=x onerror=...>` renders as literal text, including in a custom `noResults` override.
@@ -467,7 +527,7 @@ never in the background while closed.
 ```ts
 interface HawkTriggerConfig {
   kind?: 'minimal' | 'compact' | 'default'; // icon only / icon+"Search" / icon+"Search..."+kbd hint
-  container: string | HTMLElement;           // required — where the button is appended
+  container: string | HTMLElement; // required — where the button is appended
 }
 ```
 
@@ -483,33 +543,39 @@ Every piece of UI text hawk renders is overridable via `config.strings`:
 
 ```ts
 interface HawkStrings {
-  dialogLabel: string;             // 'Search'
-  inputPlaceholder: string;        // 'Search...'
-  densityGroupLabel: string;       // 'Result density'
-  densityFit: string;              // 'Fit'
-  densityMedium: string;           // 'Medium'
-  densityCompact: string;          // 'Compact'
-  escKey: string;                  // 'ESC'
-  filtersLabel: string;            // 'Filter by category'
-  previewLabel: string;            // 'Preview'
-  hintNavigate: string;            // 'Navigate'
-  hintSelect: string;              // 'Select'
-  hintClose: string;               // 'Close'
-  previewEmpty: string;            // 'Type to search, or select a result to preview it here.'
-  previewLoading: string;          // 'Loading…'
-  sectionBadge: string;            // 'Section'
-  untitled: string;                // 'Untitled'
-  typeToSearch: string;            // 'Type to search'
+  dialogLabel: string; // 'Search'
+  inputPlaceholder: string; // 'Search...'
+  densityGroupLabel: string; // 'Result density'
+  densityFit: string; // 'Fit'
+  densityMedium: string; // 'Medium'
+  densityCompact: string; // 'Compact'
+  escKey: string; // 'ESC'
+  filtersLabel: string; // 'Filter by category'
+  previewLabel: string; // 'Preview'
+  hintNavigate: string; // 'Navigate'
+  hintSelect: string; // 'Select'
+  hintClose: string; // 'Close'
+  previewEmpty: string; // 'Type to search, or select a result to preview it here.'
+  previewLoading: string; // 'Loading…'
+  discoveryLabel: string; // 'Discover related content'
+  discoveryMatches: string; // 'Query matches'
+  discoveryPages: string; // 'Related pages'
+  discoveryHeadings: string; // 'Headings'
+  discoveryEmpty: string; // 'No links available.'
+  discoveryLoading: string; // 'Finding links…'
+  sectionBadge: string; // 'Section'
+  untitled: string; // 'Untitled'
+  typeToSearch: string; // 'Type to search'
   noResults: (query: string) => string;
   matchingResults: (count: number, pageCount: number) => string;
   entries: (count: number, pageCount: number) => string;
-  unavailable: string;             // 'Search is unavailable right now. Try again later.'
-  unavailableCounter: string;      // 'Search unavailable'
-  poweredBy: string;               // 'Search powered by Pagefind'
-  pinnedTab: string;               // 'Pinned'
-  recentlyViewedTab: string;       // 'Recently viewed'
-  pinAction: string;               // 'Pin'
-  unpinAction: string;             // 'Unpin'
+  unavailable: string; // 'Search is unavailable right now. Try again later.'
+  unavailableCounter: string; // 'Search unavailable'
+  poweredBy: string; // 'Search powered by Pagefind'
+  pinnedTab: string; // 'Pinned'
+  recentlyViewedTab: string; // 'Recently viewed'
+  pinAction: string; // 'Pin'
+  unpinAction: string; // 'Unpin'
 }
 ```
 
@@ -523,13 +589,13 @@ ignored.
 `config.revealAnimation` selects how the modal opens and closes: fade, scale-fade, slide-down,
 blur-zoom, spring, a custom animation name, or `false` for an instant show/hide:
 
-| Name | Feel |
-| --- | --- |
-| `'fade'` | A plain crossfade on both the backdrop and dialog. No motion — the steadiest option. |
-| `'scale-fade'` (default) | The command-palette standard (Linear/Raycast/VS Code Quick Open): the dialog fades in while easing up from a slight scale-down. |
-| `'slide-down'` | The dialog drops in from just above its resting position (Alfred/Spotlight-top style). |
-| `'blur-zoom'` | The backdrop's blur ramps up from 0 alongside its fade, while the dialog eases in from a slight zoomed-in scale — reads as the surface "materializing". |
-| `'spring'` | The dialog's scale overshoots past 1 before settling. It exits with a scale-fade. |
+| Name                     | Feel                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `'fade'`                 | A plain crossfade on both the backdrop and dialog. No motion — the steadiest option.                                                                    |
+| `'scale-fade'` (default) | The command-palette standard (Linear/Raycast/VS Code Quick Open): the dialog fades in while easing up from a slight scale-down.                         |
+| `'slide-down'`           | The dialog drops in from just above its resting position (Alfred/Spotlight-top style).                                                                  |
+| `'blur-zoom'`            | The backdrop's blur ramps up from 0 alongside its fade, while the dialog eases in from a slight zoomed-in scale — reads as the surface "materializing". |
+| `'spring'`               | The dialog's scale overshoots past 1 before settling. It exits with a scale-fade.                                                                       |
 
 ```js
 new HawkSearch({
@@ -565,13 +631,13 @@ with `revealDuration` to match your own timing; an unrecognized name otherwise d
     open: boolean;
     query: string;
     selectedIndex: number;
-    matches: HawkMatch[];       // { title, url, excerpt, isAnchor, meta }
+    matches: HawkMatch[]; // { title, url, excerpt, isAnchor, meta }
     pageCount: number;
     pins: { url: string; title: string; isAnchor: boolean }[];
     recentlyViewed: { url: string; title: string; isAnchor: boolean; viewedAt: string }[];
     secondColumnEnabled: boolean;
     activeTab: string;
-    error: Error | null;        // set when Pagefind failed to load, or a search call rejected
+    error: Error | null; // set when Pagefind failed to load, or a search call rejected
   }
   ```
 
@@ -602,9 +668,9 @@ back to styled `console.*` output.
 
 ```ts
 interface HawkDebugOptions {
-  enabled?: boolean;       // default true
-  label?: string;          // default 'Hawk'
-  trace?: boolean;         // default false (logcad path only)
+  enabled?: boolean; // default true
+  label?: string; // default 'Hawk'
+  trace?: boolean; // default false (logcad path only)
   pollIntervalMs?: number; // default 150
 }
 interface HawkDebugController {
@@ -623,14 +689,14 @@ Optional, headless counters/timings for a `HawkSearch` instance — same non-inv
 
 ```ts
 interface HawkMetricsOptions {
-  now?: () => number;      // default performance.now
+  now?: () => number; // default performance.now
   pollIntervalMs?: number; // default 150
 }
 interface HawkMetricsController {
   snapshot(): HawkMetricsSnapshot; // opens, closes, totalOpenMs, queries, zeroResultQueries,
-                                    // zeroResultRate, totalMatches, maxMatches, averageMatches,
-                                    // selects, selectRate, tabSwitches, perTab, pinAdds,
-                                    // pinRemoves, errors, lastQueryLatencyMs, averageQueryLatencyMs
+  // zeroResultRate, totalMatches, maxMatches, averageMatches,
+  // selects, selectRate, tabSwitches, perTab, pinAdds,
+  // pinRemoves, errors, lastQueryLatencyMs, averageQueryLatencyMs
   reset(): void;
   dispose(): void; // restores hawk's original methods/callbacks
 }

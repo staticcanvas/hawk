@@ -1,0 +1,42 @@
+{
+  "name": "Subtle Sunset",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#1a1420",
+      "bgAlt": "#221a29",
+      "bgElev": "#2b2233",
+      "border": "#3a2e43",
+      "text": "#f2e6ec",
+      "textMuted": "#b499b9",
+      "textFaint": "#7a6182",
+      "selection": "#3d2c4a",
+      "accent": "#f0839e"
+    },
+    "syntax": {
+      "comment": "#7a6182",
+      "keyword": "#d97eb0",
+      "string": "#f2b26b",
+      "function": "#f0839e",
+      "variable": "#f2e6ec",
+      "constant": "#f2b26b",
+      "number": "#f2b26b",
+      "type": "#b98ee0",
+      "operator": "#b499b9",
+      "tag": "#e0637d",
+      "attribute": "#b98ee0",
+      "punctuation": "#b499b9",
+      "error": "#e0637d",
+      "warning": "#f2b26b",
+      "info": "#b98ee0",
+      "success": "#8fc98a",
+      "deleted": "#be637c"
+    }
+  }
+}
