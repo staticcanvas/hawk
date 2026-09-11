@@ -718,6 +718,17 @@
   padding: 1rem;
   background: var(--hawk-preview-bg, rgba(9, 13, 22, 0.65));
 }
+
+/* A reserved gutter is useful once the modal has enough room for the pane's scrollbar, but on
+ * phone layouts it needlessly removes several pixels from an already narrow result column and
+ * changes wrapping. Keep the maintained phone layout independent of scrollbar visibility. */
+@media (max-width: 30rem) {
+  .hawk-results-pane,
+  .hawk-preview-pane {
+    scrollbar-gutter: auto;
+  }
+}
+
 .hawk-preview-empty {
   color: var(--hawk-text-muted, #64748b);
   font-size: 0.85rem;
