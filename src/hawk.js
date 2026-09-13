@@ -233,6 +233,8 @@ export class HawkSearch {
    * @param {number} [config.resultsRevealStagger=22] Milliseconds between each row's animation start —
    *   capped at the 10th row internally, so a long result list's total entrance duration doesn't keep
    *   growing past that.
+   * @param {{color?: string, gradient?: string, opacity?: number|string, blur?: string}} [config.backdrop]
+   *   Customizes the modal scrim color/gradient, opacity, and blur. `gradient` replaces `color` when set.
    * @param {boolean} [config.eagerResults=true] Runs an empty-query search as soon as Pagefind loads, so the
    *   results pane shows a default listing instead of "Type to search". Set `false` to keep the results pane
    *   empty until the visitor types.
@@ -369,6 +371,7 @@ export class HawkSearch {
     this.resultsReveal = config.resultsReveal !== false;
     this.resultsRevealDirection = config.resultsRevealDirection || 'up';
     this.resultsRevealStagger = config.resultsRevealStagger ?? 22;
+    this.backdrop = config.backdrop || {};
     this.eagerResults = config.eagerResults !== false;
     this.onOpen = config.onOpen;
     this.onClose = config.onClose;
@@ -649,6 +652,10 @@ export class HawkSearch {
       this.#root.dataset.hawkResultsReveal = this.resultsRevealDirection;
       this.#root.style.setProperty('--hawk-results-stagger', `${this.resultsRevealStagger}ms`);
     }
+    if (this.backdrop.color) this.#root.style.setProperty('--hawk-backdrop', this.backdrop.color);
+    if (this.backdrop.gradient) this.#root.style.setProperty('--hawk-backdrop-gradient', this.backdrop.gradient);
+    if (this.backdrop.opacity !== undefined) this.#root.style.setProperty('--hawk-backdrop-opacity', String(this.backdrop.opacity));
+    if (this.backdrop.blur) this.#root.style.setProperty('--hawk-backdrop-blur', this.backdrop.blur);
     this.#applyParams();
     this.#renderDiscovery('empty');
     if (this.#tabsExplicit) {

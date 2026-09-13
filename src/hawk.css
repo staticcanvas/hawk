@@ -40,8 +40,9 @@
 .hawk-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: var(--hawk-backdrop, rgba(9, 13, 22, 0.8));
-  backdrop-filter: blur(14px);
+  background: var(--hawk-backdrop-gradient, var(--hawk-backdrop, rgba(9, 13, 22, 0.8)));
+  opacity: var(--hawk-backdrop-opacity, 1);
+  backdrop-filter: blur(var(--hawk-backdrop-blur, 14px));
 }
 
 .hawk-modal-dialog {

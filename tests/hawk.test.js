@@ -2692,6 +2692,24 @@ describe('modal reveal animation', () => {
     hawk.destroy();
   });
 
+  it('applies configurable backdrop scrim tokens to the mounted modal', () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      backdrop: {
+        color: 'rgba(10, 10, 15, 0.6)',
+        gradient: 'radial-gradient(circle at 50% 0%, red, blue)',
+        opacity: 0.8,
+        blur: '18px',
+      },
+    });
+    const root = document.querySelector('.hawk-modal');
+    expect(root.style.getPropertyValue('--hawk-backdrop')).toBe('rgba(10, 10, 15, 0.6)');
+    expect(root.style.getPropertyValue('--hawk-backdrop-gradient')).toContain('radial-gradient');
+    expect(root.style.getPropertyValue('--hawk-backdrop-opacity')).toBe('0.8');
+    expect(root.style.getPropertyValue('--hawk-backdrop-blur')).toBe('18px');
+    hawk.destroy();
+  });
+
   it('revealAnimation: false keeps open()/close() instant, with no [data-hawk-reveal]/[data-hawk-anim-state] attributes', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind(), revealAnimation: false });
     const root = document.querySelector('.hawk-modal');

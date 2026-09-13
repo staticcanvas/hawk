@@ -166,6 +166,12 @@ export interface HawkSearchConfig {
   discoveryRow?: false | HawkDiscoveryRowConfig;
   revealAnimation?: 'fade' | 'scale-fade' | 'slide-down' | 'blur-zoom' | 'spring' | string | false;
   revealDuration?: number;
+  backdrop?: {
+    color?: string;
+    gradient?: string;
+    opacity?: number | string;
+    blur?: string;
+  };
   resultsReveal?: boolean;
   resultsRevealDirection?: 'up' | 'down' | 'left' | 'right';
   resultsRevealStagger?: number;
