@@ -7,29 +7,35 @@ import TypeFlow from '@staticcanvas/typeflow';
  * consumers of `@staticcanvas/hawk/animation-typeflow` get a ready-to-use official integration.
  * The factory still accepts an explicit TypeFlow-compatible instance for custom wiring and tests.
  *
- * The specific type/scramble/rotate configs below are the defaults extracted from typeflow's
- * own docs search (docs/static/assets/docs.js) — anchor/section titles scramble-decode, page
- * titles type plainly, preview content types HTML-aware, and the header placeholder rotates.
+ * Every surface uses Hawk's explicit spatial baseline instead of TypeFlow's own library default
+ * (`char`) — `char` and `scramble` are the most computationally expensive
+ * typeStyle values (a per-character DOM update, or a full string re-render, on every tick), so
+ * they have a practical minimum speed below which frames start dropping. At Hawk's own default
+ * 2ms speed they're liable to look choppy rather than smooth, so none of the defaults below use
+ * them. The baseline is `zoom-in-space`, left-to-right, 2ms, with no cursor; all values remain
+ * overridable. `char` and `scramble` remain available by passing either value explicitly via
+ * `options`, for anyone who wants that effect and is prepared to raise `speed` accordingly.
  * Every config is overridable via `options`.
  * @module hawk-animation-typeflow
  */
 
 const DEFAULT_TITLE_CONFIG = {
   speed: 2,
-  cursor: '|',
+  cursor: '',
   cursorBlink: false,
+  typeStyle: 'zoom-in-space',
+  direction: 'left',
   respectReducedMotion: true,
 };
 
 const DEFAULT_ANCHOR_TITLE_CONFIG = {
   ...DEFAULT_TITLE_CONFIG,
-  typeStyle: 'scramble',
-  scrambleCharset: 'cyber',
-  scrambleRounds: 1,
 };
 
 const DEFAULT_CONTENT_CONFIG = {
   html: true,
+  typeStyle: 'zoom-in-space',
+  direction: 'left',
   allowedTags: [
     'article',
     'section',
@@ -81,7 +87,13 @@ const DEFAULT_ROTATE_CONFIG = {
   holdDuration: 3000,
   pauseBetween: 200,
   respectReducedMotion: true,
-  typeConfig: { speed: 2, cursor: '|', cursorBlink: true },
+  typeConfig: {
+    speed: 2,
+    cursor: '',
+    cursorBlink: false,
+    typeStyle: 'zoom-in-space',
+    direction: 'left',
+  },
   eraseConfig: { speed: 2, eraseStyle: 'end' },
 };
 

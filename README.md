@@ -84,8 +84,12 @@ interfaces.
   `disableDefaultMarkdownStyles` opts out of the built-in preview-content prose rules entirely.
 - Animation driver plugin system: `typeTitle` / `typeContent` / `rotatePlaceholder` / `stop`.
   Ships with `hawk-animation-instant` (default, zero dependencies) and `hawk-animation-typeflow`
-  (wraps `TypeFlow.type()`/`TypeFlow.rotate()`, including anchor-title scramble-decode and a
-  rotating example-query placeholder in the search input).
+  (wraps `TypeFlow.type()`/`TypeFlow.rotate()`). Every surface (title, anchor title, content, and
+  rotating placeholder) defaults to `zoom-in-space`, left direction, 2ms speed, and no cursor.
+  The `scramble` and `char` `typeStyle` values are the most computationally
+  expensive (a full re-render per keystroke or per-character DOM update) and have a practical
+  minimum speed below which frames start dropping, so none of Hawk's own defaults use them — both
+  remain fully available via an explicit `typeStyle` override for anyone who wants that effect.
 - Structured inline filter syntax (`inlineFilters: true`): typing `category:Guides responsive`
   parses out a Pagefind filter and searches only the remaining text.
 - Result/page metadata: every match carries Pagefind's full `meta` object, with configurable

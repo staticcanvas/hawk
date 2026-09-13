@@ -193,16 +193,11 @@
   <script type="module">
     import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
     import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
-    import { createHawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
-    import TypeFlow from '{{ "webutil/libs/typeflow.mjs" | relURL }}';
+    import { HawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
     import { createHawkDocsSearchConfig } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
 
     HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
-    HawkSearch.registerAnimation('typeflow', createHawkAnimationTypeflow(TypeFlow, {
-      title:       { speed: 5, cursor: '', typeStyle: 'float-in-left' },
-      anchorTitle: { speed: 5, cursor: '', typeStyle: 'float-in-bottom' },
-      content:     { speed: 5, cursor: '' },
-    }));
+    HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
 
     const categories = {{ $categories | jsonify | safeJS }};
     const categoryDefaults = {{ $categoryDefaults | jsonify | safeJS }};

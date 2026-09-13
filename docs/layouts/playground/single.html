@@ -107,24 +107,22 @@
           <fieldset class="pg-tf-subgroup">
             <legend>Title (page titles)</legend>
             <label>typeStyle <select id="pg-tf-title-style" class="pg-select">
-              <option value="char">char</option>
               <option value="word">word</option>
-              <option value="scramble">scramble</option>
               <option value="fade-trail">fade-trail</option>
-              <option value="word-fade" selected>word-fade</option>
+              <option value="word-fade">word-fade</option>
               <option value="float-in-top">float-in-top</option>
               <option value="float-in-bottom">float-in-bottom</option>
               <option value="float-in-left">float-in-left</option>
               <option value="float-in-right">float-in-right</option>
-              <option value="zoom-in-space">zoom-in-space</option>
+              <option value="zoom-in-space" selected>zoom-in-space</option>
             </select></label>
             <label>direction <select id="pg-tf-title-direction" class="pg-select">
               <option value="left" selected>left</option>
               <option value="right">right</option>
               <option value="center">center</option>
             </select></label>
-            <label>speed <input type="number" id="pg-tf-title-speed" value="45" min="1" max="120" class="pg-number"> ms</label>
-            <label>cursor <input type="text" id="pg-tf-title-cursor" value="|" maxlength="4" class="pg-text"></label>
+            <label>speed <input type="number" id="pg-tf-title-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
+            <label>cursor <input type="text" id="pg-tf-title-cursor" value="" maxlength="4" class="pg-text"></label>
             <label><input type="checkbox" id="pg-tf-title-cursor-blink"> cursorBlink</label>
             <label class="pg-field-wide">advanced overrides JSON <textarea id="pg-tf-title-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
           </fieldset>
@@ -132,8 +130,6 @@
           <fieldset class="pg-tf-subgroup">
             <legend>Anchor title (section titles)</legend>
             <label>typeStyle <select id="pg-tf-anchor-style" class="pg-select">
-              <option value="scramble">scramble</option>
-              <option value="char">char</option>
               <option value="word">word</option>
               <option value="fade-trail">fade-trail</option>
               <option value="word-fade">word-fade</option>
@@ -148,20 +144,8 @@
               <option value="right">right</option>
               <option value="center">center</option>
             </select></label>
-            <label>scrambleCharset <select id="pg-tf-anchor-charset" class="pg-select">
-              <option value="cyber" selected>cyber</option>
-              <option value="matrix">matrix</option>
-              <option value="ascii">ascii</option>
-              <option value="ascii-extended">ascii-extended</option>
-              <option value="blocks">blocks</option>
-              <option value="binary">binary</option>
-              <option value="hex">hex</option>
-              <option value="braille">braille</option>
-              <option value="runic">runic</option>
-            </select></label>
-            <label>scrambleRounds <input type="number" id="pg-tf-anchor-rounds" value="1" min="0" max="6" class="pg-number"></label>
-            <label>speed <input type="number" id="pg-tf-anchor-speed" value="55" min="1" max="120" class="pg-number"> ms</label>
-            <label>cursor <input type="text" id="pg-tf-anchor-cursor" value="|" maxlength="4" class="pg-text"></label>
+            <label>speed <input type="number" id="pg-tf-anchor-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
+            <label>cursor <input type="text" id="pg-tf-anchor-cursor" value="" maxlength="4" class="pg-text"></label>
             <label><input type="checkbox" id="pg-tf-anchor-cursor-blink"> cursorBlink</label>
             <label class="pg-field-wide">advanced overrides JSON <textarea id="pg-tf-anchor-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
           </fieldset>
@@ -170,23 +154,21 @@
             <legend>Content (preview pane)</legend>
             <label><input type="checkbox" id="pg-tf-content-html" checked> html</label>
             <label>typeStyle <select id="pg-tf-content-style" class="pg-select">
-              <option value="char">char</option>
               <option value="word">word</option>
-              <option value="scramble">scramble</option>
               <option value="fade-trail">fade-trail</option>
-              <option value="word-fade" selected>word-fade</option>
+              <option value="word-fade">word-fade</option>
               <option value="float-in-top">float-in-top</option>
               <option value="float-in-bottom">float-in-bottom</option>
               <option value="float-in-left">float-in-left</option>
               <option value="float-in-right">float-in-right</option>
-              <option value="zoom-in-space">zoom-in-space</option>
+              <option value="zoom-in-space" selected>zoom-in-space</option>
             </select></label>
             <label>direction <select id="pg-tf-content-direction" class="pg-select">
               <option value="left" selected>left</option>
               <option value="right">right</option>
               <option value="center">center</option>
             </select></label>
-            <label>speed <input type="number" id="pg-tf-content-speed" value="65" min="1" max="120" class="pg-number"> ms</label>
+            <label>speed <input type="number" id="pg-tf-content-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
             <label>cursor <input type="text" id="pg-tf-content-cursor" value="" maxlength="4" class="pg-text"></label>
             <label class="pg-field-wide">advanced overrides JSON <textarea id="pg-tf-content-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
           </fieldset>
@@ -195,22 +177,20 @@
             <legend>Rotate (placeholder)</legend>
             <label>holdDuration <input type="number" id="pg-tf-rotate-hold" value="3000" min="500" max="8000" step="100" class="pg-number"> ms</label>
             <label>pauseBetween <input type="number" id="pg-tf-rotate-pause" value="200" min="0" max="2000" step="50" class="pg-number"> ms</label>
-            <label>typeConfig.speed <input type="number" id="pg-tf-rotate-type-speed" value="45" min="1" max="120" class="pg-number"> ms</label>
+            <label>typeConfig.speed <input type="number" id="pg-tf-rotate-type-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
             <label>typeConfig.typeStyle <select id="pg-tf-rotate-type-style" class="pg-select">
-              <option value="char" selected>char</option>
               <option value="word">word</option>
-              <option value="scramble">scramble</option>
               <option value="fade-trail">fade-trail</option>
               <option value="word-fade">word-fade</option>
               <option value="float-in-top">float-in-top</option>
               <option value="float-in-bottom">float-in-bottom</option>
               <option value="float-in-left">float-in-left</option>
               <option value="float-in-right">float-in-right</option>
-              <option value="zoom-in-space">zoom-in-space</option>
+              <option value="zoom-in-space" selected>zoom-in-space</option>
             </select></label>
-            <label>typeConfig.cursor <input type="text" id="pg-tf-rotate-type-cursor" value="|" maxlength="4" class="pg-text"></label>
-            <label><input type="checkbox" id="pg-tf-rotate-type-cursor-blink" checked> typeConfig.cursorBlink</label>
-            <label>eraseConfig.speed <input type="number" id="pg-tf-rotate-erase-speed" value="35" min="1" max="120" class="pg-number"> ms</label>
+            <label>typeConfig.cursor <input type="text" id="pg-tf-rotate-type-cursor" value="" maxlength="4" class="pg-text"></label>
+            <label><input type="checkbox" id="pg-tf-rotate-type-cursor-blink"> typeConfig.cursorBlink</label>
+            <label>eraseConfig.speed <input type="number" id="pg-tf-rotate-erase-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
             <label>eraseConfig.eraseStyle <select id="pg-tf-rotate-erase-style" class="pg-select">
               <option value="end" selected>end</option>
               <option value="start">start</option>
@@ -467,6 +447,10 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
     const field = document.getElementById(id);
     if (field && value !== undefined) field.value = String(value);
   };
+  const setChecked = (id, value) => {
+    const field = document.getElementById(id);
+    if (field && value !== undefined) field.checked = Boolean(value);
+  };
 
   // The adapter is authoritative for the playground animation profile. Markup values remain
   // useful before JavaScript mounts, but this keeps the live controls and future gallery cards
@@ -474,16 +458,26 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
   setValue('pg-tf-title-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.typeStyle);
   setValue('pg-tf-title-direction', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.direction);
   setValue('pg-tf-title-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.speed);
+  setValue('pg-tf-title-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.cursor);
+  setChecked('pg-tf-title-cursor-blink', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.cursorBlink);
   setValue('pg-tf-anchor-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.typeStyle);
   setValue('pg-tf-anchor-direction', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.direction);
   setValue('pg-tf-anchor-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.speed);
+  setValue('pg-tf-anchor-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.cursor);
+  setChecked('pg-tf-anchor-cursor-blink', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.cursorBlink);
   setValue('pg-tf-content-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.typeStyle);
   setValue('pg-tf-content-direction', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.direction);
   setValue('pg-tf-content-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.speed);
+  setValue('pg-tf-content-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.cursor);
   setValue('pg-tf-rotate-hold', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.holdDuration);
   setValue('pg-tf-rotate-pause', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.pauseBetween);
   setValue('pg-tf-rotate-type-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.typeStyle);
   setValue('pg-tf-rotate-type-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.speed);
+  setValue('pg-tf-rotate-type-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.cursor);
+  setChecked(
+    'pg-tf-rotate-type-cursor-blink',
+    HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.cursorBlink
+  );
   setValue('pg-tf-rotate-erase-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.eraseStyle);
   setValue('pg-tf-rotate-erase-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.speed);
 
@@ -717,8 +711,6 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
       anchorTitle: {
         typeStyle: val('pg-tf-anchor-style'),
         direction: val('pg-tf-anchor-direction'),
-        scrambleCharset: val('pg-tf-anchor-charset'),
-        scrambleRounds: Number(val('pg-tf-anchor-rounds')),
         speed: Number(val('pg-tf-anchor-speed')),
         cursor: val('pg-tf-anchor-cursor'),
         cursorBlink: checked('pg-tf-anchor-cursor-blink'),

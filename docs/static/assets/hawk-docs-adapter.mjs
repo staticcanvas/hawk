@@ -7,14 +7,38 @@
  */
 
 export const HAWK_PLAYGROUND_TYPEFLOW_PRESET = Object.freeze({
-  title: Object.freeze({ typeStyle: 'word-fade', direction: 'left', speed: 45 }),
-  anchorTitle: Object.freeze({ typeStyle: 'zoom-in-space', direction: 'left', speed: 55 }),
-  content: Object.freeze({ html: true, typeStyle: 'word-fade', direction: 'left', speed: 65 }),
+  title: Object.freeze({
+    typeStyle: 'zoom-in-space',
+    direction: 'left',
+    speed: 2,
+    cursor: '',
+    cursorBlink: false,
+  }),
+  anchorTitle: Object.freeze({
+    typeStyle: 'zoom-in-space',
+    direction: 'left',
+    speed: 2,
+    cursor: '',
+    cursorBlink: false,
+  }),
+  content: Object.freeze({
+    html: true,
+    typeStyle: 'zoom-in-space',
+    direction: 'left',
+    speed: 2,
+    cursor: '',
+  }),
   rotate: Object.freeze({
     holdDuration: 3000,
     pauseBetween: 200,
-    typeConfig: Object.freeze({ typeStyle: 'char', speed: 45 }),
-    eraseConfig: Object.freeze({ eraseStyle: 'end', speed: 35 }),
+    typeConfig: Object.freeze({
+      typeStyle: 'zoom-in-space',
+      direction: 'left',
+      speed: 2,
+      cursor: '',
+      cursorBlink: false,
+    }),
+    eraseConfig: Object.freeze({ eraseStyle: 'end', speed: 2 }),
   }),
 });
 

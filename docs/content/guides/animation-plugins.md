@@ -26,8 +26,9 @@ back into `stop()`, which runs before every preview re-render and on `destroy()`
 ## Built-in drivers
 
 - **`instant`** (default, zero dependencies) — direct `textContent`/`innerHTML` writes.
-- **`typeflow`** — wraps `TypeFlow.type()` / `TypeFlow.rotate()`. Anchor/section titles
-  scramble-decode; page titles type plainly; preview content types HTML-aware.
+- **`typeflow`** — wraps `TypeFlow.type()` / `TypeFlow.rotate()`. Page titles, anchor/section
+  titles, HTML-aware preview content, and the rotating placeholder default to `zoom-in-space`,
+  left direction, 2ms speed, and no cursor.
 
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
@@ -45,17 +46,27 @@ configuration, `createHawkAnimationTypeflow(TypeFlow, options)` remains availabl
 The factory accepts complete TypeFlow configuration objects for `title`, `anchorTitle`,
 `content`, and the rotating placeholder's nested `typeConfig` and `eraseConfig`.
 
-| Style | Supported surfaces | Behaviour |
-|---|---|---|
-| `char` | Type | Character-by-character reveal. |
-| `word` | Type | Word-by-word reveal. |
-| `scramble` | Type and erase | Resolves text through a configurable glyph set. |
-| `fade-trail` | Type and erase | Adds a trailing opacity ramp. |
-| `word-fade` | Type and erase | Fades words without changing their final layout. |
-| `float-in-top`, `float-in-bottom` | Type and erase | Moves words vertically while changing opacity. |
-| `float-in-left`, `float-in-right` | Type and erase | Moves words horizontally while changing opacity. |
-| `zoom-in-space` | Type and erase | Uses perspective depth and scale. |
-| `end`, `start`, `center`, `fade`, `instant` | Erase | Additional erase-only strategies. |
+| Style                                       | Supported surfaces | Behaviour                                        |
+| ------------------------------------------- | ------------------ | ------------------------------------------------ |
+| `char`                                      | Type               | Character-by-character reveal.                   |
+| `word`                                      | Type               | Word-by-word reveal.                             |
+| `scramble`                                  | Type and erase     | Resolves text through a configurable glyph set.  |
+| `fade-trail`                                | Type and erase     | Adds a trailing opacity ramp.                    |
+| `word-fade`                                 | Type and erase     | Fades words without changing their final layout. |
+| `float-in-top`, `float-in-bottom`           | Type and erase     | Moves words vertically while changing opacity.   |
+| `float-in-left`, `float-in-right`           | Type and erase     | Moves words horizontally while changing opacity. |
+| `zoom-in-space`                             | Type and erase     | Uses perspective depth and scale.                |
+| `end`, `start`, `center`, `fade`, `instant` | Erase              | Additional erase-only strategies.                |
+
+Every built-in surface uses the same explicit baseline: `typeStyle: 'zoom-in-space'`,
+`direction: 'left'`, `speed: 2`, and `cursor: ''`. This prevents the wrapper, documentation search,
+gallery, and playground themes from falling through to TypeFlow's own library default (`char`).
+`char` and `scramble` are the most computationally expensive typeStyle values — `char` updates the
+DOM per character and `scramble` re-renders the full string on every tick — so both have a
+practical minimum speed below which frames start dropping, and neither is used by any of Hawk's
+own defaults, the docs search, or the playground's curated `typeStyle` pickers. Both remain fully
+available by passing `typeStyle: 'char'` / `'scramble'` explicitly to `createHawkAnimationTypeflow`
+for anyone who wants that effect and is prepared to raise `speed` accordingly.
 
 ```js
 import TypeFlow from '@staticcanvas/typeflow';

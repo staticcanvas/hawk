@@ -42,7 +42,7 @@ describe('createHawkAnimationTypeflow', () => {
       2,
       el,
       'Anchor title',
-      expect.objectContaining({ respectReducedMotion: true, typeStyle: 'scramble' })
+      expect.objectContaining({ respectReducedMotion: true, typeStyle: 'zoom-in-space' })
     );
     expect(TypeFlow.type).toHaveBeenNthCalledWith(
       3,
@@ -60,6 +60,67 @@ describe('createHawkAnimationTypeflow', () => {
     );
   });
 
+  it('defaults every surface to zoom-in-space from the left at 2ms with no cursor', () => {
+    const TypeFlow = mockTypeFlow();
+    const driver = createHawkAnimationTypeflow(TypeFlow);
+    const el = document.createElement('div');
+
+    driver.typeTitle(el, 'Plain title');
+    driver.typeTitle(el, 'Anchor title', { isAnchor: true });
+    driver.typeContent(el, '<p>content</p>');
+    driver.rotatePlaceholder(el, ['a', 'b']);
+
+    expect(TypeFlow.type).toHaveBeenNthCalledWith(
+      1,
+      el,
+      'Plain title',
+      expect.objectContaining({
+        speed: 2,
+        typeStyle: 'zoom-in-space',
+        direction: 'left',
+        cursor: '',
+        cursorBlink: false,
+      })
+    );
+    expect(TypeFlow.type).toHaveBeenNthCalledWith(
+      2,
+      el,
+      'Anchor title',
+      expect.objectContaining({
+        speed: 2,
+        typeStyle: 'zoom-in-space',
+        direction: 'left',
+        cursor: '',
+        cursorBlink: false,
+      })
+    );
+    expect(TypeFlow.type).toHaveBeenNthCalledWith(
+      3,
+      el,
+      '<p>content</p>',
+      expect.objectContaining({
+        speed: 2,
+        typeStyle: 'zoom-in-space',
+        direction: 'left',
+        cursor: '',
+      })
+    );
+    expect(TypeFlow.rotate).toHaveBeenCalledWith(
+      el,
+      ['a', 'b'],
+      expect.objectContaining({
+        typeConfig: expect.objectContaining({
+          speed: 2,
+          typeStyle: 'zoom-in-space',
+          direction: 'left',
+          cursor: '',
+          cursorBlink: false,
+        }),
+        eraseConfig: expect.objectContaining({ speed: 2, eraseStyle: 'end' }),
+      })
+    );
+  });
+
   it('renders title and HTML content immediately when reduced motion is requested', async () => {
     vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
     const title = document.createElement('h3');
@@ -73,8 +134,12 @@ describe('createHawkAnimationTypeflow', () => {
 
     expect(title.textContent).toBe('Reduced motion title');
     expect(content.innerHTML).toContain('<strong>without delay</strong>');
-    await expect(titleController.promise).resolves.toEqual(expect.objectContaining({ completed: true }));
-    await expect(contentController.promise).resolves.toEqual(expect.objectContaining({ completed: true }));
+    await expect(titleController.promise).resolves.toEqual(
+      expect.objectContaining({ completed: true })
+    );
+    await expect(contentController.promise).resolves.toEqual(
+      expect.objectContaining({ completed: true })
+    );
   });
 
   it('an explicit options override still wins over the respectReducedMotion default', () => {

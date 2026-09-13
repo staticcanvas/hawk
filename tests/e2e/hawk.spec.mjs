@@ -346,6 +346,24 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(page.locator('[data-hawk-token="--hawk-bg-canvas"]')).toHaveValue('#f5faf8');
   });
 
+  test('playground TypeFlow controls use the Hawk wrapper defaults', async ({ page }) => {
+    await page.goto('playground/index.html');
+
+    for (const id of ['title', 'anchor', 'content']) {
+      await expect(page.locator(`#pg-tf-${id}-style`)).toHaveValue('zoom-in-space');
+      await expect(page.locator(`#pg-tf-${id}-direction`)).toHaveValue('left');
+      await expect(page.locator(`#pg-tf-${id}-speed`)).toHaveValue('2');
+      await expect(page.locator(`#pg-tf-${id}-cursor`)).toHaveValue('');
+    }
+    await expect(page.locator('#pg-tf-title-cursor-blink')).not.toBeChecked();
+    await expect(page.locator('#pg-tf-anchor-cursor-blink')).not.toBeChecked();
+    await expect(page.locator('#pg-tf-rotate-type-style')).toHaveValue('zoom-in-space');
+    await expect(page.locator('#pg-tf-rotate-type-speed')).toHaveValue('2');
+    await expect(page.locator('#pg-tf-rotate-type-cursor')).toHaveValue('');
+    await expect(page.locator('#pg-tf-rotate-type-cursor-blink')).not.toBeChecked();
+    await expect(page.locator('#pg-tf-rotate-erase-speed')).toHaveValue('2');
+  });
+
   test('every playground color token has a live Pickr swatch without losing gradients', async ({
     page,
   }) => {
