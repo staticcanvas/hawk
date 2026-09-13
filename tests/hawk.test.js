@@ -1845,6 +1845,13 @@ describe('focus trap', () => {
     expect(document.activeElement).toBe(resultsPane);
     hawk.destroy();
   });
+
+  it('marks compact result rows with the compact density contract', async () => {
+    const hawk = await hawkWithResults({ params: { density: 'compact' } });
+    const row = document.querySelector('.hawk-result-item');
+    expect(row.closest('.hawk-modal').getAttribute('data-hawk-density')).toBe('compact');
+    hawk.destroy();
+  });
 });
 
 describe('pagefind load errors', () => {

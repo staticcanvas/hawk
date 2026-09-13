@@ -240,6 +240,16 @@
 [data-hawk-density='compact'] .hawk-results-pane {
   padding: 0.35rem;
 }
+[data-hawk-density='compact'] .hawk-result-item {
+  padding: 0.35rem 0.45rem;
+}
+[data-hawk-density='compact'] .hawk-result-meta {
+  gap: 0.2rem 0.4rem;
+  margin-top: 0.2rem;
+}
+[data-hawk-density='compact'] .hawk-result-desc {
+  -webkit-line-clamp: 1;
+}
 
 .hawk-modal-header {
   /* .hawk-modal-dialog is a column flex container with a fixed max-height — without
