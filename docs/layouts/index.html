@@ -86,13 +86,14 @@
   </header>
   <div class="feature-grid" data-reveal-group>
     {{ range $index, $feature := .Params.features }}
-    <a class="feature-card" data-reveal href="{{ $feature.href | relURL }}">
+    <article class="feature-card" data-reveal>
       <div class="feature-card__heading">
         <span class="feature-index" aria-hidden="true">{{ upper (substr $feature.title 0 1) }}</span>
         <h3>{{ $feature.title }}</h3>
       </div>
       <p>{{ $feature.body | safeHTML }}</p>
-    </a>
+      <a class="feature-card__link" href="{{ $feature.href | relURL }}">Read more <span aria-hidden="true">→</span></a>
+    </article>
     {{ end }}
   </div>
 </section>

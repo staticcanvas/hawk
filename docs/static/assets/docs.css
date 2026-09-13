@@ -20,7 +20,6 @@
   navigation: auto;
 }
 
-
 body {
   margin: 0;
   font-family:
@@ -1340,6 +1339,22 @@ body {
   color: #ebbcba;
 }
 
+.feature-card__link {
+  align-self: flex-start;
+  margin-top: auto;
+  color: var(--hawk-accent, var(--site-green));
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.feature-card__link:hover,
+.feature-card__link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 :root[data-theme='light'] .feature-card p strong {
   color: #6f4b8b;
 }
@@ -1830,8 +1845,7 @@ body {
   }
 }
 
-.search-trigger-btn::before,
-body[data-hawk-theme='typeflow'] .hawk-input-wrap::before {
+.search-trigger-btn::before {
   content: '';
   position: absolute;
   pointer-events: none;
@@ -1844,20 +1858,8 @@ body[data-hawk-theme='typeflow'] .hawk-input-wrap::before {
     transparent 100%
   );
   mask-image: radial-gradient(ellipse at center, transparent 38%, #000 68%, transparent 100%);
-}
-
-.search-trigger-btn::before {
   inset-block: -0.45rem;
   inset-inline: -5rem;
-  z-index: -1;
-}
-
-body[data-hawk-theme='typeflow'] .hawk-input-wrap {
-  isolation: isolate;
-}
-
-body[data-hawk-theme='typeflow'] .hawk-input-wrap::before {
-  inset: -1rem -3.75rem;
   z-index: -1;
 }
 
@@ -2758,9 +2760,17 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
     gap: var(--site-space-lg);
   }
 
-  .theme-gallery {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  .footer-brand,
+  .footer-column {
+    align-items: center;
+    text-align: center;
   }
+
+  .footer-brand p {
+    max-width: 40ch;
+    margin-inline: auto;
+  }
+
 }
 
 @media (max-width: 480px) {
@@ -2813,8 +2823,7 @@ html[data-site-scrolling='true']::-webkit-scrollbar-thumb,
 }
 
 /* The SVG is transparent; this soft mask lets the comb surround blend with either theme. */
-.search-trigger-btn::before,
-body[data-hawk-theme='typeflow'] .hawk-input-wrap::before {
+.search-trigger-btn::before {
   opacity: 0.3;
   -webkit-mask-image: radial-gradient(
     ellipse at center,
@@ -2838,8 +2847,7 @@ body[data-hawk-theme='typeflow'] .hawk-input-wrap::before {
   );
 }
 
-:root[data-theme='light'] .search-trigger-btn::before,
-:root[data-theme='light'] body[data-hawk-theme='typeflow'] .hawk-input-wrap::before {
+:root[data-theme='light'] .search-trigger-btn::before {
   opacity: 0.2;
 }
 

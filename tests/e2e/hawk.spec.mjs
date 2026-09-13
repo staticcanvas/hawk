@@ -84,7 +84,9 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
   });
 
   test('homepage feature cards link to their relevant documentation', async ({ page }) => {
-    const links = page.locator('.feature-grid .feature-card');
+    const cards = page.locator('.feature-grid .feature-card');
+    const links = cards.locator('.feature-card__link');
+    await expect(cards).toHaveCount(9);
     await expect(links).toHaveCount(9);
     await expect(links.nth(0)).toHaveAttribute('href', /pagefind-setup\/index\.html$/);
     await expect(links.nth(2)).toHaveAttribute('href', /guides\/theming\/index\.html$/);
