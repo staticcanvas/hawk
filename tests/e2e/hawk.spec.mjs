@@ -118,6 +118,19 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect
       .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
       .toBeLessThanOrEqual(360);
+
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.reload();
+    const desktopTrack = page.locator('[data-gallery-track]');
+    const desktopMedia = desktopTrack.locator('.showcase-card.is-active .showcase-card__media');
+    const desktopImage = desktopMedia.locator('img');
+    const desktopLayout = await desktopMedia.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return { width: box.width, ratio: box.width / box.height };
+    });
+    expect(desktopLayout.width).toBeGreaterThan(900);
+    expect(desktopLayout.ratio).toBeCloseTo(21 / 9, 1);
+    await expect(desktopImage).toHaveCSS('object-fit', 'contain');
   });
 
   test('homepage capability cards use title initials and semantic emphasis', async ({ page }) => {
