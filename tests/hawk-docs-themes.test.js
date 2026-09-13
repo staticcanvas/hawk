@@ -100,4 +100,25 @@ describe('documentation theme gallery', () => {
       ).toBeGreaterThanOrEqual(3);
     }
   });
+
+  it('defines Simple dark as a seamless minimal layout, not another palette swap', () => {
+    const simpleDark = themes.find(({ id }) => id === 'simple-dark');
+
+    expect(simpleDark.params).toMatchObject({
+      position: 'top-center',
+      alignment: 'start',
+      columns: 1,
+      density: 'compact',
+      scale: 0.9,
+    });
+    expect(simpleDark.tokens).toMatchObject({
+      '--hawk-bg-surface': 'rgba(11, 13, 17, 0)',
+      '--hawk-bg-surface-elevated': 'rgba(11, 13, 17, 0)',
+      '--hawk-border-subtle': 'rgba(255, 255, 255, 0)',
+      '--hawk-border-default': 'rgba(255, 255, 255, 0)',
+      '--hawk-border-strong': 'rgba(255, 255, 255, 0)',
+      '--hawk-preview-bg': 'rgba(11, 13, 17, 0)',
+      '--hawk-shadow': 'none',
+    });
+  });
 });

@@ -307,8 +307,8 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await page.goto('themes/index.html');
     const cards = page.locator('[data-gallery-theme]');
     const playgroundLinks = page.locator('.theme-gallery-playground');
-    await expect(cards).toHaveCount(13);
-    await expect(playgroundLinks).toHaveCount(13);
+    await expect(cards).toHaveCount(14);
+    await expect(playgroundLinks).toHaveCount(14);
     await expect(page.locator('[data-gallery-theme="midnight-wave"]')).toContainText(
       'Midnight Wave'
     );
@@ -325,6 +325,27 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await cards.nth(2).click();
     await expect(page.locator('.hawk-modal:visible')).toHaveCount(1);
     await expect(cards.nth(2)).toHaveAttribute('aria-pressed', 'true');
+
+    await page.keyboard.press('Escape');
+    const simpleDark = page.locator('[data-gallery-theme="simple-dark"]');
+    await simpleDark.click();
+    const simpleModal = page.locator('.hawk-modal:visible');
+    await expect(simpleModal).toHaveAttribute('data-hawk-position', 'top-center');
+    await expect(simpleModal).toHaveAttribute('data-hawk-density', 'compact');
+    await expect(simpleModal.locator('.hawk-modal-body')).toHaveAttribute('data-hawk-columns', '1');
+    await expect(simpleModal.locator('.hawk-modal-dialog')).toHaveCSS(
+      'background-color',
+      'rgba(11, 13, 17, 0)'
+    );
+    await expect(simpleModal.locator('.hawk-modal-dialog')).toHaveCSS(
+      'border-color',
+      'rgba(255, 255, 255, 0)'
+    );
+    await expect(simpleModal.locator('.hawk-modal-dialog')).toHaveCSS('box-shadow', 'none');
+    await expect(simpleModal.locator('.hawk-modal-backdrop')).toHaveCSS(
+      'backdrop-filter',
+      'blur(14px)'
+    );
   });
 
   test('a gallery preset hydrates the editable playground controls', async ({ page }) => {
