@@ -31,7 +31,42 @@ npx pagefind --site dist
 
 That writes a `pagefind/` folder into `dist/` containing the index and a small runtime.
 
-## Mount hawk
+## Mount Hawk without TypeFlow
+
+Hawk's structural stylesheet and instant content driver are part of core. This is a complete,
+configurable mount with no TypeFlow package, adapter, or theme import:
+
+```js
+import { HawkSearch } from '@staticcanvas/hawk';
+import '@staticcanvas/hawk/css';
+
+const search = new HawkSearch({
+  index: '/pagefind/',
+  triggerSelector: '[data-search-trigger]',
+  animation: 'instant',
+  revealAnimation: false,
+  resultsReveal: false,
+  theme: {
+    name: 'site-minimal',
+    apply() {},
+    tokens: {
+      '--hawk-bg-surface': '#111827',
+      '--hawk-text-primary': '#f9fafb',
+      '--hawk-accent': '#60a5fa',
+    },
+  },
+});
+```
+
+`animation: 'instant'` uses Hawk's built-in zero-dependency driver. The two reveal options above
+also remove modal and result-row motion; omit either one if you want those CSS reveals while
+keeping preview content instant. The theme object is optional—without it, `hawk.css` uses its
+neutral fallback tokens.
+
+## Add TypeFlow (optional)
+
+Register the TypeFlow visual theme and animation driver when you want the packaged animated
+experience:
 
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
@@ -58,8 +93,14 @@ markup is required. Ctrl/Cmd+K and `/` open it by default (configurable via `hot
 Hawk ships UMD builds too, for script-tag usage without a bundler:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk-theme-typeflow.css">
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.css"
+/>
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk-theme-typeflow.css"
+/>
 <script src="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk-theme-typeflow.js"></script>
 <script>

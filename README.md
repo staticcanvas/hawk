@@ -134,6 +134,34 @@ Mount hawk against it:
 
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
+import '@staticcanvas/hawk/css';
+
+const search = new HawkSearch({
+  index: '/pagefind/',
+  triggerSelector: '[data-search-trigger]',
+  animation: 'instant', // built into core; no TypeFlow dependency
+  revealAnimation: false,
+  resultsReveal: false,
+  theme: {
+    name: 'site-minimal',
+    apply() {},
+    tokens: {
+      '--hawk-bg-surface': '#111827',
+      '--hawk-text-primary': '#f9fafb',
+      '--hawk-accent': '#60a5fa',
+    },
+  },
+});
+```
+
+That is the complete zero-TypeFlow path. The theme object is optional; core CSS has neutral token
+fallbacks. `revealAnimation` and `resultsReveal` can be left enabled independently if only preview
+content needs to render instantly.
+
+For the packaged TypeFlow theme and animation experience:
+
+```js
+import { HawkSearch } from '@staticcanvas/hawk';
 import '@staticcanvas/hawk/theme-typeflow/css';
 import { HawkThemeTypeflow } from '@staticcanvas/hawk/theme-typeflow';
 import { HawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
