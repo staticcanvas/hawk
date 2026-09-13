@@ -2561,7 +2561,7 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
 
 .theme-gallery {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   gap: var(--site-space-md);
 }
 
@@ -2577,10 +2577,10 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
   min-width: 0;
   gap: 0.65rem;
   padding: var(--site-space-md);
-  border: 1px solid var(--hawk-border-subtle);
+  border: 1px solid color-mix(in srgb, var(--gallery-accent) 28%, transparent);
   border-radius: var(--site-radius-md);
-  background: color-mix(in srgb, var(--hawk-bg-surface) 82%, transparent);
-  color: var(--hawk-text-primary);
+  background: linear-gradient(145deg, var(--gallery-surface), var(--gallery-canvas));
+  color: var(--gallery-text);
   text-align: start;
   cursor: pointer;
   transition:
@@ -2591,35 +2591,35 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
 .theme-gallery-card:hover,
 .theme-gallery-card:focus-visible,
 .theme-gallery-card[aria-pressed='true'] {
-  border-color: var(--hawk-accent);
+  border-color: var(--gallery-accent);
   transform: translateY(-2px);
 }
 
 .theme-gallery-card:focus-visible {
-  outline: 2px solid var(--hawk-accent);
+  outline: 2px solid var(--gallery-accent);
   outline-offset: 3px;
 }
 
 .theme-gallery-card__swatches {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.45rem;
 }
 
 .theme-gallery-card__swatches i {
-  width: 1.65rem;
   height: 1.65rem;
   border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 50%;
+  border-radius: var(--site-radius-sm);
   background: var(--swatch);
 }
 
 .theme-gallery-card > span:not(.theme-gallery-card__swatches) {
-  color: var(--hawk-text-secondary);
+  color: var(--gallery-secondary);
   font-size: 0.82rem;
 }
 
 .theme-gallery-card code {
-  color: var(--hawk-text-muted);
+  color: var(--gallery-secondary);
   font-size: 0.7rem;
   overflow-wrap: anywhere;
 }
@@ -2751,7 +2751,7 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
   }
 
   .theme-gallery {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   }
 }
 

@@ -37,9 +37,16 @@
 
   gallery.innerHTML = galleryThemes.map((theme) => `
     <div class="theme-gallery-item">
-      <button class="theme-gallery-card" type="button" data-gallery-theme="${theme.id}">
+      <button
+        class="theme-gallery-card"
+        type="button"
+        data-gallery-theme="${theme.id}"
+        style="--gallery-canvas:${theme.tokens['--hawk-bg-canvas']};--gallery-surface:${theme.tokens['--hawk-bg-surface']};--gallery-text:${theme.tokens['--hawk-text-primary']};--gallery-secondary:${theme.tokens['--hawk-text-secondary']};--gallery-muted:${theme.tokens['--hawk-text-muted'] || theme.tokens['--hawk-text-secondary']};--gallery-accent:${theme.tokens['--hawk-accent']};--gallery-accent-alt:${theme.tokens['--hawk-accent-alt']}"
+      >
         <span class="theme-gallery-card__swatches" aria-hidden="true">
+          <i style="--swatch:${theme.tokens['--hawk-bg-canvas']}"></i>
           <i style="--swatch:${theme.tokens['--hawk-bg-surface']}"></i>
+          <i style="--swatch:${theme.tokens['--hawk-text-primary']}"></i>
           <i style="--swatch:${theme.tokens['--hawk-accent']}"></i>
           <i style="--swatch:${theme.tokens['--hawk-accent-alt']}"></i>
         </span>
