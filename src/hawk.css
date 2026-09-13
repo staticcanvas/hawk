@@ -250,6 +250,10 @@
 [data-hawk-density='compact'] .hawk-result-desc {
   -webkit-line-clamp: 1;
 }
+[data-hawk-vertical-fit='true'][data-hawk-density='fit'] .hawk-modal-dialog,
+[data-hawk-vertical-fit='true'][data-hawk-density='compact'] .hawk-modal-dialog {
+  height: fit-content;
+}
 
 .hawk-modal-header {
   /* .hawk-modal-dialog is a column flex container with a fixed max-height — without

@@ -28,6 +28,7 @@ const DEFAULT_PARAMS = {
   breakpoint: 768, // px
   density: 'medium', // 'fit' | 'medium' | 'compact'
   allowDensityToggle: true,
+  verticalFit: false,
 };
 
 const DENSITY_VALUES = new Set(['fit', 'medium', 'compact']);
@@ -820,12 +821,13 @@ export class HawkSearch {
   }
 
   #applyParams() {
-    const { scale, position, offset, columns, breakpoint, density } = this.params;
+    const { scale, position, offset, columns, breakpoint, density, verticalFit } = this.params;
     this.#root.style.setProperty('--hawk-scale', String(scale));
     this.#root.style.setProperty('--hawk-offset-x', this.#cssLength(offset.x));
     this.#root.style.setProperty('--hawk-offset-y', this.#cssLength(offset.y));
     this.#root.dataset.hawkPosition = position;
     this.#root.dataset.hawkDensity = density;
+    this.#root.dataset.hawkVerticalFit = String(verticalFit === true);
     this.#root.dataset.hawkSecondColumn = String(this.enableSecondColumn);
     this.#root.querySelector('.hawk-modal-body').dataset.hawkColumns = String(
       this.enableSecondColumn ? columns : 1

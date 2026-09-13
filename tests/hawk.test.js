@@ -1860,6 +1860,14 @@ describe('focus trap', () => {
     expect(row.closest('.hawk-modal').getAttribute('data-hawk-density')).toBe('compact');
     hawk.destroy();
   });
+
+  it('applies vertical-fit mode to fit and compact layouts', async () => {
+    const hawk = await hawkWithResults({ params: { density: 'fit', verticalFit: true } });
+    expect(document.querySelector('.hawk-modal').dataset.hawkVerticalFit).toBe('true');
+    hawk.setParams({ density: 'compact' });
+    expect(document.querySelector('.hawk-modal').dataset.hawkVerticalFit).toBe('true');
+    hawk.destroy();
+  });
 });
 
 describe('pagefind load errors', () => {

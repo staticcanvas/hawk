@@ -20,6 +20,7 @@ export interface HawkParams {
   breakpoint?: number;
   density?: 'fit' | 'medium' | 'compact';
   allowDensityToggle?: boolean;
+  verticalFit?: boolean;
 }
 
 export interface HawkMatch {
