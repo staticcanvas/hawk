@@ -51,14 +51,12 @@
 
 {{ if .Params.features }}
 <section class="shell feature-section">
-  <header class="section-heading">
-    <h2>Search that belongs to your site.</h2>
-  </header>
   {{ with site.Data.search_gallery.items }}
   <section class="search-gallery" aria-labelledby="search-gallery-title" data-search-gallery>
-    <header class="search-gallery__header">
+    <header class="section-heading search-gallery__header">
       <div class="search-gallery__title-group">
-        <h3 id="search-gallery-title">Configured Hawk models</h3>
+        <h2 id="search-gallery-title">Search that belongs to your site.</h2>
+        <p>Configured Hawk models show compact, two-column, filtered, and saved-result layouts.</p>
       </div>
     </header>
     <div class="search-gallery__track" id="search-gallery-track" tabindex="0" data-gallery-track data-reveal>

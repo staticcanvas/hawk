@@ -92,6 +92,12 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     const gallery = page.locator('[data-search-gallery]');
     const track = gallery.locator('[data-gallery-track]');
     const cards = track.locator('.showcase-card');
+    const galleryTitle = gallery.locator('#search-gallery-title');
+    await expect(galleryTitle).toHaveText('Search that belongs to your site.');
+    await expect(gallery.locator('.search-gallery__header')).toContainText(
+      'compact, two-column, filtered, and saved-result layouts'
+    );
+    await expect(galleryTitle).toHaveCount(1);
     await expect(cards).toHaveCount(4);
     await expect(cards.first().locator('img')).toHaveAttribute('src', /assets\/compact\.png$/);
     await expect

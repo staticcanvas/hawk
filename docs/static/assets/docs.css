@@ -1969,9 +1969,9 @@ body {
 .search-gallery__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: var(--site-space-md);
-  margin-block-end: var(--site-space-md);
+  margin-block-end: var(--site-space-lg);
 }
 
 .search-gallery__title-group {
@@ -1980,11 +1980,19 @@ body {
   align-items: center;
   text-align: center;
   flex: 1;
+  max-width: 52rem;
 }
 
-.search-gallery__header h3 {
+.search-gallery__header h2 {
   margin: 0;
-  font-size: 1rem;
+}
+
+.search-gallery__header p {
+  max-width: 62ch;
+  margin: var(--site-space-xs) 0 0;
+  color: var(--hawk-text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .search-gallery__track {
