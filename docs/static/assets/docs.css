@@ -382,6 +382,14 @@ a {
   padding: 1.25rem 1.4rem;
   overflow: hidden;
 }
+
+.feature-card:nth-child(3n + 1) {
+  background: color-mix(in srgb, var(--hawk-accent, #38bdf8) 3%, var(--hawk-bg-surface, #0c1412));
+}
+
+.feature-card:nth-child(3n + 2) {
+  background: color-mix(in srgb, var(--hawk-accent-alt, #fb923c) 3%, var(--hawk-bg-surface, #0c1412));
+}
 .feature-card::before {
   content: '';
   position: absolute;

@@ -1455,8 +1455,8 @@ export class HawkSearch {
                 : ''
             }
           </div>
-          <div class="hawk-result-desc">${item.excerpt || ''}</div>
           ${this.#resultMetaMarkup(item)}
+          <div class="hawk-result-desc">${item.excerpt || ''}</div>
         </a>`;
       })
       .join('');

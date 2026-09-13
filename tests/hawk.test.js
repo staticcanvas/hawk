@@ -1440,11 +1440,11 @@ describe('result/page metadata', () => {
     hawk.destroy();
   });
 
-  it('renders date and tags below the description and keeps the section badge in the preview', async () => {
+  it('renders date and tags before the description and keeps the section badge in the preview', async () => {
     const hawk = await hawkWithResults();
     const firstRow = document.querySelectorAll('.hawk-result-item')[0];
-    expect(firstRow.querySelector('.hawk-result-desc').nextElementSibling).toBe(
-      firstRow.querySelector('.hawk-result-meta')
+    expect(firstRow.querySelector('.hawk-result-meta').nextElementSibling).toBe(
+      firstRow.querySelector('.hawk-result-desc')
     );
     expect(firstRow.querySelector('.hawk-result-date').textContent).toBe('2026-09-09');
     expect(
