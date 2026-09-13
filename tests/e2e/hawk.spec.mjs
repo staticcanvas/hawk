@@ -88,11 +88,11 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     const links = cards.locator('.feature-card__link');
     await expect(cards).toHaveCount(9);
     await expect(links).toHaveCount(9);
-    await expect(links.nth(0)).toHaveAttribute('href', /pagefind-setup\/index\.html$/);
-    await expect(links.nth(2)).toHaveAttribute('href', /guides\/theming\/index\.html$/);
-    await expect(links.nth(4)).toHaveAttribute('href', /guides\/animation-plugins\/index\.html$/);
-    await expect(links.nth(7)).toHaveAttribute('href', /guides\/pins-and-embedding\/index\.html$/);
-    await expect(links.nth(8)).toHaveAttribute('href', /getting-started\/index\.html$/);
+    await expect(links.nth(0)).toHaveAttribute('href', /pagefind-setup\/$/);
+    await expect(links.nth(2)).toHaveAttribute('href', /guides\/theming\/$/);
+    await expect(links.nth(4)).toHaveAttribute('href', /guides\/animation-plugins\/$/);
+    await expect(links.nth(7)).toHaveAttribute('href', /guides\/pins-and-embedding\/$/);
+    await expect(links.nth(8)).toHaveAttribute('href', /getting-started\/$/);
   });
 
   test('the homepage search-model gallery renders its data manifest and crossfades one card at a time', async ({
