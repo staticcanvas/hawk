@@ -93,6 +93,7 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(links.nth(4)).toHaveAttribute('href', /guides\/animation-plugins\/$/);
     await expect(links.nth(7)).toHaveAttribute('href', /guides\/pins-and-embedding\/$/);
     await expect(links.nth(8)).toHaveAttribute('href', /getting-started\/$/);
+    await expect(cards.locator('.feature-index svg')).toHaveCount(9);
   });
 
   test('the homepage search-model gallery renders its data manifest and crossfades one card at a time', async ({
