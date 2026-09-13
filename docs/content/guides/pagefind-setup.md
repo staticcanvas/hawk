@@ -110,7 +110,14 @@ frontmatter value into a Pagefind attribute inside the page's `data-pagefind-bod
 | `data-pagefind-filter="key"` | Adds the element text as a filter value.               | Auto-derived tabs, explicit tab filters, and inline filters.               |
 | `data-pagefind-sort="key"`   | Adds the element text as a sortable value.             | `pagefindOptions.sort` and `HawkTab.sort`.                                 |
 
-For a Hugo page, a layout can map common frontmatter fields like this:
+Keep the emitted names (`category`, `author`, `date`, `tag`, and `tags`) consistent across
+generators so one Hawk configuration can search every index. The examples below belong in the
+layout that wraps an individual content page.
+
+### Hugo
+
+Hugo exposes page frontmatter through `.Params` and the resolved modification date through
+`.Lastmod`:
 
 ```go-html-template
 <article data-pagefind-body>
@@ -127,6 +134,96 @@ For a Hugo page, a layout can map common frontmatter fields like this:
   {{ .Content }}
 </article>
 ```
+
+### Astro
+
+An Astro layout assigned by a Markdown page receives its source frontmatter on
+`Astro.props.frontmatter`. Normalize scalar-or-array values before rendering markers:
+
+```astro
+---
+const { frontmatter } = Astro.props;
+const asList = (value) => (Array.isArray(value) ? value : value ? [value] : []);
+const categories = [...new Set([...asList(frontmatter.category), ...asList(frontmatter.categories)])];
+const authors = [...new Set([...asList(frontmatter.author), ...asList(frontmatter.authors)])];
+const tags = asList(frontmatter.tags);
+const date = frontmatter.date
+  ? new Date(frontmatter.date).toISOString().slice(0, 10)
+  : undefined;
+---
+
+<article data-pagefind-body>
+  {categories.map((category) => <span hidden data-pagefind-filter="category">{category}</span>)}
+  {categories.length > 0 && <span hidden data-pagefind-meta="category">{categories.join(', ')}</span>}
+  {authors.map((author) => <span hidden data-pagefind-filter="author">{author}</span>)}
+  {authors.length > 0 && <span hidden data-pagefind-meta="author">{authors.join(', ')}</span>}
+  {date && <span hidden data-pagefind-meta="date" data-pagefind-sort="date">{date}</span>}
+  {tags.map((tag) => <span hidden data-pagefind-filter="tag">{tag}</span>)}
+  {tags.length > 0 && <span hidden data-pagefind-meta="tags">{tags.join(', ')}</span>}
+  <slot />
+</article>
+```
+
+### Jekyll
+
+Jekyll makes custom frontmatter available on `page`; its layout content is already rendered in
+`content`. Jekyll normalizes post categories and tags as arrays:
+
+```liquid
+<article data-pagefind-body>
+  {% for category in page.categories %}
+  <span hidden data-pagefind-filter="category">{{ category | escape }}</span>
+  {% endfor %}
+  <span hidden data-pagefind-meta="category">{{ page.categories | join: ", " | escape }}</span>
+
+  {% if page.author %}
+  <span hidden data-pagefind-filter="author">{{ page.author | escape }}</span>
+  <span hidden data-pagefind-meta="author">{{ page.author | escape }}</span>
+  {% endif %}
+
+  <span hidden data-pagefind-meta="date" data-pagefind-sort="date">
+    {{ page.date | date: "%Y-%m-%d" }}
+  </span>
+  {% for tag in page.tags %}
+  <span hidden data-pagefind-filter="tag">{{ tag | escape }}</span>
+  {% endfor %}
+  <span hidden data-pagefind-meta="tags">{{ page.tags | join: ", " | escape }}</span>
+
+  {{ content }}
+</article>
+```
+
+### Eleventy (11ty)
+
+This Nunjucks layout expects `categories` and `tags` to be arrays in the content data. Eleventy's
+`page.date` is a JavaScript `Date`, so it can emit Pagefind's sortable ISO date directly:
+
+```njk
+<article data-pagefind-body>
+  {% for category in categories or [] %}
+  <span hidden data-pagefind-filter="category">{{ category }}</span>
+  {% endfor %}
+  <span hidden data-pagefind-meta="category">{{ (categories or []) | join(", ") }}</span>
+
+  {% if author %}
+  <span hidden data-pagefind-filter="author">{{ author }}</span>
+  <span hidden data-pagefind-meta="author">{{ author }}</span>
+  {% endif %}
+
+  <span hidden data-pagefind-meta="date" data-pagefind-sort="date">
+    {{ page.date.toISOString().slice(0, 10) }}
+  </span>
+  {% for tag in tags or [] %}
+  <span hidden data-pagefind-filter="tag">{{ tag }}</span>
+  {% endfor %}
+  <span hidden data-pagefind-meta="tags">{{ (tags or []) | join(", ") }}</span>
+
+  {{ content | safe }}
+</article>
+```
+
+If your Eleventy project permits untrusted frontmatter, add an HTML-escape filter to the marker
+values; `safe` is only for Eleventy's already-rendered page body.
 
 ### Attribute reference matrix
 
