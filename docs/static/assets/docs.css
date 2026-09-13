@@ -1982,86 +1982,26 @@ body {
   flex: 1;
 }
 
-.search-gallery__header span {
-  color: var(--hawk-accent);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
 .search-gallery__header h3 {
-  margin: 0.2rem 0 0;
+  margin: 0;
   font-size: 1rem;
 }
 
-.search-gallery__controls {
-  display: flex;
-  gap: var(--site-space-xs);
-}
-
-.search-gallery__controls button {
+.search-gallery__track {
   display: grid;
-  width: 44px;
-  height: 44px;
-  place-items: center;
-  border: 1px solid var(--hawk-border-default);
-  border-radius: var(--site-radius-sm);
-  background: var(--hawk-bg-surface);
-  color: var(--hawk-text-secondary);
-  cursor: pointer;
+  min-width: 0;
+  max-width: clamp(17.5rem, 32vw, 27rem);
+  margin-inline: auto;
+  padding: 0.2rem 0 var(--site-space-sm);
 }
 
-.search-gallery__controls button:hover:not(:disabled),
-.search-gallery__controls button:focus-visible {
-  border-color: var(--hawk-accent);
-  color: var(--hawk-accent);
-}
-
-.search-gallery__controls button:focus-visible,
 .search-gallery__track:focus-visible {
   outline: 2px solid var(--hawk-accent);
   outline-offset: 3px;
 }
 
-.search-gallery__controls button:disabled {
-  cursor: default;
-  opacity: 0.38;
-}
-
-.search-gallery__track {
-  display: grid;
-  grid-auto-columns: clamp(17.5rem, 32vw, 27rem);
-  grid-auto-flow: column;
-  gap: var(--site-space-md);
-  min-width: 0;
-  overflow-x: auto;
-  padding: 0.2rem 0 var(--site-space-sm);
-  scroll-padding-inline: 0.2rem;
-  scroll-snap-type: inline mandatory;
-  overscroll-behavior-inline: contain;
-  scrollbar-color: color-mix(in srgb, var(--hawk-accent) 66%, transparent)
-    color-mix(in srgb, var(--hawk-border-subtle) 52%, transparent);
-  scrollbar-width: auto;
-}
-
-.search-gallery__track::-webkit-scrollbar {
-  height: 0.72rem;
-}
-
-.search-gallery__track::-webkit-scrollbar-track {
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--hawk-border-subtle) 52%, transparent);
-}
-
-.search-gallery__track::-webkit-scrollbar-thumb {
-  border: 2px solid transparent;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--hawk-accent) 66%, transparent);
-  background-clip: padding-box;
-}
-
 .showcase-card {
+  grid-area: 1 / 1;
   min-width: 0;
   margin: 0;
   overflow: clip;
@@ -2069,15 +2009,21 @@ body {
   border-radius: var(--site-radius-lg);
   background: color-mix(in srgb, var(--hawk-bg-surface) 78%, transparent);
   box-shadow: 0 1rem 2.6rem rgb(9 17 21 / 0.12);
-  scroll-snap-align: start;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
   transition:
-    transform 180ms ease,
-    border-color 180ms ease;
+    opacity 620ms ease,
+    visibility 0ms linear 620ms;
 }
 
-.showcase-card:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--hawk-accent) 48%, var(--hawk-border-default));
+.showcase-card.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    opacity 620ms ease,
+    visibility 0ms;
 }
 
 .showcase-card__media {
@@ -2183,35 +2129,6 @@ body {
   color: var(--hawk-text-secondary);
   font-size: 0.82rem;
   line-height: 1.5;
-}
-
-.showcase-card.is-rolodex-turning > .showcase-card__media,
-.showcase-card.is-rolodex-turning > figcaption {
-  animation: showcase-rolodex-turn 900ms cubic-bezier(0.22, 0.75, 0.2, 1) both;
-  transform-origin: center bottom;
-}
-
-.showcase-card.is-rolodex-turning > figcaption {
-  animation-delay: 80ms;
-}
-
-@keyframes showcase-rolodex-turn {
-  0% {
-    opacity: 1;
-    transform: perspective(50rem) rotateX(0) translateY(0);
-  }
-  42% {
-    opacity: 0;
-    transform: perspective(50rem) rotateX(-72deg) translateY(0.7rem);
-  }
-  48% {
-    opacity: 0;
-    transform: perspective(50rem) rotateX(68deg) translateY(-0.7rem);
-  }
-  100% {
-    opacity: 1;
-    transform: perspective(50rem) rotateX(0) translateY(0);
-  }
 }
 
 .feature-card {
@@ -2932,17 +2849,10 @@ body[data-hawk-theme='typeflow'] .hawk-input-wrap::before {
   }
 
   .search-gallery__track {
-    grid-auto-columns: min(82vw, 21rem);
+    max-width: min(82vw, 21rem);
   }
 
   .showcase-card__media {
     aspect-ratio: 16 / 9;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .showcase-card.is-rolodex-turning > .showcase-card__media,
-  .showcase-card.is-rolodex-turning > figcaption {
-    animation: none;
   }
 }

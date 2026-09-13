@@ -275,61 +275,30 @@
     window.addEventListener('scroll', () => markScrolling(document.documentElement), { passive: true });
 
     // ── Homepage search-model gallery ─────────────────────────────────────────────────────
+    // Screenshots are large, so only one card is shown at a time and crossfades into the next.
+    // Any deliberate pointer or keyboard interaction stops autoplay.
     document.querySelectorAll('[data-search-gallery]').forEach((gallery) => {
       const track = gallery.querySelector('[data-gallery-track]');
-      const buttons = Array.from(gallery.querySelectorAll('[data-gallery-scroll]'));
-      if (!track || !buttons.length) return;
+      const cards = Array.from(track?.querySelectorAll('.showcase-card') || []);
+      if (!track || !cards.length) return;
 
-      const updateGalleryControls = () => {
-        const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
-        buttons.forEach((button) => {
-          const atStart = track.scrollLeft <= 1;
-          const atEnd = track.scrollLeft >= maxScroll - 1;
-          button.disabled = button.dataset.galleryScroll === 'previous' ? atStart : atEnd;
-        });
+      let activeIndex = Math.max(0, cards.findIndex((card) => card.classList.contains('is-active')));
+      let galleryTimer = null;
+      const stopGallery = () => {
+        clearInterval(galleryTimer);
+        galleryTimer = null;
       };
-      buttons.forEach((button) => {
-        button.addEventListener('click', () => {
-          const card = track.querySelector('.showcase-card');
-          const gap = Number.parseFloat(getComputedStyle(track).columnGap) || 0;
-          const step = (card?.getBoundingClientRect().width || track.clientWidth) + gap;
-          track.scrollBy({
-            left: button.dataset.galleryScroll === 'previous' ? -step : step,
-            behavior: reduceMotion ? 'auto' : 'smooth',
-          });
-        });
-      });
-      track.addEventListener('scroll', updateGalleryControls, { passive: true });
-      if ('ResizeObserver' in window) {
-        new ResizeObserver(updateGalleryControls).observe(track);
-      } else {
-        window.addEventListener('resize', updateGalleryControls, { passive: true });
-      }
-      updateGalleryControls();
-
-      // The splash gallery turns one card at a time like a vertical Rolodex. Any deliberate
-      // pointer or keyboard interaction stops autoplay so it never fights the reader.
-      const cards = Array.from(track.querySelectorAll('.showcase-card'));
-      let rolodexIndex = 0;
-      let rolodexTimer = null;
-      const stopRolodex = () => {
-        clearInterval(rolodexTimer);
-        rolodexTimer = null;
-      };
-      const turnRolodex = () => {
-        rolodexIndex = (rolodexIndex + 1) % cards.length;
-        const card = cards[rolodexIndex];
-        card.classList.remove('is-rolodex-turning');
-        void card.offsetWidth;
-        card.classList.add('is-rolodex-turning');
-        setTimeout(() => card.classList.remove('is-rolodex-turning'), 1000);
-        track.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+      const showNextCard = () => {
+        const current = cards[activeIndex];
+        activeIndex = (activeIndex + 1) % cards.length;
+        const next = cards[activeIndex];
+        current.classList.remove('is-active');
+        next.classList.add('is-active');
       };
       if (!reduceMotion && cards.length > 1) {
-        rolodexTimer = setInterval(turnRolodex, 4200);
-        track.addEventListener('pointerdown', stopRolodex, { once: true });
-        track.addEventListener('keydown', stopRolodex, { once: true });
-        buttons.forEach((button) => button.addEventListener('pointerdown', stopRolodex, { once: true }));
+        galleryTimer = setInterval(showNextCard, 4200);
+        track.addEventListener('pointerdown', stopGallery, { once: true });
+        track.addEventListener('keydown', stopGallery, { once: true });
       }
     });
 

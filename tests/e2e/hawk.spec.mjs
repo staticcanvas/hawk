@@ -83,7 +83,7 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     expect(layout.verticallyAligned).toBeLessThanOrEqual(2);
   });
 
-  test('the homepage search-model gallery renders its data manifest and scroll controls', async ({
+  test('the homepage search-model gallery renders its data manifest and crossfades one card at a time', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 360, height: 900 });
@@ -92,8 +92,6 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     const gallery = page.locator('[data-search-gallery]');
     const track = gallery.locator('[data-gallery-track]');
     const cards = track.locator('.showcase-card');
-    const previous = gallery.locator('[data-gallery-scroll="previous"]');
-    const next = gallery.locator('[data-gallery-scroll="next"]');
     await expect(cards).toHaveCount(4);
     await expect(cards.first().locator('img')).toHaveAttribute('src', /assets\/compact\.png$/);
     await expect
@@ -104,24 +102,19 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
           .evaluate((image) => image.naturalWidth)
       )
       .toBeGreaterThan(0);
-    expect((await next.boundingBox()).height).toBeGreaterThanOrEqual(44);
-    await expect(previous).toBeDisabled();
-    await expect(next).toBeEnabled();
-    await expect(track).toHaveCSS('overflow-x', 'auto');
-    await expect
-      .poll(() => track.evaluate((element) => element.scrollWidth > element.clientWidth))
-      .toBe(true);
 
-    await cards.nth(1).evaluate((card) => card.classList.add('is-rolodex-turning'));
-    await expect(cards.nth(1).locator('.showcase-card__media')).toHaveCSS(
-      'animation-name',
-      'showcase-rolodex-turn'
-    );
-    await cards.nth(1).evaluate((card) => card.classList.remove('is-rolodex-turning'));
+    // Screenshots are large, so only one card is shown at a time — no arrow navigation, same
+    // JSON source, the rest sit hidden behind the active card until autoplay turns to them.
+    await expect(gallery.locator('[data-gallery-scroll]')).toHaveCount(0);
+    await expect(gallery).not.toContainText('Search layouts');
+    await expect(cards.first()).toHaveClass(/is-active/);
+    await expect(cards.nth(1)).not.toHaveClass(/is-active/);
 
-    await next.click();
-    await expect.poll(() => track.evaluate((element) => element.scrollLeft)).toBeGreaterThan(0);
-    await expect(previous).toBeEnabled();
+    await expect(cards.nth(1).locator('.showcase-card__media')).toHaveCSS('animation-name', 'none');
+
+    // Autoplay crossfades to the next card roughly every 4.2s.
+    await expect(cards.nth(1)).toHaveClass(/is-active/, { timeout: 6000 });
+    await expect(cards.first()).not.toHaveClass(/is-active/);
     await expect
       .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
       .toBeLessThanOrEqual(360);

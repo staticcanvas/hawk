@@ -58,22 +58,12 @@
   <section class="search-gallery" aria-labelledby="search-gallery-title" data-search-gallery>
     <header class="search-gallery__header">
       <div class="search-gallery__title-group">
-        <span>Search layouts</span>
         <h3 id="search-gallery-title">Configured Hawk models</h3>
       </div>
-      <div class="search-gallery__controls" aria-label="Scroll search layout gallery">
-        <button type="button" data-gallery-scroll="previous" aria-controls="search-gallery-track" aria-label="Previous search layout">
-          <span aria-hidden="true">&larr;</span>
-        </button>
-        <button type="button" data-gallery-scroll="next" aria-controls="search-gallery-track" aria-label="Next search layout">
-          <span aria-hidden="true">&rarr;</span>
-        </button>
-      </div>
     </header>
-    <div class="search-gallery__track" id="search-gallery-track" tabindex="0" data-gallery-track data-reveal-group>
-    {{ range . }}
-    {{ $showcase := . }}
-    <figure class="showcase-card" data-reveal>
+    <div class="search-gallery__track" id="search-gallery-track" tabindex="0" data-gallery-track data-reveal>
+    {{ range $index, $showcase := . }}
+    <figure class="showcase-card{{ if eq $index 0 }} is-active{{ end }}">
       <div class="showcase-card__media">
         {{ with $showcase.image }}
         <img src="{{ . | relURL }}" alt="{{ $showcase.alt | default (printf "Hawk %s search layout" $showcase.title) }}">
