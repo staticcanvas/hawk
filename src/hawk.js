@@ -197,6 +197,8 @@ export class HawkSearch {
    * @param {boolean} [config.showResultTags=true] Renders comma-separated Pagefind metadata from
    *   resultTagsMetaKey as tags below the result excerpt. meta.section joins this row when present.
    * @param {string} [config.resultTagsMetaKey='tags'] Pagefind metadata key used for result tags.
+   * @param {string[]|false} [config.resultAccentColors=false] Optional pastel CSS colors rotated across
+   *   result rows and metadata badges; `false` disables the accent treatment.
    * @param {boolean|{density?: boolean, escape?: boolean}} [config.headerControls]
    *   Controls the Fit/Medium/Compact group and Escape button at the right of the search input.
    *   Pass false for a minimal input-only header, or disable either control independently.
@@ -328,6 +330,9 @@ export class HawkSearch {
     this.resultDateMetaKey = config.resultDateMetaKey || 'date';
     this.showResultTags = config.showResultTags !== false;
     this.resultTagsMetaKey = config.resultTagsMetaKey || 'tags';
+    this.resultAccentColors = Array.isArray(config.resultAccentColors)
+      ? config.resultAccentColors.filter(Boolean)
+      : [];
     const headerControls = config.headerControls === false ? false : config.headerControls || {};
     this.headerControls = {
       density:
@@ -1452,8 +1457,11 @@ export class HawkSearch {
         // bounded total duration instead of a growing tail — rows past the 10th all animate
         // together at the 10th's delay rather than queuing further and further behind.
         const revealIndex = Math.min(idx, 10);
+        const accent = this.resultAccentColors.length
+          ? `;--hawk-result-accent:${this.resultAccentColors[idx % this.resultAccentColors.length]}`
+          : '';
         return `
-        <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${item.isAnchor ? ' hawk-result-item--subpage' : ''}${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}" style="--hawk-row-index: ${revealIndex}">
+        <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${item.isAnchor ? ' hawk-result-item--subpage' : ''}${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}" style="--hawk-row-index: ${revealIndex}${accent}">
           <div class="hawk-result-header">
             <span class="hawk-result-title">${item.title}</span>
             ${

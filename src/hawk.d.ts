@@ -140,6 +140,7 @@ export interface HawkSearchConfig {
   resultDateMetaKey?: string;
   showResultTags?: boolean;
   resultTagsMetaKey?: string;
+  resultAccentColors?: string[] | false;
   headerControls?: false | { density?: boolean; escape?: boolean };
   excludePages?: string | string[];
   contentSelector?: string;

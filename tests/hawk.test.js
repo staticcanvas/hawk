@@ -1459,6 +1459,14 @@ describe('result/page metadata', () => {
     hawk.destroy();
   });
 
+  it('rotates configured result accent colors across rendered rows', async () => {
+    const hawk = await hawkWithResults({ resultAccentColors: ['#f5c2e7', '#94e2d5'] });
+    const rows = document.querySelectorAll('.hawk-result-item');
+    expect(rows[0].style.getPropertyValue('--hawk-result-accent')).toBe('#f5c2e7');
+    expect(rows[1].style.getPropertyValue('--hawk-result-accent')).toBe('#94e2d5');
+    hawk.destroy();
+  });
+
   it('can disable result dates and tags independently', async () => {
     const noDate = await hawkWithResults({ showResultDate: false });
     expect(document.querySelector('.hawk-result-date')).toBeNull();
