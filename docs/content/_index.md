@@ -7,22 +7,31 @@ hero:
   install: npm install @staticcanvas/hawk
 features:
   - title: Pagefind-backed
+    href: pagefind-setup/
     body: A <strong>chunked, lazily-loaded index</strong> with typo tolerance — Hawk owns the interface while <em>Pagefind preserves ranking</em>.
   - title: Tabs, curated or auto-derived
+    href: api/#tabs
     body: Use <strong>auto-derived category pills</strong>, explicit Pagefind filters, a sorted listing such as <em>Recently updated</em>, or tabs loaded from JSON.
   - title: Themeable to the token
+    href: guides/theming/
     body: Colors, fonts, and scrollbars use <strong>--hawk-* custom properties</strong>. Supply CSS or <em>theme.tokens</em> without modifying Hawk source.
   - title: Real page previews
+    href: api/#rich-preview-content
     body: The preview pane fetches the <strong>matched page content</strong>, including headings, code, and tables. Page matches can render as a <em>section outline</em>.
   - title: Modal reveal animations
+    href: guides/animation-plugins/
     body: Open/close animations include <strong>fade, scale-fade, slide-down, blur-zoom, and spring</strong>, plus a custom animation or none. Motion is <em>instant under reduced motion</em>.
   - title: Fit, medium, or compact
+    href: guides/density-and-navigation/
     body: An in-modal <strong>density switcher</strong> persists the visitor's choice alongside <em>auto viewport-scaled modals</em>, position offsets, and column layouts.
   - title: Keyboard-first
+    href: api/#instance-methods
     body: A <strong>modal focus trap</strong>, two-pane Tab navigation, arrow-key movement, Escape, and <em>Ctrl/Cmd+K</em> are included.
   - title: Pins and inline filters
+    href: guides/pins-and-embedding/
     body: Visitors can <strong>pin results</strong> or type <em>category:Guides</em> to apply Pagefind filtering from the query field.
   - title: Zero-config to start
+    href: getting-started/
     body: Start with <strong>one constructor call</strong>, a Pagefind index, and a trigger. The TypeFlow driver and <em>built-in trigger</em> remain optional.
 ---
 

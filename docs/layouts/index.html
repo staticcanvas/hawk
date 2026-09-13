@@ -82,18 +82,17 @@
   </section>
   {{ end }}
   <header class="section-subheading feature-heading">
-    <span>Capabilities</span>
     <h3>Hawk's features</h3>
   </header>
   <div class="feature-grid" data-reveal-group>
     {{ range $index, $feature := .Params.features }}
-    <article class="feature-card" data-reveal>
+    <a class="feature-card" data-reveal href="{{ $feature.href | relURL }}">
       <div class="feature-card__heading">
         <span class="feature-index" aria-hidden="true">{{ upper (substr $feature.title 0 1) }}</span>
         <h3>{{ $feature.title }}</h3>
       </div>
       <p>{{ $feature.body | safeHTML }}</p>
-    </article>
+    </a>
     {{ end }}
   </div>
 </section>
