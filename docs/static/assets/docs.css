@@ -2479,8 +2479,10 @@ body[data-hawk-theme='typeflow'] .hawk-preview-pane {
 .doc-content td {
   border: 0;
   border-block-end: 1px solid var(--hawk-border-subtle);
-  padding: 0.72rem 0.9rem;
+  padding: var(--site-space-xs);
   vertical-align: top;
+  font-size: 0.8rem;
+  line-height: 1.4;
 }
 
 .doc-content th {
