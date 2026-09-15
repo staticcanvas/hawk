@@ -1,9 +1,22 @@
+@charset "UTF-8";
+/*!
+ * hawk playground page chrome — the configurator's controls, workbench layout, and generated-
+ * code panels. Loaded alongside docs.css (docs/layouts/_default/baseof.html only links this file
+ * on the playground page itself).
+ *
+ * Entry point only — compiled by scripts/compile-docs-scss.mjs into
+ * docs/static/assets/playground.css, the file the template actually <link>s. Edit the partials in
+ * playground/ next to this file, never playground.css directly — it's generated.
+ *
+ * Partials are `@use`d in the exact order this file used to read top-to-bottom before the split —
+ * source order matters for the two @media blocks in _responsive.scss, which must stay last.
+ */
+/* Token colors for the playground's own client-side JS syntax highlighter — see docs/static/assets/js/code-highlight.js. */
 /*
  * Playground page styles — reuses hawk's own --hawk-* custom properties (see docs.css's header
  * comment) so the controls panel matches both the dark/light site theme and whichever hawk theme
  * the mounted instance itself is currently using, with no separate color decisions of its own.
  */
-
 .doc-page--playground .doc-article {
   /* single.html's own .doc-article caps prose at 48rem — too narrow for a controls panel plus a
      mounted search instance sitting beside it. */
@@ -28,9 +41,11 @@
   cursor: pointer;
   line-height: 1.2;
 }
+
 .pg-open-btn:hover {
   filter: brightness(1.08);
 }
+
 .pg-open-btn kbd {
   font-family: inherit;
   font-size: 0.72rem;
@@ -47,19 +62,20 @@
   display: inline-flex;
   align-items: center;
   background: transparent;
-  color: var(--hawk-text-muted, #64748b);
-  border: 1px solid var(--hawk-border-default, #253347);
+  color: #eb6f92;
+  border: 1px solid color-mix(in srgb, #eb6f92 55%, var(--hawk-border-default, #253347));
   border-radius: 8px;
   padding: 0.55rem 0.9rem;
   font-size: 0.85rem;
   cursor: pointer;
   line-height: 1.2;
 }
-.pg-reset-btn:hover {
-  color: var(--hawk-text-secondary, #94a3b8);
-  border-color: var(--hawk-border-strong, #475569);
-}
 
+.pg-reset-btn:hover {
+  color: #fff;
+  background: #eb6f92;
+  border-color: #eb6f92;
+}
 
 .pg-status {
   font-size: 0.82rem;
@@ -67,12 +83,14 @@
   margin: 0.6rem 0 0;
 }
 
-.pg-controls fieldset {
+.pg-controls fieldset,
+.pg-controls .pg-section {
   border: 1px solid var(--hawk-border-default, #253347);
   border-radius: 8px;
   margin: 1rem 0 0;
   padding: 0.75rem 1rem;
 }
+
 .pg-controls legend {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -80,6 +98,49 @@
   color: var(--hawk-text-muted, #64748b);
   padding: 0 0.4rem;
 }
+
+/* Collapsible <details>/<summary> control sections, nested TypeFlow sub-fieldsets, and checkbox/radio accent styling. */
+/* Every top-level control group (see docs/layouts/playground/single.html) is a <details>/
+   <summary> instead of a plain <fieldset>/<legend> so each section can be collapsed independently
+   — a real accessibility/keyboard-operable disclosure with no JS of its own required, at the cost
+   of the <fieldset>'s native form-grouping semantics for assistive tech (a deliberate trade;
+   <summary> still reads as a clear, focusable group heading). Nested sub-groups (TypeFlow's own
+   title/anchorTitle/content/rotate options, .pg-tf-subgroup) stay plain <fieldset>s — they're
+   already inside one collapsible section and don't need their own disclosure. */
+.pg-section > summary {
+  cursor: pointer;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hawk-text-muted, #64748b);
+  list-style: none;
+}
+
+.pg-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.pg-section > summary::before {
+  content: "▸";
+  display: inline-block;
+  margin-inline-end: 0.4rem;
+  transition: transform 150ms ease;
+}
+
+.pg-section[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.pg-section > summary:focus-visible {
+  outline: 2px solid var(--hawk-accent, #38bdf8);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.pg-section[open] > summary {
+  margin-bottom: 0.6rem;
+}
+
 .pg-controls label {
   display: inline-flex;
   align-items: center;
@@ -99,12 +160,14 @@
   padding: 0.25rem 0.5rem;
   font-size: 0.85rem;
 }
+
 .pg-number {
   width: 4.5rem;
 }
+
 .pg-text {
   width: 3rem;
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
 }
 
 /* Nested fieldsets (TypeFlow's own title/anchorTitle/content/rotate sub-configs) — visually
@@ -116,11 +179,20 @@
   margin: 0.75rem 0 0;
   padding: 0.5rem 0.75rem;
 }
+
 .pg-tf-subgroup legend {
   font-size: 0.72rem;
+  font-weight: 700;
   text-transform: none;
   letter-spacing: 0;
   color: var(--hawk-text-secondary, #94a3b8);
+}
+
+/* Checkbox/radio "icons" inside TypeFlow's options match the surrounding label text color instead
+   of the browser's default accent, so they read as part of the same control group. */
+#pg-typeflow-options input[type=checkbox],
+#pg-typeflow-options input[type=radio] {
+  accent-color: var(--hawk-text-secondary, #94a3b8);
 }
 
 .pg-metrics-panel {
@@ -131,6 +203,7 @@
   border-radius: 10px;
   padding: 1rem 1.1rem;
 }
+
 .pg-metrics-panel h2 {
   margin: 0 0 0.6rem;
   font-size: 0.85rem;
@@ -138,6 +211,7 @@
   letter-spacing: 0.05em;
   color: var(--hawk-accent, #38bdf8);
 }
+
 .pg-metrics-grid {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -145,13 +219,15 @@
   margin: 0;
   font-size: 0.82rem;
 }
+
 .pg-metrics-grid dt {
   color: var(--hawk-text-muted, #64748b);
 }
+
 .pg-metrics-grid dd {
   margin: 0;
   text-align: right;
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
   color: var(--hawk-text-primary, #f1f5f9);
 }
 
@@ -160,21 +236,26 @@
   border-top: 1px solid var(--hawk-border-subtle, #1e293b);
   padding-top: 1.5rem;
 }
+
 .pg-usage h2 {
   font-size: 1rem;
 }
+
 .pg-usage-block {
   margin-top: 1.25rem;
 }
+
 .pg-usage-block h3 {
   font-size: 0.9rem;
   color: var(--hawk-text-primary, #f1f5f9);
 }
+
 .pg-note {
   color: var(--hawk-text-secondary, #94a3b8);
   font-size: 0.88rem;
   max-width: 60rem;
 }
+
 .pg-note code {
   font-size: 0.85em;
 }
@@ -189,8 +270,9 @@
   font-size: 0.82rem;
   line-height: 1.5;
 }
+
 .pg-code code {
-  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-family: ui-monospace, "JetBrains Mono", monospace;
   color: var(--hawk-text-primary, #f1f5f9);
   white-space: pre;
 }
@@ -199,41 +281,52 @@
   color: #8fa6ad;
   font-style: italic;
 }
+
 .pg-code .pg-token--keyword {
   color: #d1adff;
   font-weight: 600;
 }
+
 .pg-code .pg-token--string {
   color: #99e9b5;
 }
+
 .pg-code .pg-token--number {
   color: #ffc078;
 }
+
 .pg-code .pg-token--literal {
   color: #7de7ff;
 }
+
 .pg-code .pg-token--punctuation {
   color: #c4d4d7;
 }
 
-:root[data-theme='light'] .pg-code .pg-token--comment {
+:root[data-theme=light] .pg-code .pg-token--comment {
   color: #667085;
 }
-:root[data-theme='light'] .pg-code .pg-token--keyword {
+
+:root[data-theme=light] .pg-code .pg-token--keyword {
   color: #7c3aed;
 }
-:root[data-theme='light'] .pg-code .pg-token--string {
+
+:root[data-theme=light] .pg-code .pg-token--string {
   color: #177245;
 }
-:root[data-theme='light'] .pg-code .pg-token--number {
+
+:root[data-theme=light] .pg-code .pg-token--number {
   color: #b54708;
 }
-:root[data-theme='light'] .pg-code .pg-token--literal {
+
+:root[data-theme=light] .pg-code .pg-token--literal {
   color: #0369a1;
 }
-:root[data-theme='light'] .pg-code .pg-token--punctuation {
+
+:root[data-theme=light] .pg-code .pg-token--punctuation {
   color: #475467;
 }
+
 .pg-copy-btn {
   position: absolute;
   top: 0.6rem;
@@ -246,11 +339,13 @@
   font-size: 0.75rem;
   cursor: pointer;
 }
+
 .pg-copy-btn:hover {
   color: var(--hawk-text-primary, #f1f5f9);
   border-color: var(--hawk-accent, #38bdf8);
 }
 
+/* The two-column configurator workbench: controls grid, live config/metrics output rail, and code-format tabs. */
 /* ── Configurator workbench ─────────────────────────────────────────────── */
 .pg-workbench {
   grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.72fr);
@@ -269,43 +364,41 @@
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
-
-.pg-launchbar,
 .pg-card-wide,
 #pg-typeflow-options {
-  grid-column: 1 / -1;
+  grid-column: 1/-1;
 }
 
+/* Deliberately not full-width (unlike .pg-card-wide/#pg-typeflow-options above): it sits in the
+   grid's normal flow so it lands in line with the Theme fieldset that follows it in the markup.
+   Otherwise a real <fieldset>, like every other control group, so it picks up the same
+   .pg-controls > fieldset border/background — only its <legend> color is its own. */
 .pg-launchbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.1rem;
-  border: 1px solid color-mix(in srgb, var(--hawk-accent) 38%, var(--hawk-border-default));
-  border-radius: 0.9rem;
-  background: color-mix(in srgb, var(--hawk-accent) 7%, var(--hawk-bg-surface));
-  box-shadow: 0 0.8rem 2rem rgb(10 18 21 / 0.12);
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  min-width: 0;
 }
 
-.pg-launchbar strong {
-  display: block;
-  color: var(--hawk-text-primary);
+.pg-launchbar > legend {
+  color: #ff6f61;
 }
 
 .pg-launchbar .pg-status {
-  margin: 0.15rem 0 0;
+  margin: 0;
+  color: var(--hawk-text-secondary);
 }
 
 .pg-launchbar-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
-  flex-shrink: 0;
 }
 
-
-.pg-controls > fieldset {
+.pg-controls > fieldset,
+.pg-controls > .pg-section {
   min-width: 0;
   height: 100%;
   margin: 0;
@@ -316,12 +409,13 @@
 }
 
 .pg-controls > fieldset > label,
+.pg-controls > .pg-section > label,
 .pg-tf-subgroup > label {
   flex-wrap: wrap;
 }
 
 .pg-fieldset-note {
-  grid-column: 1 / -1;
+  grid-column: 1/-1;
   margin: 0 0 0.7rem;
   color: var(--hawk-text-muted);
   font-size: 0.78rem;
@@ -344,16 +438,12 @@
   border-radius: 0.5rem;
   background: var(--hawk-bg-canvas);
   color: var(--hawk-text-primary);
-  font:
-    0.75rem/1.5 ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    monospace;
+  font: 0.75rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-.pg-json[aria-invalid='true'] {
+.pg-json[aria-invalid=true] {
   border-color: #ff7a90;
-  box-shadow: 0 0 0 2px rgb(255 122 144 / 0.12);
+  box-shadow: 0 0 0 2px rgba(255, 122, 144, 0.12);
 }
 
 .pg-field-wide {
@@ -409,13 +499,12 @@
   border: 1px solid var(--hawk-border-strong);
   border-radius: 0.45rem;
   background: var(--pg-token-preview, transparent);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   cursor: pointer;
 }
 
 .pg-token-swatch[data-empty] {
-  background:
-    linear-gradient(45deg, transparent 46%, #ff7a90 47% 53%, transparent 54%), var(--hawk-bg-canvas);
+  background: linear-gradient(45deg, transparent 46%, #ff7a90 47% 53%, transparent 54%), var(--hawk-bg-canvas);
 }
 
 .pg-token-swatch:focus-visible {
@@ -451,7 +540,7 @@
   border: 1px solid var(--hawk-border-default);
   border-radius: 0.9rem;
   background: color-mix(in srgb, var(--hawk-bg-surface) 94%, transparent);
-  box-shadow: 0 1rem 2.5rem rgb(7 13 16 / 0.16);
+  box-shadow: 0 1rem 2.5rem rgba(7, 13, 16, 0.16);
 }
 
 .pg-config-panel header {
@@ -473,6 +562,35 @@
 .pg-config-panel h2 {
   margin: 0.1rem 0 0;
   font-size: 1rem;
+}
+
+.pg-code-format-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-block-end: 0.7rem;
+}
+
+.pg-code-format-tabs button {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.pg-code-format-tabs button:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+.pg-code-format-tabs button[aria-selected=true] {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-text-primary, #f1f5f9);
+  background: color-mix(in srgb, var(--hawk-accent, #38bdf8) 14%, transparent);
 }
 
 .pg-code--output {
@@ -513,25 +631,22 @@
   font-size: 0.78rem;
 }
 
+/* Responsive breakpoints for the workbench layout. */
 @media (max-width: 1200px) {
   .pg-workbench {
     grid-template-columns: 1fr;
   }
-
   .pg-output-rail {
     position: static;
     max-height: none;
   }
-
   .pg-code--output {
     max-height: 34rem;
   }
-
   .pg-review-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-
 @media (max-width: 720px) {
   .pg-controls,
   .pg-token-grid,
@@ -539,7 +654,6 @@
   .pg-review-grid {
     grid-template-columns: 1fr;
   }
-
   .pg-launchbar {
     align-items: stretch;
     flex-direction: column;

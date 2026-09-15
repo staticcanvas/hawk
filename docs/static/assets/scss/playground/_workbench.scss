@@ -1,0 +1,294 @@
+/* The two-column configurator workbench: controls grid, live config/metrics output rail, and code-format tabs. */
+
+/* ── Configurator workbench ─────────────────────────────────────────────── */
+.pg-workbench {
+  grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.72fr);
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+.pg-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  align-items: start;
+}
+
+@media (min-width: 1440px) {
+  .pg-controls {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.pg-card-wide,
+#pg-typeflow-options {
+  grid-column: 1 / -1;
+}
+
+/* Deliberately not full-width (unlike .pg-card-wide/#pg-typeflow-options above): it sits in the
+   grid's normal flow so it lands in line with the Theme fieldset that follows it in the markup.
+   Otherwise a real <fieldset>, like every other control group, so it picks up the same
+   .pg-controls > fieldset border/background — only its <legend> color is its own. */
+.pg-launchbar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.pg-launchbar > legend {
+  color: #ff6f61;
+}
+
+.pg-launchbar .pg-status {
+  margin: 0;
+  color: var(--hawk-text-secondary);
+}
+
+.pg-launchbar-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+
+.pg-controls > fieldset,
+.pg-controls > .pg-section {
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 1rem;
+  border-color: var(--hawk-border-subtle);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--hawk-bg-surface) 82%, transparent);
+}
+
+.pg-controls > fieldset > label,
+.pg-controls > .pg-section > label,
+.pg-tf-subgroup > label {
+  flex-wrap: wrap;
+}
+
+.pg-fieldset-note {
+  grid-column: 1 / -1;
+  margin: 0 0 0.7rem;
+  color: var(--hawk-text-muted);
+  font-size: 0.78rem;
+}
+
+.pg-text {
+  width: 8.5rem;
+}
+
+.pg-text-wide {
+  width: min(100%, 24rem);
+}
+
+.pg-json {
+  width: 100%;
+  min-height: 4rem;
+  resize: vertical;
+  padding: 0.65rem;
+  border: 1px solid var(--hawk-border-default);
+  border-radius: 0.5rem;
+  background: var(--hawk-bg-canvas);
+  color: var(--hawk-text-primary);
+  font:
+    0.75rem/1.5 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+
+.pg-json[aria-invalid='true'] {
+  border-color: #ff7a90;
+  box-shadow: 0 0 0 2px rgb(255 122 144 / 0.12);
+}
+
+.pg-field-wide {
+  display: grid !important;
+  width: 100%;
+}
+
+.pg-token-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.pg-token-grid label {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.65rem;
+  border: 1px solid var(--hawk-border-subtle);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--hawk-bg-canvas) 55%, transparent);
+}
+
+.pg-token-grid label > span {
+  display: grid;
+  color: var(--hawk-text-secondary);
+  font-size: 0.72rem;
+}
+
+.pg-token-grid code {
+  overflow: hidden;
+  color: var(--hawk-text-muted);
+  font-size: 0.62rem;
+  text-overflow: ellipsis;
+}
+
+.pg-token-input {
+  width: 100%;
+}
+
+.pg-token-control {
+  display: grid !important;
+  grid-template-columns: 2.75rem minmax(0, 1fr);
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.pg-token-swatch {
+  width: 2.75rem;
+  min-width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--hawk-border-strong);
+  border-radius: 0.45rem;
+  background: var(--pg-token-preview, transparent);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.12);
+  cursor: pointer;
+}
+
+.pg-token-swatch[data-empty] {
+  background:
+    linear-gradient(45deg, transparent 46%, #ff7a90 47% 53%, transparent 54%), var(--hawk-bg-canvas);
+}
+
+.pg-token-swatch:focus-visible {
+  outline: 2px solid var(--hawk-accent);
+  outline-offset: 2px;
+}
+
+.pcr-app {
+  border: 1px solid var(--hawk-border-default);
+  color: var(--hawk-text-primary);
+  font-family: var(--hawk-font-family, inherit);
+}
+
+.pg-tf-subgroup {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem 0.8rem;
+}
+
+.pg-output-rail {
+  position: sticky;
+  top: calc(var(--site-header-height) + 1rem);
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+  max-height: calc(100dvh - var(--site-header-height) - 2rem);
+}
+
+.pg-config-panel,
+.pg-metrics-panel {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--hawk-border-default);
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--hawk-bg-surface) 94%, transparent);
+  box-shadow: 0 1rem 2.5rem rgb(7 13 16 / 0.16);
+}
+
+.pg-config-panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 0.8rem;
+}
+
+.pg-config-panel header span {
+  color: var(--hawk-accent);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.pg-config-panel h2 {
+  margin: 0.1rem 0 0;
+  font-size: 1rem;
+}
+
+.pg-code-format-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-block-end: 0.7rem;
+}
+
+.pg-code-format-tabs button {
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.pg-code-format-tabs button:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+.pg-code-format-tabs button[aria-selected='true'] {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-text-primary, #f1f5f9);
+  background: color-mix(in srgb, var(--hawk-accent, #38bdf8) 14%, transparent);
+}
+
+.pg-code--output {
+  max-height: calc(100dvh - 12rem);
+  margin: 0;
+  overflow: auto;
+  padding: 1rem;
+}
+
+.pg-copy-btn--static {
+  position: static;
+  flex: 0 0 auto;
+}
+
+.pg-review-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.pg-review-grid a {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem;
+  border: 1px solid var(--hawk-border-subtle);
+  border-radius: 0.75rem;
+  background: var(--hawk-bg-surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+.pg-review-grid a:hover {
+  border-color: var(--hawk-accent);
+}
+
+.pg-review-grid span {
+  color: var(--hawk-text-secondary);
+  font-size: 0.78rem;
+}
+

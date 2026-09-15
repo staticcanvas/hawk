@@ -1,0 +1,49 @@
+/* Homepage feature grid ("Hawk's features" cards). */
+
+/* ── Homepage feature grid ─────────────────────────────────── */
+.feature-section {
+  padding-block: 3.5rem;
+}
+.feature-section h2 {
+  font-size: 1.3rem;
+  margin: 0 0 1.25rem;
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+.feature-card {
+  position: relative;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem;
+  overflow: hidden;
+}
+
+.feature-card:nth-child(3n + 1) {
+  background: color-mix(in srgb, var(--hawk-accent, #38bdf8) 3%, var(--hawk-bg-surface, #0c1412));
+}
+
+.feature-card:nth-child(3n + 2) {
+  background: color-mix(in srgb, var(--hawk-accent-alt, #fb923c) 3%, var(--hawk-bg-surface, #0c1412));
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--hawk-accent, #38bdf8), var(--hawk-accent-alt, #fb923c));
+  opacity: 0.7;
+}
+.feature-card h3 {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 1rem;
+}
+.feature-card p {
+  margin: 0;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+

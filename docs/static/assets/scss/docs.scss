@@ -1,0 +1,31 @@
+/*!
+ * hawk docs site chrome — intentionally minimal (nav, header, footer, article layout). Color
+ * tokens reuse hawk's own --hawk-* custom properties (via hawk-theme-typeflow.css, loaded before
+ * this file in baseof.html) so the docs site and the search modal it dogfoods share one palette
+ * instead of maintaining two.
+ *
+ * Entry point only — compiled by scripts/compile-docs-scss.mjs (run via `npm run docs:scss`, and
+ * as part of `docs:build`/`docs:serve`) into docs/static/assets/docs.css, the file every template
+ * actually <link>s. Edit the partials in docs/ next to this file, never docs.css directly — it's
+ * generated and will be overwritten on the next build.
+ *
+ * Partials are `@use`d in the exact order this file used to read top-to-bottom before the split —
+ * CSS cascade order matters for equal-specificity rules, so this order is load-bearing, not
+ * cosmetic; see _responsive-overrides.scss's own header for the one place that's called out
+ * explicitly in-file too.
+ */
+
+@use 'docs/base';
+@use 'docs/hero';
+@use 'docs/features';
+@use 'docs/homepage-guides';
+@use 'docs/scroll-reveal';
+@use 'docs/doc-layout';
+@use 'docs/install-tabs';
+@use 'docs/guides-index';
+@use 'docs/editorial-finish';
+@use 'docs/search-chrome-toc';
+@use 'docs/syntax-highlighting';
+@use 'docs/tables-callouts';
+@use 'docs/responsive-overrides';
+@use 'docs/decorative';

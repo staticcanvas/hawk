@@ -17,20 +17,18 @@
     {{ partial "pagefind-frontmatter.html" . }}
     <div class="pg-workbench">
       <div class="pg-controls">
-        <div class="pg-launchbar">
-          <div>
-            <strong>Live configuration</strong>
-            <p class="pg-status" id="pg-status">Loading hawk...</p>
-          </div>
+        <fieldset class="pg-launchbar">
+          <legend>Live configuration</legend>
+          <p class="pg-status" id="pg-status">Loading hawk...</p>
           <div class="pg-launchbar-actions">
             <button class="pg-open-btn" type="button" data-playground-trigger aria-keyshortcuts="Control+Shift+K Meta+Shift+K">Open search preview <kbd aria-hidden="true">Ctrl+Shift+K</kbd></button>
             <button class="pg-reset-btn" type="button" id="pg-reset-btn" title="Clear saved settings and restore defaults">Reset</button>
           </div>
-        </div>
+        </fieldset>
 
-        <fieldset>
-          <legend>Theme</legend>
-          <label>preset <select id="pg-theme-preset" class="pg-select">
+        <details class="pg-section" open>
+          <summary data-lume="Pick a gallery preset or 'none' for hawk.css's own unstyled defaults.">Theme</summary>
+          <label data-lume="Load a gallery/template theme's tokens, params, and reveal animation into every control below.">preset <select id="pg-theme-preset" class="pg-select">
             <option value="typeflow" selected>TypeFlow (default)</option>
             <option value="pastel-dusk">Pastel dusk</option>
             <option value="paper-mint">Paper mint</option>
@@ -47,9 +45,9 @@
             <option value="subtle-sunset">Subtle sunset</option>
             <option value="none">none (unstyled)</option>
           </select></label>
-          <label><input type="radio" name="pg-theme" value="typeflow" checked> typeflow</label>
-          <label><input type="radio" name="pg-theme" value="none"> none (unstyled)</label>
-        </fieldset>
+          <label data-lume="config.theme: 'typeflow' — the registered theme, colored by the tokens below."><input type="radio" name="pg-theme" value="typeflow" checked> typeflow</label>
+          <label data-lume="config.theme: 'blank' — hawk.css's own unstyled defaults, no theme applied."><input type="radio" name="pg-theme" value="none"> none (unstyled)</label>
+        </details>
 
         {{ $themeTokens := slice
           (dict "name" "Canvas" "token" "--hawk-bg-canvas" "value" "#36454f")
@@ -75,12 +73,12 @@
           (dict "name" "Scrollbar active" "token" "--hawk-scrollbar-thumb-active" "value" "rgba(32, 227, 178, 0.68)")
           (dict "name" "Powered by" "token" "--hawk-powered-by-color" "value" "#a6b7b4")
         }}
-        <fieldset class="pg-card-wide" id="pg-theme-tokens">
-          <legend>Theme color tokens</legend>
+        <details class="pg-section pg-card-wide" id="pg-theme-tokens" open>
+          <summary data-lume="Every --hawk-* color hawk.css reads. Blank falls back to its neutral default.">Theme color tokens</summary>
           <p class="pg-fieldset-note">Every value accepts any valid CSS color, including alpha and gradients.</p>
           <div class="pg-token-grid">
             {{ range $themeTokens }}
-            <label>
+            <label data-lume="{{ .token }} — {{ .name }}. Blank falls back to hawk.css's own neutral default.">
               <span>{{ .name }}<code>{{ .token }}</code></span>
               <span class="pg-token-control">
                 <button class="pg-token-swatch" type="button" data-pickr-trigger aria-label="Choose {{ .name }} color"></button>
@@ -89,25 +87,49 @@
             </label>
             {{ end }}
           </div>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>Animation driver</legend>
-          <label><input type="radio" name="pg-animation" value="instant"> instant</label>
-          <label><input type="radio" name="pg-animation" value="typeflow" checked> typeflow</label>
-        </fieldset>
+        {{/* config.backdrop's gradient/opacity/blur (src/hawk.js) are plain --hawk-* tokens too —
+             see docs/content/guides/theming.md's "A JS-only theming path: theme.tokens" — so they
+             ride the same currentThemeTokens()/Pickr-aware input wiring as the color tokens above.
+             No dedicated pickr swatch: gradient is a full CSS gradient() expression, not a single
+             pickable color, and opacity/blur are plain numbers/lengths. */}}
+        <details class="pg-section pg-card-wide" id="pg-backdrop-scrim" open>
+          <summary data-lume="config.backdrop — customizes the modal's scrim independently of the theme's own tokens.">Backdrop scrim</summary>
+          <p class="pg-fieldset-note">Leave blank to fall back to the Backdrop color token above.</p>
+          <div class="pg-token-grid">
+            <label data-lume="config.backdrop.gradient — replaces the Backdrop color token above when set.">
+              <span>Gradient<code>--hawk-backdrop-gradient</code></span>
+              <input class="pg-text pg-token-input" type="text" data-hawk-token="--hawk-backdrop-gradient" value="" placeholder="radial-gradient(circle at 50% 0%, rgba(196,167,231,0.14) 0%, rgba(10,10,15,0.6) 70%)">
+            </label>
+            <label data-lume="config.backdrop.opacity.">
+              <span>Opacity<code>--hawk-backdrop-opacity</code></span>
+              <input class="pg-number pg-token-input" type="number" data-hawk-token="--hawk-backdrop-opacity" value="" min="0" max="1" step="0.01" placeholder="1">
+            </label>
+            <label data-lume="config.backdrop.blur — backdrop-filter blur radius.">
+              <span>Blur<code>--hawk-backdrop-blur</code></span>
+              <input class="pg-text pg-token-input" type="text" data-hawk-token="--hawk-backdrop-blur" value="" placeholder="14px">
+            </label>
+          </div>
+        </details>
+
+        <details class="pg-section" open>
+          <summary data-lume="instant (zero dependencies, built into core) or typeflow (typewriter effect).">Animation driver</summary>
+          <label data-lume="config.animation: false — zero dependencies, built into core."><input type="radio" name="pg-animation" value="instant"> instant</label>
+          <label data-lume="config.animation: 'typeflow' — the typewriter effect driver."><input type="radio" name="pg-animation" value="typeflow" checked> typeflow</label>
+        </details>
 
         {{/* Every option createHawkAnimationTypeflow(TypeFlow, options) accepts (src/hawk-animation-typeflow.js's
              DEFAULT_TITLE_CONFIG/DEFAULT_ANCHOR_TITLE_CONFIG/DEFAULT_CONTENT_CONFIG/DEFAULT_ROTATE_CONFIG) —
              hidden until "typeflow" is selected above. Changing any of these re-mounts (see mount() below):
              the driver object is resolved once at HawkSearch construction, so re-registering it afterward
              wouldn't retroactively reach an already-built instance. */}}
-        <fieldset id="pg-typeflow-options" hidden>
-          <legend>TypeFlow options</legend>
+        <details class="pg-section" id="pg-typeflow-options" open hidden>
+          <summary data-lume="Every option createHawkAnimationTypeflow accepts. Hidden unless typeflow is selected above.">TypeFlow options</summary>
 
           <fieldset class="pg-tf-subgroup">
             <legend>Title (page titles)</legend>
-            <label>typeStyle <select id="pg-tf-title-style" class="pg-select">
+            <label data-lume="typeStyle for page titles.">typeStyle <select id="pg-tf-title-style" class="pg-select">
               <option value="word">word</option>
               <option value="fade-trail">fade-trail</option>
               <option value="word-fade">word-fade</option>
@@ -117,20 +139,20 @@
               <option value="float-in-right">float-in-right</option>
               <option value="zoom-in-space" selected>zoom-in-space</option>
             </select></label>
-            <label>direction <select id="pg-tf-title-direction" class="pg-select">
+            <label data-lume="Direction the title animates in from.">direction <select id="pg-tf-title-direction" class="pg-select">
               <option value="left" selected>left</option>
               <option value="right">right</option>
               <option value="center">center</option>
             </select></label>
-            <label>speed <input type="number" id="pg-tf-title-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
-            <label>cursor <input type="text" id="pg-tf-title-cursor" value="" maxlength="4" class="pg-text"></label>
-            <label><input type="checkbox" id="pg-tf-title-cursor-blink"> cursorBlink</label>
-            <label class="pg-field-wide">advanced overrides JSON <textarea id="pg-tf-title-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
+            <label data-lume="Milliseconds per character/word step.">speed <input type="number" id="pg-tf-title-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
+            <label data-lume="Cursor glyph shown while typing; blank for none.">cursor <input type="text" id="pg-tf-title-cursor" value="" maxlength="4" class="pg-text"></label>
+            <label data-lume="Blinks the cursor while idle."><input type="checkbox" id="pg-tf-title-cursor-blink"> cursorBlink</label>
+            <label class="pg-field-wide" data-lume="Raw JSON merged over this subgroup's own config — for options not exposed above.">advanced overrides JSON <textarea id="pg-tf-title-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
           </fieldset>
 
           <fieldset class="pg-tf-subgroup">
             <legend>Anchor title (section titles)</legend>
-            <label>typeStyle <select id="pg-tf-anchor-style" class="pg-select">
+            <label data-lume="typeStyle for section/heading titles.">typeStyle <select id="pg-tf-anchor-style" class="pg-select">
               <option value="word">word</option>
               <option value="fade-trail">fade-trail</option>
               <option value="word-fade">word-fade</option>
@@ -140,21 +162,21 @@
               <option value="float-in-right">float-in-right</option>
               <option value="zoom-in-space" selected>zoom-in-space</option>
             </select></label>
-            <label>direction <select id="pg-tf-anchor-direction" class="pg-select">
+            <label data-lume="Direction the anchor title animates in from.">direction <select id="pg-tf-anchor-direction" class="pg-select">
               <option value="left" selected>left</option>
               <option value="right">right</option>
               <option value="center">center</option>
             </select></label>
-            <label>speed <input type="number" id="pg-tf-anchor-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
-            <label>cursor <input type="text" id="pg-tf-anchor-cursor" value="" maxlength="4" class="pg-text"></label>
-            <label><input type="checkbox" id="pg-tf-anchor-cursor-blink"> cursorBlink</label>
-            <label class="pg-field-wide">advanced overrides JSON <textarea id="pg-tf-anchor-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
+            <label data-lume="Milliseconds per character/word step.">speed <input type="number" id="pg-tf-anchor-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
+            <label data-lume="Cursor glyph shown while typing; blank for none.">cursor <input type="text" id="pg-tf-anchor-cursor" value="" maxlength="4" class="pg-text"></label>
+            <label data-lume="Blinks the cursor while idle."><input type="checkbox" id="pg-tf-anchor-cursor-blink"> cursorBlink</label>
+            <label class="pg-field-wide" data-lume="Raw JSON merged over this subgroup's own config.">advanced overrides JSON <textarea id="pg-tf-anchor-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
           </fieldset>
 
           <fieldset class="pg-tf-subgroup">
             <legend>Content (preview pane)</legend>
-            <label><input type="checkbox" id="pg-tf-content-html" checked> html</label>
-            <label>typeStyle <select id="pg-tf-content-style" class="pg-select">
+            <label data-lume="Types the preview as real HTML (links stay clickable) instead of plain text."><input type="checkbox" id="pg-tf-content-html" checked> html</label>
+            <label data-lume="typeStyle for the preview pane's content.">typeStyle <select id="pg-tf-content-style" class="pg-select">
               <option value="word">word</option>
               <option value="fade-trail">fade-trail</option>
               <option value="word-fade">word-fade</option>
@@ -164,22 +186,22 @@
               <option value="float-in-right">float-in-right</option>
               <option value="zoom-in-space" selected>zoom-in-space</option>
             </select></label>
-            <label>direction <select id="pg-tf-content-direction" class="pg-select">
+            <label data-lume="Direction the content animates in from.">direction <select id="pg-tf-content-direction" class="pg-select">
               <option value="left" selected>left</option>
               <option value="right">right</option>
               <option value="center">center</option>
             </select></label>
-            <label>speed <input type="number" id="pg-tf-content-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
-            <label>cursor <input type="text" id="pg-tf-content-cursor" value="" maxlength="4" class="pg-text"></label>
-            <label class="pg-field-wide">advanced overrides JSON <textarea id="pg-tf-content-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
+            <label data-lume="Milliseconds per character/word step.">speed <input type="number" id="pg-tf-content-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
+            <label data-lume="Cursor glyph shown while typing; blank for none.">cursor <input type="text" id="pg-tf-content-cursor" value="" maxlength="4" class="pg-text"></label>
+            <label class="pg-field-wide" data-lume="Raw JSON merged over this subgroup's own config.">advanced overrides JSON <textarea id="pg-tf-content-extra" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
           </fieldset>
 
           <fieldset class="pg-tf-subgroup">
             <legend>Rotate (placeholder)</legend>
-            <label>holdDuration <input type="number" id="pg-tf-rotate-hold" value="3000" min="500" max="8000" step="100" class="pg-number"> ms</label>
-            <label>pauseBetween <input type="number" id="pg-tf-rotate-pause" value="200" min="0" max="2000" step="50" class="pg-number"> ms</label>
-            <label>typeConfig.speed <input type="number" id="pg-tf-rotate-type-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
-            <label>typeConfig.typeStyle <select id="pg-tf-rotate-type-style" class="pg-select">
+            <label data-lume="How long a rotating placeholder stays fully typed before erasing.">holdDuration <input type="number" id="pg-tf-rotate-hold" value="3000" min="500" max="8000" step="100" class="pg-number"> ms</label>
+            <label data-lume="Pause between one placeholder finishing erase and the next starting to type.">pauseBetween <input type="number" id="pg-tf-rotate-pause" value="200" min="0" max="2000" step="50" class="pg-number"> ms</label>
+            <label data-lume="Milliseconds per character/word step while typing a placeholder.">typeConfig.speed <input type="number" id="pg-tf-rotate-type-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
+            <label data-lume="typeStyle used while typing a placeholder.">typeConfig.typeStyle <select id="pg-tf-rotate-type-style" class="pg-select">
               <option value="word">word</option>
               <option value="fade-trail">fade-trail</option>
               <option value="word-fade">word-fade</option>
@@ -189,10 +211,10 @@
               <option value="float-in-right">float-in-right</option>
               <option value="zoom-in-space" selected>zoom-in-space</option>
             </select></label>
-            <label>typeConfig.cursor <input type="text" id="pg-tf-rotate-type-cursor" value="" maxlength="4" class="pg-text"></label>
-            <label><input type="checkbox" id="pg-tf-rotate-type-cursor-blink"> typeConfig.cursorBlink</label>
-            <label>eraseConfig.speed <input type="number" id="pg-tf-rotate-erase-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
-            <label>eraseConfig.eraseStyle <select id="pg-tf-rotate-erase-style" class="pg-select">
+            <label data-lume="Cursor glyph shown while typing; blank for none.">typeConfig.cursor <input type="text" id="pg-tf-rotate-type-cursor" value="" maxlength="4" class="pg-text"></label>
+            <label data-lume="Blinks the cursor while idle."><input type="checkbox" id="pg-tf-rotate-type-cursor-blink"> typeConfig.cursorBlink</label>
+            <label data-lume="Milliseconds per character/word step while erasing a placeholder.">eraseConfig.speed <input type="number" id="pg-tf-rotate-erase-speed" value="2" min="1" max="120" class="pg-number"> ms</label>
+            <label data-lume="How the placeholder erases: from the end, or all at once.">eraseConfig.eraseStyle <select id="pg-tf-rotate-erase-style" class="pg-select">
               <option value="end" selected>end</option>
               <option value="start">start</option>
               <option value="center">center</option>
@@ -207,13 +229,13 @@
               <option value="float-in-right">float-in-right</option>
               <option value="zoom-in-space">zoom-in-space</option>
             </select></label>
-            <label class="pg-field-wide">advanced rotate overrides JSON <textarea id="pg-tf-rotate-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
+            <label class="pg-field-wide" data-lume="Raw JSON merged over this subgroup's own config.">advanced rotate overrides JSON <textarea id="pg-tf-rotate-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
           </fieldset>
-        </fieldset>
+        </details>
 
-        <fieldset>
-          <legend>Modal reveal</legend>
-          <label><select id="pg-reveal-animation" class="pg-select">
+        <details class="pg-section" open>
+          <summary data-lume="The open/close animation played on the whole modal.">Modal reveal</summary>
+          <label data-lume="config.revealAnimation — the modal's own open/close animation, or off."><select id="pg-reveal-animation" class="pg-select">
             <option value="scale-fade">scale-fade</option>
             <option value="fade">fade</option>
             <option value="slide-down">slide-down</option>
@@ -221,145 +243,164 @@
             <option value="spring" selected>spring</option>
             <option value="false">off</option>
           </select></label>
-          <label>duration <input type="number" id="pg-reveal-duration" value="520" min="0" max="2000" step="10" class="pg-number"> ms</label>
-        </fieldset>
+          <label data-lume="Total time for the modal's open/close animation.">duration <input type="number" id="pg-reveal-duration" value="520" min="0" max="2000" step="10" class="pg-number"> ms</label>
+        </details>
 
-        <fieldset>
-          <legend>Results reveal</legend>
-          <label><input type="checkbox" id="pg-results-reveal" checked> enabled</label>
-          <label>direction <select id="pg-results-reveal-direction" class="pg-select">
+        <details class="pg-section" open>
+          <summary data-lume="The staggered entrance animation played on each result row.">Results reveal</summary>
+          <label data-lume="config.resultsReveal — staggers each result row's entrance on render."><input type="checkbox" id="pg-results-reveal" checked> enabled</label>
+          <label data-lume="config.resultsRevealDirection — which side rows animate in from.">direction <select id="pg-results-reveal-direction" class="pg-select">
             <option value="up" selected>up</option>
             <option value="down">down</option>
             <option value="left">left</option>
             <option value="right">right</option>
           </select></label>
-          <label>stagger <input type="number" id="pg-results-reveal-stagger" value="22" min="0" max="80" step="2" class="pg-number"> ms</label>
-        </fieldset>
+          <label data-lume="config.resultsRevealStagger — delay added per row, capped at the 10th.">stagger <input type="number" id="pg-results-reveal-stagger" value="22" min="0" max="80" step="2" class="pg-number"> ms</label>
+        </details>
 
-        <fieldset>
-          <legend>Layout</legend>
-          <label>scale <select id="pg-scale" class="pg-select">
-            <option value="0.8">0.8&times;</option>
-            <option value="0.94">0.94&times;</option>
-            <option value="0.96">0.96&times;</option>
-            <option value="1" selected>1&times;</option>
-            <option value="1.2">1.2&times;</option>
-          </select></label>
-          <label>position <select id="pg-position" class="pg-select">
+        <details class="pg-section" open>
+          <summary data-lume="Scale, position, columns, density, and the breakpoint that collapses to one column.">Layout</summary>
+          {{/* A fixed option list here previously meant any preset (or Object.entries(theme...)
+               someone writes) picking a --hawk-scale not already in the list silently produced an
+               empty <select> value: setting .value to a non-matching option resets a <select> to
+               "", and Number('') is 0 — a var(--hawk-scale, 1) of 0 collapses the whole dialog to
+               0x0 (max-width/max-height are both `calc(Npx * var(--hawk-scale))`), rendering as
+               what looks like "no results" even though the DOM still has them. Concretely: Simple
+               Dark's scale is 0.9, which was never in this list. A free-form number, like
+               pg-breakpoint below, accepts any preset's value without needing to be kept in sync
+               with one. */}}
+          <label data-lume="config.params.scale — multiplies the modal's own max-width/max-height.">scale <input type="number" id="pg-scale" value="1" min="0.1" max="2" step="0.01" class="pg-number"></label>
+          <label data-lume="config.params.position — where the modal anchors in the viewport.">position <select id="pg-position" class="pg-select">
             <option value="top-center" selected>top-center</option>
             <option value="center">center</option>
             <option value="top-left">top-left</option>
             <option value="top-right">top-right</option>
           </select></label>
-          <label>columns <select id="pg-columns" class="pg-select">
+          <label data-lume="config.params.columns — 1 or 2; forced to 1 below the breakpoint or in compact density regardless.">columns <select id="pg-columns" class="pg-select">
             <option value="2" selected>2</option>
             <option value="1">1</option>
           </select></label>
-          <label>density <select id="pg-density" class="pg-select">
+          <label data-lume="config.params.density — fit, medium, or compact sizing.">density <select id="pg-density" class="pg-select">
             <option value="fit" selected>fit</option>
             <option value="medium">medium</option>
             <option value="compact">compact</option>
           </select></label>
-          <label>offset x <input type="text" id="pg-offset-x" value="1rem" class="pg-text"></label>
-          <label>offset y <input type="text" id="pg-offset-y" value="6vh" class="pg-text"></label>
-          <label>alignment <select id="pg-alignment" class="pg-select">
+          <label data-lume="config.params.offset.x — horizontal gap from the viewport edge.">offset x <input type="text" id="pg-offset-x" value="1rem" class="pg-text"></label>
+          <label data-lume="config.params.offset.y — vertical gap from the viewport edge.">offset y <input type="text" id="pg-offset-y" value="6vh" class="pg-text"></label>
+          <label data-lume="config.params.alignment — cross-axis fit for the preview pane when it's shorter than the results list.">alignment <select id="pg-alignment" class="pg-select">
             <option value="stretch" selected>stretch</option><option value="start">start</option><option value="center">center</option>
           </select></label>
-          <label>breakpoint <input type="number" id="pg-breakpoint" value="768" min="320" max="1600" class="pg-number"> px</label>
-          <label><input type="checkbox" id="pg-density-toggle" checked> density toggle</label>
-          <label><input type="checkbox" id="pg-header-density" checked> show density control</label>
-          <label><input type="checkbox" id="pg-header-escape" checked> show Escape control</label>
-        </fieldset>
+          <label data-lume="config.params.breakpoint — viewport width below which the modal forces a single column.">breakpoint <input type="number" id="pg-breakpoint" value="768" min="320" max="1600" class="pg-number"> px</label>
+          <label data-lume="config.params.allowDensityToggle — lets the visitor switch density from the modal header."><input type="checkbox" id="pg-density-toggle" checked> density toggle</label>
+          <label data-lume="config.headerControls.density — shows the Fit/Medium/Compact group in the header."><input type="checkbox" id="pg-header-density" checked> show density control</label>
+          <label data-lume="config.headerControls.escape — shows the Escape button in the header."><input type="checkbox" id="pg-header-escape" checked> show Escape control</label>
+        </details>
 
-        <fieldset class="pg-card-wide">
-          <legend>Hawk search behavior</legend>
-          <label>index <input type="text" id="pg-index" value="{{ "pagefind/" | relURL }}" class="pg-text pg-text-wide"></label>
-          <label>instance id <input type="text" id="pg-id" value="hawk-playground-search" class="pg-text"></label>
-          <label>trigger selector <input type="text" id="pg-trigger-selector" value="[data-playground-trigger]" class="pg-text pg-text-wide"></label>
-          <label>max results <input type="number" id="pg-max-results" value="18" min="1" max="100" class="pg-number"></label>
-          <label>content selector <input type="text" id="pg-content-selector" value=".doc-article" class="pg-text pg-text-wide"></label>
-          <label>category filter <input type="text" id="pg-category-filter" value="category" class="pg-text"></label>
-          <label><input type="checkbox" id="pg-include-all" checked> include All tab</label>
-          <label><input type="checkbox" id="pg-eager-results" checked> eager results</label>
-          <label><input type="checkbox" id="pg-inline-filters" checked> inline filters</label>
-          <label><input type="checkbox" id="pg-preview-sections" checked> section previews</label>
-          <label>section selector <input type="text" id="pg-section-selector" value="h2, h3" class="pg-text"></label>
-          <label>excerpt length <input type="number" id="pg-section-excerpt" value="140" min="40" max="500" class="pg-number"></label>
-          <label><input type="checkbox" id="pg-second-column" checked> second column</label>
-          <label><input type="checkbox" id="pg-default-markdown" checked> default preview typography</label>
-          <label><input type="checkbox" id="pg-powered-by" checked> Pagefind attribution</label>
-          <label><input type="checkbox" id="pg-result-date" checked> result dates</label>
-          <label>date metadata key <input type="text" id="pg-result-date-key" value="date" class="pg-text"></label>
-          <label><input type="checkbox" id="pg-result-tags" checked> result tags</label>
-          <label>tags metadata key <input type="text" id="pg-result-tags-key" value="tags" class="pg-text"></label>
-          <label>attribution URL <input type="url" id="pg-powered-href" value="https://pagefind.app/" class="pg-text pg-text-wide"></label>
-          <label>default tab <input type="text" id="pg-default-tab" value="all" class="pg-text"></label>
-          <label>tabs URL <input type="text" id="pg-tabs-url" value="" placeholder="/tabs.json" class="pg-text"></label>
-          <label>default preview URL <input type="text" id="pg-preview-url" value="" class="pg-text"></label>
-          <label>default preview title <input type="text" id="pg-preview-title" value="" class="pg-text"></label>
-          <label><input type="checkbox" id="pg-discovery-row" checked> discovery row</label>
-          <label><input type="checkbox" id="pg-discovery-matches" checked> discovery matches</label>
-          <label><input type="checkbox" id="pg-discovery-pages" checked> discovery pages</label>
-          <label><input type="checkbox" id="pg-discovery-headings" checked> discovery headings</label>
-          <label>rotating prompts <input type="text" id="pg-placeholders" value="Search guides,Search API,Try inline filters" class="pg-text pg-text-wide"></label>
-          <label class="pg-field-wide">excluded pages JSON <textarea id="pg-exclude-pages" class="pg-json" rows="3" spellcheck="false">["{{ "" | relURL }}", "{{ "404.html" | relURL }}", "{{ "playground/" | relURL }}"]</textarea></label>
-          <label class="pg-field-wide">tabs JSON <textarea id="pg-tabs" class="pg-json" rows="4" spellcheck="false">[]</textarea></label>
-          <label class="pg-field-wide">strings JSON <textarea id="pg-strings" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
-          <label class="pg-field-wide">advanced Hawk overrides JSON <textarea id="pg-hawk-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
-        </fieldset>
+        <details class="pg-section pg-card-wide" open>
+          <summary data-lume="Index, trigger, tabs, previews, and discovery-row options.">Hawk search behavior</summary>
+          <label data-lume="config.index — the Pagefind index URL to search against.">index <input type="text" id="pg-index" value="{{ "pagefind/" | relURL }}" class="pg-text pg-text-wide"></label>
+          <label data-lume="config.id — the modal's own DOM id, also used to namespace ARIA ids.">instance id <input type="text" id="pg-id" value="hawk-playground-search" class="pg-text"></label>
+          <label data-lume="config.triggerSelector — elements that open the modal on click.">trigger selector <input type="text" id="pg-trigger-selector" value="[data-playground-trigger]" class="pg-text pg-text-wide"></label>
+          <label data-lume="config.maxResults — maximum rendered result rows.">max results <input type="number" id="pg-max-results" value="18" min="1" max="100" class="pg-number"></label>
+          <label data-lume="config.contentSelector — where the preview pane reads a fetched result page's content from.">content selector <input type="text" id="pg-content-selector" value=".doc-article" class="pg-text pg-text-wide"></label>
+          <label data-lume="config.categoryFilterName — the Pagefind filter dimension auto-derived tabs use.">category filter <input type="text" id="pg-category-filter" value="category" class="pg-text"></label>
+          <label data-lume="config.includeAllTab — prepends a filterless &quot;All&quot; tab."><input type="checkbox" id="pg-include-all" checked> include All tab</label>
+          <label data-lume="config.eagerResults — shows a default listing on open instead of an empty &quot;Type to search&quot; state."><input type="checkbox" id="pg-eager-results" checked> eager results</label>
+          <label data-lume="config.inlineFilters — lets a typed query like &quot;category:Guides&quot; apply a filter inline."><input type="checkbox" id="pg-inline-filters" checked> inline filters</label>
+          <label data-lume="config.previewSections — breaks a page-level match's preview into per-heading rows."><input type="checkbox" id="pg-preview-sections" checked> section previews</label>
+          <label data-lume="config.previewSectionSelector — which headings count as a &quot;section&quot; for previewSections.">section selector <input type="text" id="pg-section-selector" value="h2, h3" class="pg-text"></label>
+          <label data-lume="config.previewSectionExcerptLength — max characters per previewSections row.">excerpt length <input type="number" id="pg-section-excerpt" value="140" min="40" max="500" class="pg-number"></label>
+          <label data-lume="config.enableSecondColumn — whether the preview pane is available at all."><input type="checkbox" id="pg-second-column" checked> second column</label>
+          <label data-lume="Unchecking sets config.disableDefaultMarkdownStyles — opts out of hawk.css's own preview prose rules."><input type="checkbox" id="pg-default-markdown" checked> default preview typography</label>
+          <label data-lume="config.showPoweredBy — the &quot;Search powered by Pagefind&quot; attribution link."><input type="checkbox" id="pg-powered-by" checked> Pagefind attribution</label>
+          <label data-lume="config.showResultDate — renders a date beneath each result excerpt when present."><input type="checkbox" id="pg-result-date" checked> result dates</label>
+          <label data-lume="config.resultDateMetaKey — Pagefind metadata key used for the date.">date metadata key <input type="text" id="pg-result-date-key" value="date" class="pg-text"></label>
+          <label data-lume="config.resultDateFormat — 'relative' renders the date as &quot;7 days ago&quot; via Intl.RelativeTimeFormat instead of its raw value.">date format <select id="pg-result-date-format" class="pg-select">
+            <option value="timestamp" selected>timestamp</option>
+            <option value="relative">relative (time ago)</option>
+          </select></label>
+          <label data-lume="config.showResultTags — renders comma-separated tags beneath each result excerpt."><input type="checkbox" id="pg-result-tags" checked> result tags</label>
+          <label data-lume="config.resultTagsMetaKey — Pagefind metadata key used for tags.">tags metadata key <input type="text" id="pg-result-tags-key" value="tags" class="pg-text"></label>
+          <label data-lume="config.showSubpageConnector — indents an anchor/heading match with a connector line against its parent page."><input type="checkbox" id="pg-subpage-connector" checked> subpage connector line</label>
+          <label data-lume="Unchecking sends tagAccentColors: false, disabling the per-tag pastel rotation."><input type="checkbox" id="pg-tag-accent-colors-enabled" checked> tag accent colors</label>
+          <label data-lume="config.tagAccentColors — comma-separated colors rotated per tag within a result row.">tag accent colors <input type="text" id="pg-tag-accent-colors" value="" placeholder="blank = built-in pastel range" class="pg-text pg-text-wide"></label>
+          <label data-lume="config.poweredByHref — where the attribution link points.">attribution URL <input type="url" id="pg-powered-href" value="https://pagefind.app/" class="pg-text pg-text-wide"></label>
+          <label data-lume="config.defaultTab — which tab is active on mount.">default tab <input type="text" id="pg-default-tab" value="all" class="pg-text"></label>
+          <label data-lume="config.tabsUrl — loads config.tabs from a JSON file instead of the inline JSON below.">tabs URL <input type="text" id="pg-tabs-url" value="" placeholder="/tabs.json" class="pg-text"></label>
+          <label data-lume="config.defaultPreviewUrl — shows a specific page's content on mount, before any selection.">default preview URL <input type="text" id="pg-preview-url" value="" class="pg-text"></label>
+          <label data-lume="config.defaultPreviewTitle — title shown alongside defaultPreviewUrl.">default preview title <input type="text" id="pg-preview-title" value="" class="pg-text"></label>
+          <label data-lume="config.discoveryRow — an opt-in third row beneath results with query matches, related pages, and heading links."><input type="checkbox" id="pg-discovery-row" checked> discovery row</label>
+          <label data-lume="discoveryRow.matches — marked query-term links."><input type="checkbox" id="pg-discovery-matches" checked> discovery matches</label>
+          <label data-lume="discoveryRow.pages — distinct pages among the current matches."><input type="checkbox" id="pg-discovery-pages" checked> discovery pages</label>
+          <label data-lume="discoveryRow.headings — Pagefind heading-level deep links."><input type="checkbox" id="pg-discovery-headings" checked> discovery headings</label>
+          <label data-lume="config.rotatingPlaceholders — comma-separated example queries cycled through the empty input.">rotating prompts <input type="text" id="pg-placeholders" value="Search guides,Search API,Try inline filters" class="pg-text pg-text-wide"></label>
+          <label class="pg-field-wide" data-lume="config.excludePages — page URLs/paths omitted from results, JSON array.">excluded pages JSON <textarea id="pg-exclude-pages" class="pg-json" rows="3" spellcheck="false">["{{ "" | relURL }}", "{{ "404.html" | relURL }}", "{{ "playground/" | relURL }}"]</textarea></label>
+          <label class="pg-field-wide" data-lume="config.tabs — explicit tab definitions, JSON array. Overrides categories/tabsUrl when non-empty.">tabs JSON <textarea id="pg-tabs" class="pg-json" rows="4" spellcheck="false">[]</textarea></label>
+          <label class="pg-field-wide" data-lume="config.strings — i18n overrides for hawk's own UI text, JSON object.">strings JSON <textarea id="pg-strings" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
+          <label class="pg-field-wide" data-lume="Raw JSON merged over the whole constructed config — for options not exposed above.">advanced Hawk overrides JSON <textarea id="pg-hawk-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
+        </details>
 
-        <fieldset>
-          <legend>Saved activity</legend>
-          <label><input type="checkbox" id="pg-pins" checked> pins</label>
-          <label>max pins <input type="number" id="pg-max-pins" value="20" min="0" max="100" class="pg-number"></label>
-          <label>pin key <input type="text" id="pg-pin-key" value="hawk:playground:pins" class="pg-text"></label>
-          <label><input type="checkbox" id="pg-recent" checked> recently viewed</label>
-          <label>max recent <input type="number" id="pg-max-recent" value="10" min="0" max="100" class="pg-number"></label>
-          <label>recent key <input type="text" id="pg-recent-key" value="hawk:playground:recent" class="pg-text"></label>
-        </fieldset>
+        <details class="pg-section" open>
+          <summary data-lume="Pins and recently viewed results, both persisted to localStorage.">Saved activity</summary>
+          <label data-lume="config.enablePins — a pin toggle on every result, persisted to localStorage."><input type="checkbox" id="pg-pins" checked> pins</label>
+          <label data-lume="config.maxPins.">max pins <input type="number" id="pg-max-pins" value="20" min="0" max="100" class="pg-number"></label>
+          <label data-lume="config.pinStorageKey — localStorage key used for pins.">pin key <input type="text" id="pg-pin-key" value="hawk:playground:pins" class="pg-text"></label>
+          <label data-lume="config.enableRecentlyViewed — tracks recently viewed results as a synthetic tab."><input type="checkbox" id="pg-recent" checked> recently viewed</label>
+          <label data-lume="config.maxRecentlyViewed.">max recent <input type="number" id="pg-max-recent" value="10" min="0" max="100" class="pg-number"></label>
+          <label data-lume="config.recentlyViewedStorageKey — localStorage key used for recently viewed.">recent key <input type="text" id="pg-recent-key" value="hawk:playground:recent" class="pg-text"></label>
+        </details>
 
-        <fieldset>
-          <legend>Keyboard</legend>
-          <label><input type="checkbox" id="pg-hotkey-open"> Ctrl/Cmd+K</label>
-          <label><input type="checkbox" id="pg-hotkey-slash"> slash shortcut</label>
-          <label><input type="checkbox" id="pg-hotkey-escape" checked> Escape closes</label>
-        </fieldset>
+        <details class="pg-section" open>
+          <summary data-lume="Hotkeys and inline filter syntax (e.g. category:Guides) in the query field.">Keyboard</summary>
+          <label data-lume="config.hotkeys.open — Ctrl/Cmd+K opens the modal."><input type="checkbox" id="pg-hotkey-open"> Ctrl/Cmd+K</label>
+          <label data-lume="config.hotkeys.slash — the / key opens the modal (ignored while a text field has focus)."><input type="checkbox" id="pg-hotkey-slash"> slash shortcut</label>
+          <label data-lume="config.hotkeys.escape — Escape closes the modal."><input type="checkbox" id="pg-hotkey-escape" checked> Escape closes</label>
+        </details>
 
-        <fieldset class="pg-card-wide">
-          <legend>Pagefind browser and search options</legend>
+        <details class="pg-section pg-card-wide" open>
+          <summary data-lume="Passed straight through to Pagefind's own init/search calls.">Pagefind browser and search options</summary>
           <p class="pg-fieldset-note">Initialization settings are applied before Pagefind loads; filters and sorting are applied to each search.</p>
-          <label>excerpt length <input type="number" id="pg-pf-excerpt" value="30" min="1" max="100" class="pg-number"></label>
-          <label>base URL <input type="text" id="pg-pf-base-url" value="{{ "" | relURL }}" class="pg-text"></label>
-          <label><input type="checkbox" id="pg-pf-diacritics"> exact diacritics</label>
-          <label><input type="checkbox" id="pg-pf-no-worker"> disable worker</label>
-          <label>highlight parameter <input type="text" id="pg-pf-highlight" value="" placeholder="highlight" class="pg-text"></label>
-          <label>metadata cache tag <input type="text" id="pg-pf-cache" value="" placeholder="build-2026-09" class="pg-text"></label>
-          <label>index weight <input type="number" id="pg-pf-index-weight" value="1" min="0" max="10" step="0.1" class="pg-number"></label>
-          <label>term frequency <input type="number" id="pg-rank-frequency" value="1" min="0" max="1" step="0.05" class="pg-number"></label>
-          <label>term similarity <input type="number" id="pg-rank-similarity" value="1" min="0" step="0.05" class="pg-number"></label>
-          <label>page length <input type="number" id="pg-rank-length" value="0.75" min="0" max="1" step="0.05" class="pg-number"></label>
-          <label>term saturation <input type="number" id="pg-rank-saturation" value="1.4" min="0" max="2" step="0.1" class="pg-number"></label>
-          <label>diacritic similarity <input type="number" id="pg-rank-diacritic" value="0.8" min="0" max="1" step="0.05" class="pg-number"></label>
-          <label>metadata weights JSON <textarea id="pg-rank-meta" class="pg-json" rows="3" spellcheck="false">{"title": 5}</textarea></label>
-          <label>merge filter JSON <textarea id="pg-pf-merge-filter" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
-          <label>filter JSON <textarea id="pg-pf-filters" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
-          <label>sort key <input type="text" id="pg-pf-sort-key" value="" placeholder="date" class="pg-text"></label>
-          <label>sort direction <select id="pg-pf-sort-direction" class="pg-select"><option value="desc">desc</option><option value="asc">asc</option></select></label>
-          <label class="pg-field-wide">merged indexes JSON <textarea id="pg-pf-merge" class="pg-json" rows="4" spellcheck="false">[]</textarea></label>
-          <label class="pg-field-wide">advanced initialization overrides JSON <textarea id="pg-pf-init-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
-          <label class="pg-field-wide">advanced per-search overrides JSON <textarea id="pg-pf-search-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
-        </fieldset>
+          <label data-lume="pagefindInitOptions.excerptLength.">excerpt length <input type="number" id="pg-pf-excerpt" value="30" min="1" max="100" class="pg-number"></label>
+          <label data-lume="pagefindInitOptions.baseUrl.">base URL <input type="text" id="pg-pf-base-url" value="{{ "" | relURL }}" class="pg-text"></label>
+          <label data-lume="pagefindInitOptions.exactDiacritics — disables diacritic-insensitive matching."><input type="checkbox" id="pg-pf-diacritics"> exact diacritics</label>
+          <label data-lume="pagefindInitOptions.noWorker — disables Pagefind's web worker."><input type="checkbox" id="pg-pf-no-worker"> disable worker</label>
+          <label data-lume="pagefindInitOptions.highlightParam — URL param name Pagefind reads for highlighting.">highlight parameter <input type="text" id="pg-pf-highlight" value="" placeholder="highlight" class="pg-text"></label>
+          <label data-lume="pagefindInitOptions.cache-busting tag appended to indexed asset requests.">metadata cache tag <input type="text" id="pg-pf-cache" value="" placeholder="build-2026-09" class="pg-text"></label>
+          <label data-lume="pagefindInitOptions.indexWeight — this index's weight in a merged search.">index weight <input type="number" id="pg-pf-index-weight" value="1" min="0" max="10" step="0.1" class="pg-number"></label>
+          <label data-lume="pagefindOptions.ranking.termFrequency.">term frequency <input type="number" id="pg-rank-frequency" value="1" min="0" max="1" step="0.05" class="pg-number"></label>
+          <label data-lume="pagefindOptions.ranking.termSimilarity.">term similarity <input type="number" id="pg-rank-similarity" value="1" min="0" step="0.05" class="pg-number"></label>
+          <label data-lume="pagefindOptions.ranking.pageLength.">page length <input type="number" id="pg-rank-length" value="0.75" min="0" max="1" step="0.05" class="pg-number"></label>
+          <label data-lume="pagefindOptions.ranking.termSaturation.">term saturation <input type="number" id="pg-rank-saturation" value="1.4" min="0" max="2" step="0.1" class="pg-number"></label>
+          <label data-lume="pagefindOptions.ranking.termSimilarityDiacritics.">diacritic similarity <input type="number" id="pg-rank-diacritic" value="0.8" min="0" max="1" step="0.05" class="pg-number"></label>
+          <label data-lume="pagefindOptions.ranking.metadataWeights, JSON object.">metadata weights JSON <textarea id="pg-rank-meta" class="pg-json" rows="3" spellcheck="false">{"title": 5}</textarea></label>
+          <label data-lume="pagefindOptions.mergeFilter, JSON object.">merge filter JSON <textarea id="pg-pf-merge-filter" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
+          <label data-lume="pagefindOptions.filters, JSON object.">filter JSON <textarea id="pg-pf-filters" class="pg-json" rows="3" spellcheck="false">{}</textarea></label>
+          <label data-lume="pagefindOptions.sort — Pagefind metadata key to sort results by.">sort key <input type="text" id="pg-pf-sort-key" value="" placeholder="date" class="pg-text"></label>
+          <label data-lume="Sort direction for pg-pf-sort-key.">sort direction <select id="pg-pf-sort-direction" class="pg-select"><option value="desc">desc</option><option value="asc">asc</option></select></label>
+          <label class="pg-field-wide" data-lume="pagefindMergeIndexes — additional Pagefind indexes searched alongside this one, JSON array.">merged indexes JSON <textarea id="pg-pf-merge" class="pg-json" rows="4" spellcheck="false">[]</textarea></label>
+          <label class="pg-field-wide" data-lume="Raw JSON merged over pagefindInitOptions.">advanced initialization overrides JSON <textarea id="pg-pf-init-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
+          <label class="pg-field-wide" data-lume="Raw JSON merged over pagefindOptions on every search call.">advanced per-search overrides JSON <textarea id="pg-pf-search-extra" class="pg-json" rows="4" spellcheck="false">{}</textarea></label>
+        </details>
 
-        <fieldset>
-          <legend>Diagnostics</legend>
-          <label><input type="checkbox" id="pg-debug"> Debug (logs to devtools console)</label>
-          <label><input type="checkbox" id="pg-metrics"> Metrics (live readout below)</label>
-        </fieldset>
+        <details class="pg-section" open>
+          <summary data-lume="@staticcanvas/hawk/debug and /metrics — both optional, opt-in add-ons.">Diagnostics</summary>
+          <label data-lume="Mounts @staticcanvas/hawk/debug against this instance — logs its lifecycle to the console."><input type="checkbox" id="pg-debug"> Debug (logs to devtools console)</label>
+          <label data-lume="Mounts @staticcanvas/hawk/metrics against this instance — a live readout appears below."><input type="checkbox" id="pg-metrics"> Metrics (live readout below)</label>
+        </details>
       </div>
 
       <div class="pg-output-rail">
         <section class="pg-config-panel">
           <header><div><span>Generated output</span><h2>Hawk configuration</h2></div><button class="pg-copy-btn pg-copy-btn--static" type="button" data-copy-target="#pg-code-output">Copy config</button></header>
+          {{/* Mirrors the splash page's own ESM/UMD/jsDelivr install tabs (docs/layouts/index.html)
+               — the generated snippet previously always assumed a bundler (bare `@staticcanvas/hawk`
+               specifiers). buildConfigSnippet(format) below renders the same live configuration in
+               whichever of the three a visitor actually uses. */}}
+          <div class="pg-code-format-tabs" role="tablist" aria-label="Usage format" data-pg-code-format>
+            <button type="button" role="tab" id="pg-format-esm" aria-selected="true" data-format="esm">ESM (bundler)</button>
+            <button type="button" role="tab" id="pg-format-umd" aria-selected="false" data-format="umd">UMD (script tag)</button>
+            <button type="button" role="tab" id="pg-format-jsdelivr" aria-selected="false" data-format="jsdelivr">jsDelivr (CDN ESM)</button>
+          </div>
           <pre class="pg-code pg-code--output"><code id="pg-code-output" data-pg-highlight="javascript"></code></pre>
         </section>
         <div class="pg-metrics-panel" id="pg-metrics-panel" hidden>
@@ -413,674 +454,17 @@ await index.writeFiles({ outputPath: 'public/pagefind' });` }}</code><button cla
 </div>
 
 {{/* Plain (non-module) global-build scripts, not ESM — hawk-debug.js's UMD build externalizes
-     @staticcanvas/logcad as window.logcad, which is never staged here (see the Debug guide's
-     console-fallback note), so it safely resolves to undefined and createHawkDebug takes its
-     console fallback path. Regular scripts run synchronously as parsed, before the deferred
-     module script below, so window.HawkDebug/window.HawkMetrics already exist by the time it runs. */}}
+     @staticcanvas/logcad as window.logcad (see vite.optional.config.js's 'debug' mode). Loading
+     logcad's own UMD build first means the Debug toggle below exercises logcad's real styled
+     output rather than always falling back to the plain console.* path (see hawk-debug.js's own
+     dual-path write()) — if logcad wasn't staged (vite.config.js's stage-web-utility-assets
+     plugin skips it when the peer dependency isn't installed), window.logcad stays undefined and
+     createHawkDebug still falls back cleanly on its own. Regular scripts run synchronously as
+     parsed, before the deferred module script below, so window.logcad/window.HawkDebug/
+     window.HawkMetrics already exist by the time it runs. */}}
+<script src="{{ "webutil/libs/logcad.min.js" | relURL }}"></script>
 <script src="{{ "webutil/libs/hawk-debug.js" | relURL }}"></script>
 <script src="{{ "webutil/libs/hawk-metrics.js" | relURL }}"></script>
 
-<script type="module">
-  import Pickr from '{{ "webutil/libs/pickr.min.mjs" | relURL }}';
-  import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
-  import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
-  import {
-    createHawkDocsTheme,
-    getHawkGalleryTheme,
-    HAWK_GALLERY_THEMES,
-    HAWK_PLAYGROUND_TYPEFLOW_PRESET,
-    loadAllHawkGalleryThemes,
-    loadHawkGalleryTemplate,
-  } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
-
-  HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
-  // A theme that stamps nothing — hawk.css's own unthemed structural styles apply, none of
-  // hawk-theme-typeflow.css's [data-hawk-theme='typeflow'] rules do. HawkSearchConfig has no
-  // "no theme" sentinel (unlike animation's `false`), so an explicit no-op theme is the way to
-  // demonstrate the unstyled baseline here.
-  HawkSearch.registerTheme('blank', { name: 'blank', apply() {} });
-
-  const statusEl = document.getElementById('pg-status');
-  const val = (id) => document.getElementById(id).value;
-  const checked = (id) => document.getElementById(id).checked;
-  const radio = (name) => document.querySelector(`input[name="${name}"]:checked`).value;
-  const setValue = (id, value) => {
-    const field = document.getElementById(id);
-    if (field && value !== undefined) field.value = String(value);
-  };
-  const setChecked = (id, value) => {
-    const field = document.getElementById(id);
-    if (field && value !== undefined) field.checked = Boolean(value);
-  };
-
-  // The adapter is authoritative for the playground animation profile. Markup values remain
-  // useful before JavaScript mounts, but this keeps the live controls and future gallery cards
-  // on the same maintained preset.
-  setValue('pg-tf-title-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.typeStyle);
-  setValue('pg-tf-title-direction', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.direction);
-  setValue('pg-tf-title-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.speed);
-  setValue('pg-tf-title-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.cursor);
-  setChecked('pg-tf-title-cursor-blink', HAWK_PLAYGROUND_TYPEFLOW_PRESET.title.cursorBlink);
-  setValue('pg-tf-anchor-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.typeStyle);
-  setValue('pg-tf-anchor-direction', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.direction);
-  setValue('pg-tf-anchor-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.speed);
-  setValue('pg-tf-anchor-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.cursor);
-  setChecked('pg-tf-anchor-cursor-blink', HAWK_PLAYGROUND_TYPEFLOW_PRESET.anchorTitle.cursorBlink);
-  setValue('pg-tf-content-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.typeStyle);
-  setValue('pg-tf-content-direction', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.direction);
-  setValue('pg-tf-content-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.speed);
-  setValue('pg-tf-content-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.content.cursor);
-  setValue('pg-tf-rotate-hold', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.holdDuration);
-  setValue('pg-tf-rotate-pause', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.pauseBetween);
-  setValue('pg-tf-rotate-type-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.typeStyle);
-  setValue('pg-tf-rotate-type-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.speed);
-  setValue('pg-tf-rotate-type-cursor', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.cursor);
-  setChecked(
-    'pg-tf-rotate-type-cursor-blink',
-    HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.typeConfig.cursorBlink
-  );
-  setValue('pg-tf-rotate-erase-style', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.eraseStyle);
-  setValue('pg-tf-rotate-erase-speed', HAWK_PLAYGROUND_TYPEFLOW_PRESET.rotate.eraseConfig.speed);
-
-  const tokenInputs = Array.from(document.querySelectorAll('[data-hawk-token]'));
-  const syncTokenSwatch = (input) => {
-    const swatch = input.closest('label')?.querySelector('[data-pickr-trigger]');
-    if (!swatch) return;
-    const value = input.value.trim();
-    swatch.style.setProperty('--pg-token-preview', value || 'transparent');
-    swatch.toggleAttribute('data-empty', !value);
-  };
-
-  let activePreset = null;
-  const allGalleryThemes = await loadAllHawkGalleryThemes('{{ "assets/theme-templates/" | relURL }}');
-  const themePresetSelect = document.getElementById('pg-theme-preset');
-  if (themePresetSelect && allGalleryThemes.length) {
-    themePresetSelect.innerHTML = [
-      ...allGalleryThemes.map((t) => `<option value="${t.id}">${t.label}</option>`),
-      '<option value="none">none (unstyled)</option>',
-    ].join('');
-  }
-
-  function applyThemePreset(preset) {
-    if (!preset) return;
-    if (preset.id === 'none') {
-      const noneRadio = document.querySelector('input[name="pg-theme"][value="none"]');
-      if (noneRadio) noneRadio.checked = true;
-      activePreset = null;
-      return;
-    }
-    const typeflowRadio = document.querySelector('input[name="pg-theme"][value="typeflow"]');
-    if (typeflowRadio) typeflowRadio.checked = true;
-    tokenInputs.forEach((input) => { input.value = ''; });
-    if (preset.tokens) {
-      for (const [token, value] of Object.entries(preset.tokens)) {
-        const input = tokenInputs.find((candidate) => candidate.dataset.hawkToken === token);
-        if (input) {
-          input.value = value;
-          syncTokenSwatch(input);
-        }
-      }
-    }
-    if (preset.params) {
-      if (preset.params.position) setValue('pg-position', preset.params.position);
-      if (preset.params.density) setValue('pg-density', preset.params.density);
-      if (preset.params.scale) setValue('pg-scale', preset.params.scale);
-    }
-    if (preset.revealAnimation) {
-      setValue('pg-reveal-animation', preset.revealAnimation);
-    }
-    activePreset = preset;
-    if (themePresetSelect) themePresetSelect.value = preset.id;
-  }
-
-  const requestedPresetId = new URLSearchParams(window.location.search).get('preset') || 'typeflow';
-  const requestedPreset = allGalleryThemes.find((theme) => theme.id === requestedPresetId)
-    || getHawkGalleryTheme(requestedPresetId)
-    || await loadHawkGalleryTemplate(requestedPresetId, '{{ "assets/theme-templates/" | relURL }}');
-  if (requestedPreset) {
-    applyThemePreset(requestedPreset);
-  } else if (themePresetSelect) {
-    themePresetSelect.value = 'typeflow';
-  }
-
-  // Restore persisted settings on top of the preset so the user's last-used configuration
-  // survives a reload. Skip restore when a ?preset= param is explicitly in the URL — that
-  // signals a deliberate "open with this preset" link and should not be overridden by stale state.
-  if (!new URLSearchParams(window.location.search).has('preset')) {
-    restorePlaygroundState();
-    // Re-sync Pickr swatches whose values may have been overwritten by restorePlaygroundState().
-    tokenInputs.forEach(syncTokenSwatch);
-  }
-
-  const pickers = tokenInputs.map((input) => {
-    const trigger = input.closest('label')?.querySelector('[data-pickr-trigger]');
-    syncTokenSwatch(input);
-    const picker = Pickr.create({
-      el: trigger,
-      useAsButton: true,
-      theme: 'nano',
-      default: '#20e3b2',
-      defaultRepresentation: 'HEXA',
-      components: {
-        preview: true,
-        opacity: true,
-        hue: true,
-        interaction: {
-          hex: true,
-          rgba: true,
-          input: true,
-          cancel: true,
-          save: true,
-        },
-      },
-    });
-
-    const commitPickerColor = (color) => {
-      if (!color) return;
-      input.value = color.toHEXA().toString();
-      syncTokenSwatch(input);
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-
-    picker
-      .on('show', () => {
-        // Pickr only parses solid colors. Invalid values (including CSS gradients) leave its
-        // previous selection intact until the user deliberately chooses a replacement color.
-        picker.setColor(input.value.trim(), true);
-      })
-      .on('change', commitPickerColor)
-      .on('save', (color) => {
-        commitPickerColor(color);
-        picker.hide();
-      });
-
-    input.addEventListener('input', () => syncTokenSwatch(input));
-    return picker;
-  });
-
-  const jsonValue = (id, fallback) => {
-    const field = document.getElementById(id);
-    try {
-      const parsed = JSON.parse(field.value || JSON.stringify(fallback));
-      field.setAttribute('aria-invalid', 'false');
-      return parsed;
-    } catch {
-      field.setAttribute('aria-invalid', 'true');
-      return fallback;
-    }
-  };
-
-  let search = null;
-  let debugController = null;
-  let metricsController = null;
-  let metricsTimer = null;
-  let typeflowModule = null; // { TypeFlow, createHawkAnimationTypeflow }, cached once loaded
-
-  // ── Playground settings persistence ─────────────────────────────────────────────────────────
-  // All named control values are serialised to localStorage so the playground survives a reload
-  // with the same configuration the user left it in. Only ids that actually exist in the DOM are
-  // stored/restored, so adding controls in future doesn't break older saved state.
-  const PG_STORAGE_KEY = 'hawk:playground:settings';
-
-  function savePlaygroundState() {
-    try {
-      const state = {};
-      document.querySelectorAll('.pg-controls [id]').forEach((el) => {
-        if (el.type === 'radio') {
-          if (el.checked) state[`radio:${el.name}`] = el.value;
-        } else if (el.type === 'checkbox') {
-          state[el.id] = el.checked;
-        } else if (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' || el.type === 'text' || el.type === 'number' || el.type === 'url') {
-          state[el.id] = el.value;
-        }
-      });
-      localStorage.setItem(PG_STORAGE_KEY, JSON.stringify(state));
-    } catch {
-      // localStorage unavailable (private browsing, storage quota) — silent no-op.
-    }
-  }
-
-  function restorePlaygroundState() {
-    try {
-      const raw = localStorage.getItem(PG_STORAGE_KEY);
-      if (!raw) return;
-      const state = JSON.parse(raw);
-      for (const [key, value] of Object.entries(state)) {
-        if (key.startsWith('radio:')) {
-          const name = key.slice(6);
-          const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
-          if (radio) radio.checked = true;
-        } else {
-          const el = document.getElementById(key);
-          if (!el) continue;
-          if (el.type === 'checkbox') {
-            el.checked = Boolean(value);
-          } else {
-            el.value = String(value);
-          }
-        }
-      }
-    } catch {
-      // Malformed stored JSON — ignore and use defaults.
-    }
-  }
-
-  document.getElementById('pg-reset-btn')?.addEventListener('click', () => {
-    try { localStorage.removeItem(PG_STORAGE_KEY); } catch { /* ignore */ }
-    window.location.reload();
-  });
-
-  // The released TypeFlow peer is staged locally by hawk's docs build. The toggle still degrades
-  // to 'instant' with a visible note if an incomplete/manual asset build omitted it. Only the *module* is cached — the
-  // driver itself is rebuilt fresh on every mount() so TypeFlow-option changes below actually
-  // take effect (HawkSearch resolves config.animation to a driver object once at construction).
-  async function loadTypeflowModule() {
-    if (typeflowModule) return typeflowModule;
-    try {
-      const [{ default: TypeFlow }, { createHawkAnimationTypeflow }] = await Promise.all([
-        import('{{ "webutil/libs/typeflow.mjs" | relURL }}'),
-        import('{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}'),
-      ]);
-      typeflowModule = { TypeFlow, createHawkAnimationTypeflow };
-      return typeflowModule;
-    } catch {
-      return null;
-    }
-  }
-
-  function currentTypeflowOptions() {
-    const rotateExtra = jsonValue('pg-tf-rotate-extra', {});
-    const rotateTypeConfig = {
-      speed: Number(val('pg-tf-rotate-type-speed')),
-      typeStyle: val('pg-tf-rotate-type-style'),
-      cursor: val('pg-tf-rotate-type-cursor'),
-      cursorBlink: checked('pg-tf-rotate-type-cursor-blink'),
-    };
-    const rotateEraseConfig = {
-      speed: Number(val('pg-tf-rotate-erase-speed')),
-      eraseStyle: val('pg-tf-rotate-erase-style'),
-    };
-    return {
-      title: {
-        typeStyle: val('pg-tf-title-style'),
-        direction: val('pg-tf-title-direction'),
-        speed: Number(val('pg-tf-title-speed')),
-        cursor: val('pg-tf-title-cursor'),
-        cursorBlink: checked('pg-tf-title-cursor-blink'),
-        ...jsonValue('pg-tf-title-extra', {}),
-      },
-      anchorTitle: {
-        typeStyle: val('pg-tf-anchor-style'),
-        direction: val('pg-tf-anchor-direction'),
-        speed: Number(val('pg-tf-anchor-speed')),
-        cursor: val('pg-tf-anchor-cursor'),
-        cursorBlink: checked('pg-tf-anchor-cursor-blink'),
-        ...jsonValue('pg-tf-anchor-extra', {}),
-      },
-      content: {
-        html: checked('pg-tf-content-html'),
-        typeStyle: val('pg-tf-content-style'),
-        direction: val('pg-tf-content-direction'),
-        speed: Number(val('pg-tf-content-speed')),
-        cursor: val('pg-tf-content-cursor'),
-        ...jsonValue('pg-tf-content-extra', {}),
-      },
-      rotate: {
-        holdDuration: Number(val('pg-tf-rotate-hold')),
-        pauseBetween: Number(val('pg-tf-rotate-pause')),
-        ...rotateExtra,
-        typeConfig: { ...rotateTypeConfig, ...(rotateExtra.typeConfig || {}) },
-        eraseConfig: { ...rotateEraseConfig, ...(rotateExtra.eraseConfig || {}) },
-      },
-    };
-  }
-
-  function currentParams() {
-    return {
-      scale: Number(val('pg-scale')),
-      position: val('pg-position'),
-      offset: { x: val('pg-offset-x'), y: val('pg-offset-y') },
-      alignment: val('pg-alignment'),
-      columns: Number(val('pg-columns')),
-      breakpoint: Number(val('pg-breakpoint')),
-      density: val('pg-density'),
-      allowDensityToggle: checked('pg-density-toggle'),
-    };
-  }
-
-  function currentThemeTokens() {
-    return Object.fromEntries(
-      Array.from(document.querySelectorAll('[data-hawk-token]'), (input) => [input.dataset.hawkToken, input.value.trim()])
-        .filter(([, value]) => value)
-    );
-  }
-
-  function currentPagefindInitOptions() {
-    const options = {
-      baseUrl: val('pg-pf-base-url').trim() || '/',
-      excerptLength: Number(val('pg-pf-excerpt')),
-      exactDiacritics: checked('pg-pf-diacritics'),
-      noWorker: checked('pg-pf-no-worker'),
-      indexWeight: Number(val('pg-pf-index-weight')),
-      ranking: {
-        termFrequency: Number(val('pg-rank-frequency')),
-        termSimilarity: Number(val('pg-rank-similarity')),
-        pageLength: Number(val('pg-rank-length')),
-        termSaturation: Number(val('pg-rank-saturation')),
-        diacriticSimilarity: Number(val('pg-rank-diacritic')),
-        metaWeights: jsonValue('pg-rank-meta', { title: 5 }),
-      },
-    };
-    const mergeFilter = jsonValue('pg-pf-merge-filter', {});
-    if (mergeFilter && Object.keys(mergeFilter).length) options.mergeFilter = mergeFilter;
-    if (val('pg-pf-highlight').trim()) options.highlightParam = val('pg-pf-highlight').trim();
-    if (val('pg-pf-cache').trim()) options.metaCacheTag = val('pg-pf-cache').trim();
-    return { ...options, ...jsonValue('pg-pf-init-extra', {}) };
-  }
-
-  function currentPagefindSearchOptions() {
-    const options = {};
-    const filters = jsonValue('pg-pf-filters', {});
-    if (filters && Object.keys(filters).length) options.filters = filters;
-    const sortKey = val('pg-pf-sort-key').trim();
-    if (sortKey) options.sort = { [sortKey]: val('pg-pf-sort-direction') };
-    return { ...options, ...jsonValue('pg-pf-search-extra', {}) };
-  }
-
-  function currentHawkConfig(animationName) {
-    const tabs = jsonValue('pg-tabs', []);
-    const config = {
-      index: val('pg-index').trim(),
-      id: val('pg-id').trim() || 'hawk-playground-search',
-      triggerSelector: val('pg-trigger-selector').trim() || '[data-playground-trigger]',
-      excludePages: jsonValue('pg-exclude-pages', []),
-      contentSelector: val('pg-content-selector').trim() || '[data-pagefind-body]',
-      maxResults: Number(val('pg-max-results')),
-      categoryFilterName: val('pg-category-filter').trim() || 'category',
-      includeAllTab: checked('pg-include-all'),
-      defaultTab: val('pg-default-tab').trim() || 'all',
-      eagerResults: checked('pg-eager-results'),
-      inlineFilters: checked('pg-inline-filters'),
-      previewSections: checked('pg-preview-sections'),
-      previewSectionSelector: val('pg-section-selector').trim() || 'h2, h3',
-      previewSectionExcerptLength: Number(val('pg-section-excerpt')),
-      discoveryRow: checked('pg-discovery-row')
-        ? {
-            matches: checked('pg-discovery-matches'),
-            pages: checked('pg-discovery-pages'),
-            headings: checked('pg-discovery-headings'),
-          }
-        : false,
-      enableSecondColumn: checked('pg-second-column'),
-      disableDefaultMarkdownStyles: !checked('pg-default-markdown'),
-      showPoweredBy: checked('pg-powered-by'),
-      showResultDate: checked('pg-result-date'),
-      resultDateMetaKey: val('pg-result-date-key').trim() || 'date',
-      showResultTags: checked('pg-result-tags'),
-      resultTagsMetaKey: val('pg-result-tags-key').trim() || 'tags',
-      headerControls: {
-        density: checked('pg-header-density'),
-        escape: checked('pg-header-escape'),
-      },
-      poweredByHref: val('pg-powered-href').trim() || 'https://pagefind.app/',
-      enablePins: checked('pg-pins'),
-      pinStorageKey: val('pg-pin-key').trim(),
-      maxPins: Number(val('pg-max-pins')),
-      enableRecentlyViewed: checked('pg-recent'),
-      recentlyViewedStorageKey: val('pg-recent-key').trim(),
-      maxRecentlyViewed: Number(val('pg-max-recent')),
-      hotkeys: {
-        open: checked('pg-hotkey-open'),
-        slash: checked('pg-hotkey-slash'),
-        escape: checked('pg-hotkey-escape'),
-      },
-      strings: jsonValue('pg-strings', {}),
-      rotatingPlaceholders: val('pg-placeholders').split(',').map((item) => item.trim()).filter(Boolean),
-      defaultPreviewUrl: val('pg-preview-url').trim() || undefined,
-      defaultPreviewTitle: val('pg-preview-title').trim(),
-      tabs: tabs.length ? tabs : undefined,
-      tabsUrl: !tabs.length && val('pg-tabs-url').trim() ? val('pg-tabs-url').trim() : undefined,
-      pagefindInitOptions: currentPagefindInitOptions(),
-      pagefindMergeIndexes: jsonValue('pg-pf-merge', []),
-      pagefindOptions: currentPagefindSearchOptions(),
-      theme: radio('pg-theme') === 'none' ? 'blank' : 'playground-typeflow',
-      animation: animationName === 'typeflow' ? 'typeflow' : false,
-      revealAnimation: val('pg-reveal-animation') === 'false' ? false : val('pg-reveal-animation'),
-      revealDuration: Number(val('pg-reveal-duration')),
-      resultsReveal: checked('pg-results-reveal'),
-      resultsRevealDirection: val('pg-results-reveal-direction'),
-      resultsRevealStagger: Number(val('pg-results-reveal-stagger')),
-      params: currentParams(),
-    };
-    return { ...config, ...jsonValue('pg-hawk-extra', {}) };
-  }
-
-  const escapeCode = (value) => value.replace(/[&<>]/g, (character) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-  })[character]);
-
-  function highlightCode(source) {
-    const tokenPattern = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|\b(?:import|from|const|let|var|function|return|new|await|async|if|else|class|extends|this)\b|\b(?:true|false|null|undefined)\b|\b\d+(?:\.\d+)?\b|[{}[\](),.;:])/g;
-    let highlighted = '';
-    let cursor = 0;
-
-    for (const match of source.matchAll(tokenPattern)) {
-      const token = match[0];
-      let type = 'punctuation';
-      if (token.startsWith('//') || token.startsWith('/*')) type = 'comment';
-      else if (token.startsWith('"') || token.startsWith("'")) type = 'string';
-      else if (/^(true|false|null|undefined)$/.test(token)) type = 'literal';
-      else if (/^\d/.test(token)) type = 'number';
-      else if (/^[A-Za-z]/.test(token)) type = 'keyword';
-
-      highlighted += escapeCode(source.slice(cursor, match.index));
-      highlighted += '<span class="pg-token--' + type + '">' + escapeCode(token) + '</span>';
-      cursor = match.index + token.length;
-    }
-
-    return highlighted + escapeCode(source.slice(cursor));
-  }
-
-  document.querySelectorAll('[data-pg-highlight]').forEach((code) => {
-    code.innerHTML = highlightCode(code.textContent);
-  });
-
-  function buildConfigSnippet() {
-    const theme = radio('pg-theme');
-    const animation = radio('pg-animation');
-    const lines = [`import { HawkSearch } from '@staticcanvas/hawk';`];
-    if (theme !== 'none') lines.push(`import '@staticcanvas/hawk/theme-typeflow/css';`);
-    if (animation === 'typeflow') {
-      lines.push(`import { createHawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';`);
-      lines.push(`import TypeFlow from '@staticcanvas/typeflow';`);
-    }
-    lines.push('');
-    if (theme !== 'none') {
-      lines.push(`HawkSearch.registerTheme('playground-typeflow', {`);
-      lines.push(`  name: 'playground-typeflow',`);
-      lines.push(`  apply(el) { el.dataset.hawkTheme = 'typeflow'; },`);
-      lines.push(`  tokens: ${JSON.stringify(currentThemeTokens(), null, 2)},`);
-      lines.push(`});`);
-    } else {
-      lines.push(`HawkSearch.registerTheme('blank', { name: 'blank', apply() {} });`);
-    }
-    if (animation === 'typeflow') {
-      lines.push(`HawkSearch.registerAnimation('typeflow', createHawkAnimationTypeflow(TypeFlow, ${JSON.stringify(currentTypeflowOptions(), null, 2)}));`);
-    }
-    lines.push('');
-    const config = currentHawkConfig(animation);
-    lines.push(`new HawkSearch(${JSON.stringify(config, null, 2)});`);
-    return lines.join('\n');
-  }
-
-  function refreshCodeSnippet() {
-    const el = document.getElementById('pg-code-output');
-    if (el) el.innerHTML = highlightCode(buildConfigSnippet());
-  }
-
-  function renderMetricsSnapshot() {
-    if (!metricsController) return;
-    const snap = metricsController.snapshot();
-    const grid = document.getElementById('pg-metrics-grid');
-    const rows = [
-      ['opens', snap.opens],
-      ['queries', snap.queries],
-      ['zero-result rate', snap.zeroResultRate],
-      ['avg matches', snap.averageMatches],
-      ['avg query latency (ms)', snap.averageQueryLatencyMs],
-      ['selects', snap.selects],
-      ['select rate', snap.selectRate],
-      ['tab switches', snap.tabSwitches],
-      ['pins (+/-)', `${snap.pinAdds}/${snap.pinRemoves}`],
-      ['errors', snap.errors],
-    ];
-    grid.innerHTML = rows.map(([label, value]) => `<dt>${label}</dt><dd>${value}</dd>`).join('');
-  }
-
-  function teardownDiagnostics() {
-    debugController?.dispose();
-    debugController = null;
-    metricsController?.dispose();
-    metricsController = null;
-    clearInterval(metricsTimer);
-    metricsTimer = null;
-  }
-
-  function applyDiagnostics() {
-    teardownDiagnostics();
-    if (!search) return;
-
-    if (checked('pg-debug') && window.HawkDebug) {
-      debugController = window.HawkDebug.createHawkDebug(search, { label: 'Playground' });
-    }
-
-    const metricsPanel = document.getElementById('pg-metrics-panel');
-    if (checked('pg-metrics') && window.HawkMetrics) {
-      metricsController = window.HawkMetrics.createHawkMetrics(search);
-      metricsPanel.hidden = false;
-      renderMetricsSnapshot();
-      metricsTimer = setInterval(renderMetricsSnapshot, 500);
-    } else {
-      metricsPanel.hidden = true;
-    }
-  }
-
-  let mountGeneration = 0;
-
-  async function mount() {
-    // Two controls changed in quick succession (e.g. a TypeFlow option right after switching the
-    // animation radio) can each start a mount() call before the first one's await resolves —
-    // whichever finishes last would otherwise win regardless of which is actually newer. Same
-    // stale-response guard shape as hawk.js's own #executeSearch (searchGeneration).
-    const generation = ++mountGeneration;
-
-    const animation = radio('pg-animation');
-    document.getElementById('pg-typeflow-options').hidden = animation !== 'typeflow';
-
-    let resolvedAnimation = 'instant';
-    let fallbackNote = '';
-    if (animation === 'typeflow') {
-      const mod = await loadTypeflowModule();
-      if (generation !== mountGeneration) return; // a newer mount() call superseded this one
-      if (mod) {
-        HawkSearch.registerAnimation('typeflow', mod.createHawkAnimationTypeflow(mod.TypeFlow, currentTypeflowOptions()));
-        resolvedAnimation = 'typeflow';
-      } else {
-        fallbackNote = ' (typeflow build not found in webutil/libs — see the Animation Plugins guide to stage one)';
-      }
-    }
-
-    search?.destroy();
-    if (radio('pg-theme') !== 'none') {
-      HawkSearch.registerTheme(
-        'playground-typeflow',
-        createHawkDocsTheme('playground-typeflow', currentThemeTokens())
-      );
-    }
-    search = new HawkSearch(currentHawkConfig(resolvedAnimation));
-
-    const presetNote = activePreset
-      ? `, preset: ${activePreset.label}`
-      : '';
-    statusEl.textContent = `Mounted — animation: ${resolvedAnimation}, theme: ${radio('pg-theme')}${presetNote}.${fallbackNote}`;
-    applyDiagnostics();
-    refreshCodeSnippet();
-    savePlaygroundState();
-  }
-
-  themePresetSelect?.addEventListener('change', () => {
-    const selectedId = themePresetSelect.value;
-    if (selectedId === 'none') {
-      applyThemePreset({ id: 'none' });
-    } else {
-      const match = allGalleryThemes.find((t) => t.id === selectedId);
-      if (match) applyThemePreset(match);
-    }
-    mount();
-  });
-
-  let mountDebounceTimer = null;
-  function debouncedMount() {
-    clearTimeout(mountDebounceTimer);
-    mountDebounceTimer = setTimeout(() => {
-      mount();
-    }, 120);
-  }
-
-  document.querySelectorAll('.pg-controls input[type="radio"], .pg-controls input[type="checkbox"]').forEach((input) => {
-    input.addEventListener('change', () => {
-      if (input.id === 'pg-debug' || input.id === 'pg-metrics') {
-        applyDiagnostics();
-      } else {
-        mount();
-      }
-    });
-  });
-  document.querySelectorAll('.pg-controls select, .pg-controls textarea, .pg-controls input:not([type="radio"]):not([type="checkbox"])').forEach((input) => {
-    input.addEventListener('change', () => {
-      mount();
-    });
-    // Listen to 'input' on text, number, and textarea controls so edits (like speed typing or spinner clicks) take effect live
-    input.addEventListener('input', () => {
-      debouncedMount();
-    });
-  });
-
-  window.addEventListener('keydown', (event) => {
-    if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'k') {
-      event.preventDefault();
-      if (!search) return;
-      if (search.state?.open) {
-        search.close();
-      } else {
-        search.open();
-      }
-    }
-  });
-
-  window.addEventListener('pagehide', () => {
-    pickers.forEach((picker) => picker.destroy());
-  }, { once: true });
-
-  document.querySelectorAll('.pg-copy-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const target = btn.dataset.copyTarget ? document.querySelector(btn.dataset.copyTarget) : btn.previousElementSibling;
-      const code = target?.matches?.('code') ? target : target?.querySelector?.('code');
-      if (!code) return;
-      try {
-        await navigator.clipboard.writeText(code.textContent);
-        const prev = btn.textContent;
-        btn.textContent = 'Copied!';
-        setTimeout(() => { btn.textContent = prev; }, 1200);
-      } catch {
-        // Clipboard API unavailable (permissions, insecure context) — the code is still
-        // selectable/readable in the block itself, so this is a silent no-op, not an error.
-      }
-    });
-  });
-
-  mount();
-</script>
+<script type="module" src="{{ "assets/js/playground.js" | relURL }}"></script>
 {{ end }}

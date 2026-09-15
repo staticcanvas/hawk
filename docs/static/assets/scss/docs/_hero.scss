@@ -1,0 +1,155 @@
+/* Homepage hero: title row, tagline, hero actions, and the install-tabs/minimal-usage code panels. */
+
+/* ── Homepage hero ─────────────────────────────────────────── */
+.hero {
+  position: relative;
+  padding-block: 4.5rem 4rem;
+  border-bottom: 1px solid var(--hawk-border-subtle, #1e293b);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      ellipse 900px 420px at 18% -10%,
+      var(--hawk-accent-glow, rgba(56, 189, 248, 0.16)),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 800px 420px at 86% 8%,
+      var(--hawk-accent-alt-glow, rgba(251, 146, 60, 0.14)),
+      transparent 60%
+    );
+}
+.hero-inner {
+  /* Shares .shell's own 1100px/margin:0 auto container (see index.html's class="shell
+     hero-inner") rather than adding a second, narrower max-width here — a max-width on this
+     element re-centers it inside .shell, pulling its left edge inward and out of alignment with
+     .feature-section/.guides-section below, which are .shell-only. Readable line length for the
+     tagline is handled locally, on .hero-tagline's own max-width, not by narrowing this whole
+     column. */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.hero-logo {
+  border-radius: 12px;
+  margin-bottom: 1.25rem;
+}
+.hero-eyebrow {
+  display: block;
+  color: var(--hawk-accent, #38bdf8);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.6rem;
+}
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  margin: 0 0 0.9rem;
+  background: linear-gradient(
+    120deg,
+    var(--hawk-text-primary, #f1f5f9) 55%,
+    var(--hawk-accent, #38bdf8)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.hero-tagline {
+  font-size: 1.1rem;
+  line-height: 1.55;
+  color: var(--hawk-text-secondary, #94a3b8);
+  margin: 0 0 2rem;
+  max-width: 56ch;
+}
+
+.hero-tagline strong {
+  color: #c4a7e7;
+  font-weight: 650;
+}
+
+.hero-tagline em {
+  color: #ebbcba;
+  font-style: italic;
+}
+
+:root[data-theme='light'] .hero-tagline strong {
+  color: #6f4b8b;
+}
+
+:root[data-theme='light'] .hero-tagline em {
+  color: #8a4954;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: linear-gradient(120deg, var(--hawk-accent, #38bdf8), var(--hawk-accent-alt, #fb923c));
+  color: #0b1120;
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-secondary {
+  background: var(--hawk-bg-surface, #0f172a);
+  border-color: var(--hawk-border-default, #253347);
+  color: var(--hawk-text-primary, #f1f5f9);
+  font-weight: 500;
+}
+.btn-secondary:hover {
+  border-color: var(--hawk-accent, #38bdf8);
+}
+.btn-secondary kbd {
+  font-size: 0.72rem;
+  font-weight: 400;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  color: var(--hawk-text-muted, #64748b);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-weight: 500;
+  padding-inline: 0.5rem;
+}
+.btn-ghost:hover {
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+
+.hero-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--hawk-bg-surface, #0f172a);
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.85rem;
+}
+.hero-install-prompt {
+  color: var(--hawk-text-muted, #64748b);
+}
+.hero-install code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--hawk-text-primary, #f1f5f9);
+}
+

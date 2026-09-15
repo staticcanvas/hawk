@@ -1,0 +1,102 @@
+/* ── Full-width editorial finish ─────────────────────────────────────────── */
+body {
+  font-family:
+    'Hanken Grotesk',
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+
+.shell,
+.page-shell:not(.page-shell--home) {
+  width: min(var(--site-frame-width), 100rem);
+  max-width: 100rem;
+}
+
+.doc-article,
+.doc-page--no-toc .doc-article {
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+}
+
+.hero-title,
+.doc-header h1,
+.doc-content > h1 {
+  font-family: 'Unbounded', 'Hanken Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.section-heading h2,
+.doc-content h2,
+.doc-content h3,
+.doc-content h4,
+.feature-card h3,
+.guide-card h3 {
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  font-weight: 700;
+}
+
+.hero-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  margin-block-end: var(--site-space-md);
+}
+
+.hero-title-row .hero-title {
+  margin: 0;
+}
+
+.btn-source {
+  gap: 0.55rem;
+  border: 1px solid var(--hawk-border-default);
+  background: color-mix(in srgb, var(--hawk-bg-surface-elevated) 72%, transparent);
+  color: var(--hawk-text-primary);
+  text-decoration: none;
+}
+
+.btn-source:hover {
+  border-color: var(--hawk-accent);
+  color: var(--hawk-accent);
+}
+
+.feature-card {
+  position: relative;
+  min-height: 14rem;
+  overflow: hidden;
+}
+
+.feature-card__heading {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(0.85rem, 1.8vw, 1.4rem);
+}
+
+.feature-index {
+  flex: 0 0 auto;
+  color: color-mix(in srgb, var(--hawk-accent) 70%, transparent);
+  font-family: 'Rubik Spray Paint', fantasy;
+  font-size: clamp(2.8rem, 4.2vw, 5.2rem);
+  font-weight: 400;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+}
+
+.feature-card__heading h3 {
+  margin: 0;
+  padding-block-end: 0.08em;
+  font-size: clamp(1.2rem, 1.05rem + 0.5vw, 1.55rem);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.feature-card__heading + p {
+  max-width: 48ch;
+  margin: 0;
+  line-height: 1.65;
+}
+

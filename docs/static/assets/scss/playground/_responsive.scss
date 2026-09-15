@@ -1,0 +1,34 @@
+/* Responsive breakpoints for the workbench layout. */
+
+@media (max-width: 1200px) {
+  .pg-workbench {
+    grid-template-columns: 1fr;
+  }
+
+  .pg-output-rail {
+    position: static;
+    max-height: none;
+  }
+
+  .pg-code--output {
+    max-height: 34rem;
+  }
+
+  .pg-review-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .pg-controls,
+  .pg-token-grid,
+  .pg-tf-subgroup,
+  .pg-review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pg-launchbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

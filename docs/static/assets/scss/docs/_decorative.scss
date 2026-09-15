@@ -1,0 +1,121 @@
+/* Themed scrollbars, the background comb-pattern mask, and the back-to-top button. */
+
+/* Every scrollbar is quiet at rest and gains contrast only while its owner scrolls. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--hawk-text-muted, #9fb0ad) 18%, transparent) transparent;
+}
+
+html[data-site-scrolling='true'],
+*[data-site-scrolling='true'] {
+  scrollbar-color: color-mix(in srgb, var(--hawk-accent, #20e3b2) 68%, transparent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 0.58rem;
+  height: 0.58rem;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hawk-text-muted, #9fb0ad) 18%, transparent);
+  background-clip: padding-box;
+}
+
+html[data-site-scrolling='true']::-webkit-scrollbar-thumb,
+*[data-site-scrolling='true']::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--hawk-accent, #20e3b2) 68%, transparent);
+  background-clip: padding-box;
+}
+
+.hawk-results-pane:not([data-hawk-scrolling='true']):hover::-webkit-scrollbar-thumb,
+.hawk-preview-pane:not([data-hawk-scrolling='true']):hover::-webkit-scrollbar-thumb,
+.hawk-modal-filters:not([data-hawk-scrolling='true']):hover::-webkit-scrollbar-thumb {
+  background: var(--hawk-scrollbar-thumb);
+}
+
+/* The SVG is transparent; this soft mask lets the comb surround blend with either theme. */
+.search-trigger-btn::before {
+  opacity: 0.3;
+  -webkit-mask-image: radial-gradient(
+    ellipse at center,
+    transparent 0 24%,
+    rgb(0 0 0 / 0.96) 43%,
+    rgb(0 0 0 / 0.72) 57%,
+    rgb(0 0 0 / 0.46) 70%,
+    rgb(0 0 0 / 0.22) 82%,
+    rgb(0 0 0 / 0.08) 92%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse at center,
+    transparent 0 24%,
+    rgb(0 0 0 / 0.96) 43%,
+    rgb(0 0 0 / 0.72) 57%,
+    rgb(0 0 0 / 0.46) 70%,
+    rgb(0 0 0 / 0.22) 82%,
+    rgb(0 0 0 / 0.08) 92%,
+    transparent 100%
+  );
+}
+
+:root[data-theme='light'] .search-trigger-btn::before {
+  opacity: 0.2;
+}
+
+@media (max-width: 700px) {
+  :root {
+    --site-frame-width: 100%;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Back to top (baseof.html's own #back-to-top, shown/hidden by scroll position in its script
+   block). Fixed so it stays put regardless of scroll, offset above the footer's own safe-area
+   padding on phones so it never sits under a home-indicator/gesture-bar. */
+.back-to-top {
+  position: fixed;
+  right: var(--site-space-md, 1.5rem);
+  bottom: calc(var(--site-space-md, 1.5rem) + env(safe-area-inset-bottom, 0px));
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 999px;
+  background: var(--hawk-bg-surface-elevated, #1a2634);
+  color: var(--hawk-text-secondary, #94a3b8);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+.back-to-top:hover,
+.back-to-top:focus-visible {
+  color: var(--hawk-accent, #38bdf8);
+  border-color: var(--hawk-accent, #38bdf8);
+}
+
+.back-to-top:focus-visible {
+  outline: 2px solid var(--hawk-accent, #38bdf8);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: none;
+  }
+}

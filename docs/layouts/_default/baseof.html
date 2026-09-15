@@ -23,13 +23,14 @@
   <meta name="description" content="{{ .Description | default site.Params.description }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Rubik+Spray+Paint&amp;family=Unbounded:wght@600;700&amp;display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Rubik+Spray+Paint&amp;family=Space+Grotesk:wght@400;500&amp;family=Unbounded:wght@600;700&amp;display=swap">
   <link rel="icon" href="{{ "assets/branding/hawk-logo.svg" | relURL }}">
   <link rel="stylesheet" href="{{ "webutil/libs/hawk.css" | relURL }}">
   <link rel="stylesheet" href="{{ "webutil/libs/hawk-theme-typeflow.css" | relURL }}">
   <link rel="stylesheet" href="{{ "assets/docs.css" | relURL }}">
   {{ if eq .Type "playground" }}
   <link rel="stylesheet" href="{{ "webutil/libs/pickr-nano.min.css" | relURL }}">
+  <link rel="stylesheet" href="{{ "webutil/libs/lume.css" | relURL }}">
   <link rel="stylesheet" href="{{ "assets/playground.css" | relURL }}">
   {{ end }}
   <script type="importmap">
@@ -150,6 +151,10 @@
     </div>
   </footer>
 
+  <button type="button" id="back-to-top" class="back-to-top" aria-label="Back to top" hidden>
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
   {{/* Explicit tabs computed from every category actually in use across the site's own content
        right now (every content page's category/categories frontmatter) — renders synchronously
        on mount instead of waiting on Pagefind's filters() to resolve, in a fixed, deliberate
@@ -190,259 +195,27 @@
     {{ end }}
   {{ end }}
 
-  <script type="module">
-    import { HawkSearch } from '{{ "webutil/libs/hawk.mjs" | relURL }}';
-    import { HawkThemeTypeflow } from '{{ "webutil/libs/hawk-theme-typeflow.mjs" | relURL }}';
-    import { HawkAnimationTypeflow } from '{{ "webutil/libs/hawk-animation-typeflow.mjs" | relURL }}';
-    import { createHawkDocsSearchConfig } from '{{ "assets/hawk-docs-adapter.mjs" | relURL }}';
-
-    HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
-    HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
-
-    const categories = {{ $categories | jsonify | safeJS }};
-    const categoryDefaults = {{ $categoryDefaults | jsonify | safeJS }};
-    // A working example of HawkTab.accentColor, documented in api.md's Tabs section — one color
-    // per category, so the filter row itself hints at "which tab" before you even read the label.
-    const accentColors = { Guides: '#20e3b2', Reference: '#0cebeb', Resources: '#7ee8c6', Tools: '#29ffc6' };
-
-    new HawkSearch(createHawkDocsSearchConfig({
-      index: document.body.dataset.hawkIndex,
+  {{/* Hugo-computed site-structure data (category list, per-category landing pages, and
+       baseURL-correct exclude paths) that only the build itself can derive — everything else
+       lives in docs/static/assets/js/ as plain external modules, loaded below in the same order
+       this used to run inline. */}}
+  <script>
+    window.__HAWK_DOCS_SEARCH_DATA__ = {
+      categories: {{ $categories | jsonify | safeJS }},
+      categoryDefaults: {{ $categoryDefaults | jsonify | safeJS }},
       excludePages: [
         {{ ("" | relURL) | jsonify | safeJS }},
         {{ ("404.html" | relURL) | jsonify | safeJS }},
         {{ ("playground/" | relURL) | jsonify | safeJS }},
       ],
-      categories,
-      categoryDefaults,
-      accentColors,
-    }));
-
-    // ── Theme toggle ──────────────────────────────────────────────────────────────────────
-    // Reuses hawk-theme-typeflow.css's existing [data-theme='light'] token overrides (already
-    // shipped for the search modal) for the whole site's chrome too — no separate light-mode
-    // color CSS needed in docs.css: every --hawk-* custom property docs.css reads inherits from
-    // <html>, and hawk-theme-typeflow.css's light-mode selector already matches any
-    // [data-theme='light'] ancestor of the [data-hawk-theme='typeflow'] element (body carries
-    // that attribute already), so toggling documentElement.dataset.theme re-themes everything at
-    // once.
-    const themeToggle = document.querySelector('.theme-toggle');
-    const applyTheme = (theme) => {
-      document.documentElement.dataset.theme = theme;
-      if (themeToggle) themeToggle.setAttribute('aria-pressed', String(theme === 'light'));
     };
-    if (themeToggle) {
-      themeToggle.addEventListener('click', () => {
-        const next = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
-        applyTheme(next);
-        try {
-          localStorage.setItem('hawk-docs:theme', next);
-        } catch (e) {
-          // private browsing / storage disabled — the choice still applies this session.
-        }
-      });
-    }
-    applyTheme(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark');
-    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    // ── Responsive documentation menu ────────────────────────────────────────────────────
-    const mobileNav = document.querySelector('[data-mobile-nav]');
-    if (mobileNav) {
-      const mobileNavBreakpoint = matchMedia('(max-width: 960px)');
-      const closeMobileNav = () => { mobileNav.open = false; };
-      closeMobileNav();
-      mobileNavBreakpoint.addEventListener('change', closeMobileNav);
-      mobileNav.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMobileNav));
-      mobileNav.addEventListener('keydown', (event) => {
-        if (event.key !== 'Escape' || !mobileNav.open) return;
-        event.preventDefault();
-        closeMobileNav();
-        mobileNav.querySelector('summary').focus();
-      });
-    }
-
-    // ── Site-wide scrollbar activity ─────────────────────────────────────────────────────
-    const scrollbarTimers = new WeakMap();
-    const markScrolling = (target) => {
-      const scrollable = target === document ? document.documentElement : target;
-      if (!(scrollable instanceof Element)) return;
-      scrollable.dataset.siteScrolling = 'true';
-      clearTimeout(scrollbarTimers.get(scrollable));
-      scrollbarTimers.set(scrollable, setTimeout(() => {
-        scrollable.dataset.siteScrolling = 'false';
-      }, 550));
-    };
-    document.addEventListener('scroll', (event) => markScrolling(event.target), { capture: true, passive: true });
-    window.addEventListener('scroll', () => markScrolling(document.documentElement), { passive: true });
-
-    // ── Homepage search-model gallery ─────────────────────────────────────────────────────
-    // Screenshots are large, so only one card is shown at a time and crossfades into the next.
-    // Any deliberate pointer or keyboard interaction stops autoplay.
-    document.querySelectorAll('[data-search-gallery]').forEach((gallery) => {
-      const track = gallery.querySelector('[data-gallery-track]');
-      const cards = Array.from(track?.querySelectorAll('.showcase-card') || []);
-      if (!track || !cards.length) return;
-
-      let activeIndex = Math.max(0, cards.findIndex((card) => card.classList.contains('is-active')));
-      let galleryTimer = null;
-      const stopGallery = () => {
-        clearInterval(galleryTimer);
-        galleryTimer = null;
-      };
-      const showNextCard = () => {
-        const current = cards[activeIndex];
-        activeIndex = (activeIndex + 1) % cards.length;
-        const next = cards[activeIndex];
-        current.classList.remove('is-active');
-        next.classList.add('is-active');
-      };
-      if (!reduceMotion && cards.length > 1) {
-        galleryTimer = setInterval(showNextCard, 4200);
-        track.addEventListener('pointerdown', stopGallery, { once: true });
-        track.addEventListener('keydown', stopGallery, { once: true });
-      }
-    });
-
-    // ── Install tabs ──────────────────────────────────────────────────────────────────────
-    document.querySelectorAll('[data-install-tabs]').forEach((tabs) => {
-      const tabList = tabs.querySelector('[role="tablist"]');
-      const tabButtons = Array.from(tabList.querySelectorAll('[role="tab"]'));
-      const activateTab = (nextTab, focus = false) => {
-        tabButtons.forEach((tab) => {
-          const selected = tab === nextTab;
-          tab.setAttribute('aria-selected', String(selected));
-          tab.tabIndex = selected ? 0 : -1;
-          document.getElementById(tab.getAttribute('aria-controls')).hidden = !selected;
-        });
-        if (focus) nextTab.focus();
-      };
-      tabButtons.forEach((tab, index) => {
-        tab.addEventListener('click', () => activateTab(tab));
-        tab.addEventListener('keydown', (event) => {
-          if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-          event.preventDefault();
-          const nextIndex = event.key === 'Home'
-            ? 0
-            : event.key === 'End'
-              ? tabButtons.length - 1
-              : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabButtons.length) % tabButtons.length;
-          activateTab(tabButtons[nextIndex], true);
-        });
-      });
-    });
-
-    // ── Scroll-aware table of contents ────────────────────────────────────────────────────
-    const toc = document.querySelector('.doc-toc');
-    if (toc) {
-      const tocDisclosure = toc.querySelector('[data-toc-disclosure]');
-      const tocBreakpoint = matchMedia('(max-width: 960px)');
-      const syncTocDisclosure = () => {
-        if (tocDisclosure) tocDisclosure.open = !tocBreakpoint.matches;
-      };
-      syncTocDisclosure();
-      tocBreakpoint.addEventListener('change', syncTocDisclosure);
-
-      const tocLinks = Array.from(toc.querySelectorAll('a[href^="#"]'));
-      tocLinks.forEach((link) => {
-        link.addEventListener('click', () => {
-          if (tocDisclosure && tocBreakpoint.matches) tocDisclosure.open = false;
-        });
-      });
-      const headingLinks = tocLinks
-        .map((link) => ({ link, heading: document.getElementById(decodeURIComponent(link.hash.slice(1))) }))
-        .filter(({ heading }) => heading);
-      const setCurrentHeading = (id) => {
-        headingLinks.forEach(({ link }) => {
-          if (decodeURIComponent(link.hash.slice(1)) === id) {
-            link.setAttribute('aria-current', 'location');
-            link.scrollIntoView({ block: 'nearest', behavior: reduceMotion ? 'auto' : 'smooth' });
-          } else {
-            link.removeAttribute('aria-current');
-          }
-        });
-      };
-      if (headingLinks.length && 'IntersectionObserver' in window) {
-        const visibleHeadings = new Map();
-        const tocObserver = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) visibleHeadings.set(entry.target.id, entry.boundingClientRect.top);
-            else visibleHeadings.delete(entry.target.id);
-          });
-          const current = [...visibleHeadings.entries()].sort((a, b) => a[1] - b[1])[0];
-          if (current) setCurrentHeading(current[0]);
-        }, { rootMargin: '-12% 0px -72% 0px', threshold: [0, 1] });
-        headingLinks.forEach(({ heading }) => tocObserver.observe(heading));
-        setCurrentHeading(headingLinks[0].heading.id);
-      }
-    }
-
-    // ── Code-block copy controls ─────────────────────────────────────────────────────────
-    const copyText = async (text) => {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text);
-        return;
-      }
-      const fallback = document.createElement('textarea');
-      fallback.value = text;
-      fallback.setAttribute('readonly', '');
-      fallback.style.position = 'fixed';
-      fallback.style.opacity = '0';
-      document.body.appendChild(fallback);
-      fallback.select();
-      const copied = document.execCommand('copy');
-      fallback.remove();
-      if (!copied) throw new Error('Copy command failed');
-    };
-    document.querySelectorAll('.doc-content .highlight').forEach((block) => {
-      const code = block.querySelector('pre code');
-      if (!code || block.querySelector('.code-copy-btn')) return;
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'code-copy-btn';
-      button.textContent = 'Copy';
-      button.setAttribute('aria-label', 'Copy code');
-      button.addEventListener('click', async () => {
-        clearTimeout(button._copyResetTimer);
-        try {
-          await copyText(code.textContent);
-          button.textContent = 'Copied';
-          button.dataset.state = 'copied';
-          button.setAttribute('aria-label', 'Code copied');
-        } catch (error) {
-          button.textContent = 'Copy failed';
-          button.dataset.state = 'error';
-          button.setAttribute('aria-label', 'Code copy failed');
-        }
-        button._copyResetTimer = setTimeout(() => {
-          button.textContent = 'Copy';
-          button.removeAttribute('data-state');
-          button.setAttribute('aria-label', 'Copy code');
-        }, 1800);
-      });
-      block.appendChild(button);
-    });
-
-    // ── Scroll-reveal ─────────────────────────────────────────────────────────────────────
-    // Fades/slides [data-reveal] elements in as they enter the viewport. Skips everything
-    // (elements start fully visible, no observer attached) when prefers-reduced-motion is set,
-    // or if IntersectionObserver isn't available at all — a static page is a correct fallback
-    // for either case, not a broken one.
-    const revealTargets = document.querySelectorAll('[data-reveal]');
-    if (revealTargets.length && !reduceMotion && 'IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('is-revealed');
-              observer.unobserve(entry.target);
-            }
-          }
-        },
-        { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
-      );
-      revealTargets.forEach((el) => observer.observe(el));
-    } else {
-      revealTargets.forEach((el) => el.classList.add('is-revealed'));
-    }
   </script>
+  <script type="module" src="{{ "assets/js/site-search.js" | relURL }}"></script>
+  <script type="module" src="{{ "assets/js/theme-toggle.js" | relURL }}"></script>
+  <script type="module" src="{{ "assets/js/chrome-typeflow.js" | relURL }}"></script>
+  <script type="module" src="{{ "assets/js/mobile-nav.js" | relURL }}"></script>
+  <script type="module" src="{{ "assets/js/scroll-effects.js" | relURL }}"></script>
+  <script type="module" src="{{ "assets/js/toc-scrollspy.js" | relURL }}"></script>
+  <script type="module" src="{{ "assets/js/code-examples.js" | relURL }}"></script>
 </body>
 </html>

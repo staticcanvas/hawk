@@ -1,0 +1,87 @@
+/* Token colors for the playground's own client-side JS syntax highlighter — see docs/static/assets/js/code-highlight.js. */
+
+/*
+ * Playground page styles — reuses hawk's own --hawk-* custom properties (see docs.css's header
+ * comment) so the controls panel matches both the dark/light site theme and whichever hawk theme
+ * the mounted instance itself is currently using, with no separate color decisions of its own.
+ */
+
+.doc-page--playground .doc-article {
+  /* single.html's own .doc-article caps prose at 48rem — too narrow for a controls panel plus a
+     mounted search instance sitting beside it. */
+  max-width: none;
+}
+
+.pg-controls {
+  min-width: 0;
+}
+
+.pg-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--hawk-accent, #38bdf8);
+  color: #04121c;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.pg-open-btn:hover {
+  filter: brightness(1.08);
+}
+.pg-open-btn kbd {
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: rgba(4, 18, 28, 0.16);
+  border: 1px solid rgba(4, 18, 28, 0.28);
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  color: #04121c;
+}
+
+.pg-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  color: #eb6f92;
+  border: 1px solid color-mix(in srgb, #eb6f92 55%, var(--hawk-border-default, #253347));
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  line-height: 1.2;
+}
+.pg-reset-btn:hover {
+  color: #fff;
+  background: #eb6f92;
+  border-color: #eb6f92;
+}
+
+
+.pg-status {
+  font-size: 0.82rem;
+  color: var(--hawk-text-muted, #64748b);
+  margin: 0.6rem 0 0;
+}
+
+.pg-controls fieldset,
+.pg-controls .pg-section {
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 8px;
+  margin: 1rem 0 0;
+  padding: 0.75rem 1rem;
+}
+.pg-controls legend {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--hawk-text-muted, #64748b);
+  padding: 0 0.4rem;
+}
+
