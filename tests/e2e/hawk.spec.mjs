@@ -96,62 +96,6 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(cards.locator('.feature-index svg')).toHaveCount(9);
   });
 
-  test('the homepage search-model gallery renders its data manifest and crossfades one card at a time', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 360, height: 900 });
-    await page.goto('index.html');
-
-    const gallery = page.locator('[data-search-gallery]');
-    const track = gallery.locator('[data-gallery-track]');
-    const cards = track.locator('.showcase-card');
-    const galleryTitle = gallery.locator('#search-gallery-title');
-    await expect(galleryTitle).toHaveText('Search that belongs to your site.');
-    await expect(gallery.locator('.search-gallery__header')).toContainText(
-      'compact, two-column, filtered, and saved-result layouts'
-    );
-    await expect(galleryTitle).toHaveCount(1);
-    await expect(cards).toHaveCount(4);
-    await expect(cards.first().locator('img')).toHaveAttribute('src', /assets\/compact\.png$/);
-    await expect
-      .poll(() =>
-        cards
-          .first()
-          .locator('img')
-          .evaluate((image) => image.naturalWidth)
-      )
-      .toBeGreaterThan(0);
-
-    // Screenshots are large, so only one card is shown at a time — no arrow navigation, same
-    // JSON source, the rest sit hidden behind the active card until autoplay turns to them.
-    await expect(gallery.locator('[data-gallery-scroll]')).toHaveCount(0);
-    await expect(gallery).not.toContainText('Search layouts');
-    await expect(cards.first()).toHaveClass(/is-active/);
-    await expect(cards.nth(1)).not.toHaveClass(/is-active/);
-
-    await expect(cards.nth(1).locator('.showcase-card__media')).toHaveCSS('animation-name', 'none');
-
-    // Autoplay crossfades to the next card roughly every 4.2s.
-    await expect(cards.nth(1)).toHaveClass(/is-active/, { timeout: 6000 });
-    await expect(cards.first()).not.toHaveClass(/is-active/);
-    await expect
-      .poll(() => page.evaluate(() => document.documentElement.scrollWidth))
-      .toBeLessThanOrEqual(360);
-
-    await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.reload();
-    const desktopTrack = page.locator('[data-gallery-track]');
-    const desktopMedia = desktopTrack.locator('.showcase-card.is-active .showcase-card__media');
-    const desktopImage = desktopMedia.locator('img');
-    const desktopLayout = await desktopMedia.evaluate((element) => {
-      const box = element.getBoundingClientRect();
-      return { width: box.width, ratio: box.width / box.height };
-    });
-    expect(desktopLayout.width).toBeGreaterThan(900);
-    expect(desktopLayout.ratio).toBeCloseTo(21 / 9, 1);
-    await expect(desktopImage).toHaveCSS('object-fit', 'contain');
-  });
-
   test('homepage capability cards use title initials and semantic emphasis', async ({ page }) => {
     const cards = page.locator('.feature-card');
     await expect(cards).toHaveCount(9);
@@ -178,14 +122,6 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
   test('homepage headings, guides, demo note, and footer retain their editorial layout', async ({
     page,
   }) => {
-    const sectionTitle = page.locator('.feature-section > .section-heading h2');
-    await expect(sectionTitle).toHaveText('Search that belongs to your site.');
-    const titleCenterOffset = await sectionTitle.evaluate((element) => {
-      const box = element.getBoundingClientRect();
-      return Math.abs(box.left + box.width / 2 - window.innerWidth / 2);
-    });
-    expect(titleCenterOffset).toBeLessThanOrEqual(2);
-
     const guideMarkers = page.locator('.guide-card__index');
     await expect(guideMarkers.first()).not.toHaveText(/^\d+$/);
     await expect(guideMarkers.first()).toHaveCSS('font-family', /Rubik Spray Paint/);
@@ -339,8 +275,8 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await page.goto('themes/index.html');
     const cards = page.locator('[data-gallery-theme]');
     const playgroundLinks = page.locator('.theme-gallery-playground');
-    await expect(cards).toHaveCount(14);
-    await expect(playgroundLinks).toHaveCount(14);
+    await expect(cards).toHaveCount(24);
+    await expect(playgroundLinks).toHaveCount(24);
     await expect(page.locator('[data-gallery-theme="midnight-wave"]')).toContainText(
       'Midnight Wave'
     );
@@ -415,9 +351,12 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
   }) => {
     await page.goto('playground/index.html');
 
+    // 22 single-color tokens (each with a swatch) plus the 3 backdrop scrim tokens — gradient,
+    // opacity, blur — that aren't a single pickable color and so have no swatch (see the
+    // Backdrop scrim fieldset in docs/layouts/playground/single.html).
     const inputs = page.locator('[data-hawk-token]');
     const swatches = page.locator('[data-pickr-trigger]');
-    await expect(inputs).toHaveCount(22);
+    await expect(inputs).toHaveCount(25);
     await expect(swatches).toHaveCount(22);
     await expect(swatches.first()).toHaveCSS('background-color', 'rgb(54, 69, 79)');
 
@@ -465,7 +404,10 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
       'metadata',
       'frontmatter',
     ]);
-    await expect(result.locator('.hawk-result-desc + .hawk-result-meta')).toBeVisible();
+    // Tags/date render above the excerpt, not below (hawk.js's #resultMetaMarkup is emitted
+    // before .hawk-result-desc) — see devtracker-pending.md's "left column results are showing
+    // ... 'guide guide date' before the description" for why that ordering is deliberate.
+    await expect(result.locator('.hawk-result-meta + .hawk-result-desc')).toBeVisible();
   });
 
   test('the discovery row uses real Pagefind matches and stacks all groups at 360px', async ({

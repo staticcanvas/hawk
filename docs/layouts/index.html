@@ -4,6 +4,7 @@
   for the home page specifically). Full-bleed hero, unlike every other page's .shell-constrained
   single column — see baseof.html's .IsHome check on the wrapping div.
 */}}
+{{ partial "pagefind-frontmatter.html" . }}
 <section class="hero">
   <div class="shell hero-inner">
     <p class="hero-release">Version v{{ site.Params.version }} released <span aria-hidden="true">·</span> MIT License</p>
@@ -26,61 +27,65 @@
       </a>
     </div>
 
+    {{/* Every .install-tabs__panel carries exactly one data-copy-text (the literal string a
+         click copies) — see baseof.html's "Install tabs" JS, which wires role="tab"/"tabpanel"
+         switching generically for any tab count, plus a copy-button handler keyed off
+         data-copy-text so panels don't need distinct per-panel copy logic. */}}
     <div class="install-tabs" data-install-tabs>
       <div class="install-tabs__list" role="tablist" aria-label="Install Hawk">
         <button type="button" role="tab" id="install-tab-npm" aria-controls="install-panel-npm" aria-selected="true">npm</button>
         <button type="button" role="tab" id="install-tab-pnpm" aria-controls="install-panel-pnpm" aria-selected="false" tabindex="-1">pnpm</button>
         <button type="button" role="tab" id="install-tab-bun" aria-controls="install-panel-bun" aria-selected="false" tabindex="-1">bun</button>
+        <button type="button" role="tab" id="install-tab-esm" aria-controls="install-panel-esm" aria-selected="false" tabindex="-1">ESM</button>
+        <button type="button" role="tab" id="install-tab-umd" aria-controls="install-panel-umd" aria-selected="false" tabindex="-1">UMD</button>
         <button type="button" role="tab" id="install-tab-jsdelivr" aria-controls="install-panel-jsdelivr" aria-selected="false" tabindex="-1">jsDelivr</button>
       </div>
       <div class="install-tabs__panel" role="tabpanel" id="install-panel-npm" aria-labelledby="install-tab-npm">
         <span class="hero-install-prompt" aria-hidden="true">$</span><code>npm install @staticcanvas/hawk</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="npm install @staticcanvas/hawk" aria-label="Copy install command">Copy</button>
       </div>
       <div class="install-tabs__panel" role="tabpanel" id="install-panel-pnpm" aria-labelledby="install-tab-pnpm" hidden>
         <span class="hero-install-prompt" aria-hidden="true">$</span><code>pnpm add @staticcanvas/hawk</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="pnpm add @staticcanvas/hawk" aria-label="Copy install command">Copy</button>
       </div>
       <div class="install-tabs__panel" role="tabpanel" id="install-panel-bun" aria-labelledby="install-tab-bun" hidden>
         <span class="hero-install-prompt" aria-hidden="true">$</span><code>bun add @staticcanvas/hawk</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="bun add @staticcanvas/hawk" aria-label="Copy install command">Copy</button>
+      </div>
+      {{/* Hugo's own highlight func reuses the exact .chroma token classes already themed (both
+           color modes) in docs.css for markdown code fences — no separate client-side highlighter
+           needed for the splash page's hand-built panels. */}}
+      {{ $esmCode := "import { HawkSearch } from '@staticcanvas/hawk';\n\nnew HawkSearch({ index: '/pagefind/' });" }}
+      <div class="install-tabs__panel install-tabs__panel--code" role="tabpanel" id="install-panel-esm" aria-labelledby="install-tab-esm" hidden>
+        {{ highlight $esmCode "js" "" }}
+        <button type="button" class="install-tabs__copy" data-copy-text="import { HawkSearch } from '@staticcanvas/hawk';&#10;&#10;new HawkSearch({ index: '/pagefind/' });" aria-label="Copy ESM usage example">Copy</button>
+      </div>
+      {{ $umdCode := "<script src=\"dist/hawk.min.js\"></script>\n<script>\n  new Hawk({ index: '/pagefind/' });\n</script>" }}
+      <div class="install-tabs__panel install-tabs__panel--code" role="tabpanel" id="install-panel-umd" aria-labelledby="install-tab-umd" hidden>
+        {{ highlight $umdCode "html" "" }}
+        <button type="button" class="install-tabs__copy" data-copy-text="&lt;script src=&quot;dist/hawk.min.js&quot;&gt;&lt;/script&gt;&#10;&lt;script&gt;&#10;  new Hawk({ index: '/pagefind/' });&#10;&lt;/script&gt;" aria-label="Copy UMD usage example">Copy</button>
       </div>
       <div class="install-tabs__panel" role="tabpanel" id="install-panel-jsdelivr" aria-labelledby="install-tab-jsdelivr" hidden>
         <code>https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.mjs</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.mjs" aria-label="Copy jsDelivr URL">Copy</button>
       </div>
+    </div>
+
+    {{/* The most minimal complete, self-contained mount — trigger: {container} renders hawk's
+         own button, so this needs no hand-built markup at all beyond the two lines shown. See
+         "Zero-config to start" below and docs/content/api.md#built-in-trigger. */}}
+    {{ $minimalCode := "import { HawkSearch } from '@staticcanvas/hawk';\nimport '@staticcanvas/hawk/css';\n\nnew HawkSearch({\n  index: '/pagefind/',\n  trigger: { container: 'body' },\n});" }}
+    <div class="hero-minimal-usage">
+      <p class="hero-minimal-usage__label">Minimal usage</p>
+      {{ highlight $minimalCode "js" "" }}
+      <button type="button" class="install-tabs__copy" data-copy-text="import { HawkSearch } from '@staticcanvas/hawk';&#10;import '@staticcanvas/hawk/css';&#10;&#10;new HawkSearch({&#10;  index: '/pagefind/',&#10;  trigger: { container: 'body' },&#10;});" aria-label="Copy minimal usage example">Copy</button>
     </div>
   </div>
 </section>
 
+<!-- SECTION: FEATURES LAYOUT TYPES -->
 {{ if .Params.features }}
 <section class="shell feature-section">
-  {{ with site.Data.search_gallery.items }}
-  <section class="search-gallery" aria-labelledby="search-gallery-title" data-search-gallery>
-    <header class="section-heading search-gallery__header">
-      <div class="search-gallery__title-group">
-        <h2 id="search-gallery-title">Search that belongs to your site.</h2>
-        <p>Configured Hawk models show compact, two-column, filtered, and saved-result layouts.</p>
-      </div>
-    </header>
-    <div class="search-gallery__track" id="search-gallery-track" tabindex="0" data-gallery-track data-reveal>
-    {{ range $index, $showcase := . }}
-    <figure class="showcase-card{{ if eq $index 0 }} is-active{{ end }}">
-      <div class="showcase-card__media">
-        {{ with $showcase.image }}
-        <img src="{{ . | relURL }}" alt="{{ $showcase.alt | default (printf "Hawk %s search layout" $showcase.title) }}">
-        {{ else }}
-        <div class="showcase-placeholder" data-layout="{{ $showcase.id }}" role="img" aria-label="Screenshot placeholder for {{ $showcase.title }} mode">
-          <span></span><span></span><span></span><span></span>
-        </div>
-        {{ end }}
-      </div>
-      <figcaption>
-        <span>{{ $showcase.label }}</span>
-        <strong>{{ $showcase.title }}</strong>
-        <p>{{ $showcase.body }}</p>
-      </figcaption>
-    </figure>
-    {{ end }}
-    </div>
-  </section>
-  {{ end }}
   <header class="section-subheading feature-heading">
     <h3>Hawk's features</h3>
   </header>
@@ -111,7 +116,6 @@
 
 <section class="shell guides-section">
   <header class="section-heading guides-heading">
-    <span>Documentation</span>
     <h2>Guides</h2>
     <a class="guides-all-link" href="{{ "guides/" | relURL }}">View all guides <span aria-hidden="true">&rarr;</span></a>
   </header>
