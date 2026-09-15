@@ -58,11 +58,13 @@
   "scripts": {
     "dev": "vite",
     "serve:demo": "vite --open docs/static/webutil/index.html",
-    "docs:build": "npm run build && hugo --source docs && node scripts/pagefind-index.mjs --site public",
-    "docs:serve": "npm run build && hugo --source docs && node scripts/pagefind-index.mjs --site public && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
+    "docs:build": "npm run build && node scripts/compile-docs-scss.mjs && node scripts/generate-theme-css.mjs && hugo --source docs && node scripts/pagefind-index.mjs --site public",
+    "docs:serve": "npm run build && node scripts/compile-docs-scss.mjs && node scripts/generate-theme-css.mjs && hugo --source docs && node scripts/pagefind-index.mjs --site public && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
     "build": "vite build && npm_config_mode=theme-typeflow vite build --config vite.optional.config.js && npm_config_mode=animation-typeflow vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=metrics vite build --config vite.optional.config.js",
     "dev:typeflow": "npm run build && node scripts/copy-to-typeflow.mjs",
     "pagefind:index": "node scripts/pagefind-index.mjs",
+    "themes:css": "node scripts/generate-theme-css.mjs",
+    "docs:scss": "node scripts/compile-docs-scss.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
@@ -118,6 +120,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@simonwep/pickr": "1.10.1",
     "@staticcanvas/logcad": "^0.6.0",
+    "@staticcanvas/lume": "^0.37.1",
     "@staticcanvas/typeflow": "^0.34.1",
     "@vitest/coverage-v8": "^3.2.7",
     "eslint": "^9.20.0",
@@ -126,6 +129,7 @@
     "jsdom": "^26.0.0",
     "prettier": "^3.5.0",
     "rollup-plugin-copy": "^3.5.0",
+    "sass": "^1.104.1",
     "vite": "^6.1.0",
     "vitest": "^3.0.5"
   }
