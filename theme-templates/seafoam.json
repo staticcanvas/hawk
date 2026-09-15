@@ -1,0 +1,42 @@
+{
+  "name": "Seafoam",
+  "variant": "original",
+  "mode": "light",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#f4faf8",
+      "bgAlt": "#e7f4f0",
+      "bgElev": "#d7ece4",
+      "border": "#bce0d5",
+      "text": "#0e2a24",
+      "textMuted": "#3e6a5e",
+      "textFaint": "#6b8f85",
+      "selection": "#bfe6da",
+      "accent": "#0d8c72"
+    },
+    "syntax": {
+      "comment": "#6b8f85",
+      "keyword": "#0d8c72",
+      "string": "#4c8f3f",
+      "function": "#0f7a9e",
+      "variable": "#0e2a24",
+      "constant": "#946a1a",
+      "number": "#946a1a",
+      "type": "#3f7fa8",
+      "operator": "#3e6a5e",
+      "tag": "#946a1a",
+      "attribute": "#0f7a9e",
+      "punctuation": "#3e6a5e",
+      "error": "#c1442c",
+      "warning": "#a06a12",
+      "info": "#0f7a9e",
+      "success": "#0d8c72",
+      "deleted": "#a33a26"
+    }
+  }
+}

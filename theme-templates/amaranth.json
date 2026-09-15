@@ -1,0 +1,42 @@
+{
+  "name": "Amaranth",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#170f16",
+      "bgAlt": "#1e141d",
+      "bgElev": "#281c27",
+      "border": "#3a2839",
+      "text": "#f4e3ef",
+      "textMuted": "#c295bb",
+      "textFaint": "#8a6485",
+      "selection": "#432a41",
+      "accent": "#d6428f"
+    },
+    "syntax": {
+      "comment": "#8a6485",
+      "keyword": "#d6428f",
+      "string": "#d67a9a",
+      "function": "#b06fd4",
+      "variable": "#f4e3ef",
+      "constant": "#c9975f",
+      "number": "#c9975f",
+      "type": "#7f8fd8",
+      "operator": "#c295bb",
+      "tag": "#c9975f",
+      "attribute": "#b06fd4",
+      "punctuation": "#c295bb",
+      "error": "#e0575f",
+      "warning": "#c9975f",
+      "info": "#b06fd4",
+      "success": "#8fae6a",
+      "deleted": "#b8465a"
+    }
+  }
+}

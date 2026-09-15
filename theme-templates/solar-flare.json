@@ -1,0 +1,42 @@
+{
+  "name": "Solar Flare",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#171310",
+      "bgAlt": "#1e1812",
+      "bgElev": "#292018",
+      "border": "#3d2f1e",
+      "text": "#f7ecd9",
+      "textMuted": "#c9ab7c",
+      "textFaint": "#8f7854",
+      "selection": "#4a3a1e",
+      "accent": "#f2b705"
+    },
+    "syntax": {
+      "comment": "#8f7854",
+      "keyword": "#f2b705",
+      "string": "#e2823a",
+      "function": "#e2a53a",
+      "variable": "#f7ecd9",
+      "constant": "#e2823a",
+      "number": "#e2823a",
+      "type": "#d68f4a",
+      "operator": "#c9ab7c",
+      "tag": "#e2a53a",
+      "attribute": "#f2b705",
+      "punctuation": "#c9ab7c",
+      "error": "#e2543a",
+      "warning": "#f2b705",
+      "info": "#e2a53a",
+      "success": "#a3b555",
+      "deleted": "#c74a3a"
+    }
+  }
+}

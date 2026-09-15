@@ -1,0 +1,42 @@
+{
+  "name": "Glacier Blue",
+  "variant": "original",
+  "mode": "light",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#f4f9fc",
+      "bgAlt": "#e8f2f8",
+      "bgElev": "#d7e9f2",
+      "border": "#bcd8e8",
+      "text": "#10262f",
+      "textMuted": "#3f6270",
+      "textFaint": "#6c8a95",
+      "selection": "#c3e0ee",
+      "accent": "#0072c6"
+    },
+    "syntax": {
+      "comment": "#6c8a95",
+      "keyword": "#0072c6",
+      "string": "#1f7a55",
+      "function": "#0086a8",
+      "variable": "#10262f",
+      "constant": "#946a1a",
+      "number": "#946a1a",
+      "type": "#5a5fc7",
+      "operator": "#3f6270",
+      "tag": "#946a1a",
+      "attribute": "#0086a8",
+      "punctuation": "#3f6270",
+      "error": "#c53030",
+      "warning": "#946a1a",
+      "info": "#0072c6",
+      "success": "#1f7a55",
+      "deleted": "#a3324a"
+    }
+  }
+}

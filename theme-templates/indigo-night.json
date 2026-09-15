@@ -1,0 +1,42 @@
+{
+  "name": "Indigo Night",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#121428",
+      "bgAlt": "#171a33",
+      "bgElev": "#212343",
+      "border": "#33356a",
+      "text": "#e6e6f7",
+      "textMuted": "#a8a9d4",
+      "textFaint": "#7476a3",
+      "selection": "#2b2e5c",
+      "accent": "#6366f1"
+    },
+    "syntax": {
+      "comment": "#7476a3",
+      "keyword": "#6366f1",
+      "string": "#4f94d4",
+      "function": "#8183f4",
+      "variable": "#e6e6f7",
+      "constant": "#c9a15f",
+      "number": "#c9a15f",
+      "type": "#5fb3c9",
+      "operator": "#a8a9d4",
+      "tag": "#c9a15f",
+      "attribute": "#8183f4",
+      "punctuation": "#a8a9d4",
+      "error": "#f06565",
+      "warning": "#c9a15f",
+      "info": "#8183f4",
+      "success": "#7fbf7f",
+      "deleted": "#c4514f"
+    }
+  }
+}

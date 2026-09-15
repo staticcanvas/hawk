@@ -1,0 +1,42 @@
+{
+  "name": "Obsidian",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette — a true-black, sharply bordered high-contrast theme, distinct from Simple Dark's borderless/transparent minimalism.",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#0a0a0b",
+      "bgAlt": "#121214",
+      "bgElev": "#1c1c1f",
+      "border": "#2c2c30",
+      "text": "#f5f5f7",
+      "textMuted": "#b8b8bf",
+      "textFaint": "#85858c",
+      "selection": "#2c2c30",
+      "accent": "#e8e8ec"
+    },
+    "syntax": {
+      "comment": "#85858c",
+      "keyword": "#e8e8ec",
+      "string": "#c7c9ce",
+      "function": "#9ea3ad",
+      "variable": "#f5f5f7",
+      "constant": "#b8b8bf",
+      "number": "#b8b8bf",
+      "type": "#9ea3ad",
+      "operator": "#85858c",
+      "tag": "#c7c9ce",
+      "attribute": "#9ea3ad",
+      "punctuation": "#85858c",
+      "error": "#e0575f",
+      "warning": "#d6b76a",
+      "info": "#9ea3ad",
+      "success": "#9fae6a",
+      "deleted": "#c4514f"
+    }
+  }
+}
