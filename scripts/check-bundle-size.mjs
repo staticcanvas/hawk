@@ -23,7 +23,13 @@ const bundlePath = `dist/${packageName}/dist/${packageName}.min.js`;
 // independently configurable density/Escape header controls add requested UI capability.
 // Raised 11KB -> 12KB: the opt-in discovery row adds three independently configurable,
 // accessible link groups plus indexed-result extraction and same-origin URL normalization.
-const maxGzipBytes = 12 * 1024;
+// Raised 12KB -> 13KB: per-tag pastel accent colors (tagAccentColors, independent of the
+// whole-row resultAccentColors), an optional subpage connector toggle, and relative-time result
+// dates ("7 days ago") via a division ladder over the host's own Intl.RelativeTimeFormat — no
+// date library needed, but the ladder itself isn't free — left the bundle at 12176/12288 bytes,
+// 112 bytes of headroom under the old 12KB ceiling: too tight for the next real feature to land
+// without immediately re-raising this, same reasoning as the 9KB->10KB raise above.
+const maxGzipBytes = 13 * 1024;
 const bundle = readFileSync(bundlePath);
 const gzipBytes = gzipSync(bundle).byteLength;
 

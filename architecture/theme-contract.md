@@ -43,11 +43,16 @@ only needs to redefine tokens — never hawk.css's structural rules.
 | `--hawk-text-primary`, `--hawk-text-secondary`, `--hawk-text-muted` | Text hierarchy |
 | `--hawk-accent`, `--hawk-accent-dim`, `--hawk-accent-glow` | Primary accent (selection, match highlight, active filter pill) |
 | `--hawk-accent-alt`, `--hawk-accent-alt-dim`, `--hawk-accent-alt-glow` | Secondary accent (anchor/section badge) |
-| `--hawk-backdrop` | Modal backdrop overlay color |
+| `--hawk-backdrop`, `--hawk-backdrop-gradient`, `--hawk-backdrop-opacity`, `--hawk-backdrop-blur` | Modal backdrop overlay — `-gradient` replaces `-backdrop` when set; also settable per-instance via `config.backdrop` |
+| `--hawk-dialog-blur` | Dialog's own `backdrop-filter` — `none` (no-op) unless a translucent theme wants the dialog itself to keep reading page content behind it, distinct from the backdrop |
 | `--hawk-preview-bg` | Preview pane background |
 | `--hawk-shadow`, `--hawk-radius` | Dialog chrome |
+| `--hawk-corner-shape` | Chromium-only `corner-shape` value (behind `@supports`); defaults to `squircle` where supported, a no-op elsewhere |
 | `--hawk-font-family`, `--hawk-font-size-base` | Typography, set on `.hawk-modal-dialog` |
 | `--hawk-mark-bg`, `--hawk-mark-color`, `--hawk-mark-weight`, `--hawk-mark-style` | Search-match `<mark>` styling (`-bg` falls back to `--hawk-accent-glow`) |
+| `--hawk-result-accent` | Set inline per result row by `config.resultAccentColors`; colors title/tags/badges uniformly for that row |
+| `--hawk-tag-accent` | Set inline per *tag* by `config.tagAccentColors`; falls back to `--hawk-result-accent`, then `--hawk-accent` |
+| `--hawk-result-date-font-family`, `--hawk-result-date-opacity` | Result date styling — both no-ops (inherit / fully opaque) until a theme sets them |
 | `--hawk-scrollbar-thumb`, `--hawk-scrollbar-thumb-active` | Results/preview/filter-strip scrollbars (idle / hover-or-scrolling — the active state is Blink/WebKit-only) |
 | `--hawk-powered-by-color`, `--hawk-powered-by-opacity` | The "Search powered by Pagefind" attribution link |
 

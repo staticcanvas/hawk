@@ -1440,6 +1440,35 @@ describe('result/page metadata', () => {
     hawk.destroy();
   });
 
+  it('renders the date as relative time when resultDateFormat is "relative"', async () => {
+    // Only Date.now() is stubbed (not full fake timers), so hawk.js's own internal
+    // setTimeout-based debounce/search flow — and this test file's own `await new Promise(...)`
+    // ticks — keep working exactly as in every other test here.
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-09-16T00:00:00.000Z').getTime());
+    const hawk = await hawkWithResults({ resultDateFormat: 'relative' });
+    const dateEl = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-date');
+    expect(dateEl.getAttribute('datetime')).toBe('2026-09-09'); // raw value untouched
+    expect(dateEl.textContent).toBe('7 days ago');
+    hawk.destroy();
+    nowSpy.mockRestore();
+  });
+
+  it('crosses over to "months ago" past the day-ladder threshold', async () => {
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-10-19T00:00:00.000Z').getTime());
+    const hawk = await hawkWithResults({ resultDateFormat: 'relative' });
+    const dateEl = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-date');
+    expect(dateEl.textContent).toBe('1 month ago');
+    hawk.destroy();
+    nowSpy.mockRestore();
+  });
+
+  it('defaults resultDateFormat to "timestamp", leaving the raw value as visible text', async () => {
+    const hawk = await hawkWithResults();
+    const dateEl = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-date');
+    expect(dateEl.textContent).toBe('2026-09-09');
+    hawk.destroy();
+  });
+
   it('renders date and tags before the description and keeps the section badge in the preview', async () => {
     const hawk = await hawkWithResults();
     const firstRow = document.querySelectorAll('.hawk-result-item')[0];
@@ -1459,11 +1488,52 @@ describe('result/page metadata', () => {
     hawk.destroy();
   });
 
+  it('omits tags on an anchor/heading sub-result row, since it reuses its parent page meta wholesale', async () => {
+    const hawk = await hawkWithResults();
+    const rows = document.querySelectorAll('.hawk-result-item');
+    const anchorRow = rows[1]; // "A Section" — Page One's sub_result
+    expect(hawk.state.matches[1].isAnchor).toBe(true);
+    expect(anchorRow.querySelectorAll('.hawk-result-tag')).toHaveLength(0);
+    // Date isn't page-identity like tags/section are, so it's untouched by this scoping.
+    expect(anchorRow.querySelector('.hawk-result-date').textContent).toBe('2026-09-09');
+
+    const parentRow = rows[0]; // Page One itself keeps its own tags
+    expect(parentRow.querySelectorAll('.hawk-result-tag')).toHaveLength(3);
+    hawk.destroy();
+  });
+
   it('rotates configured result accent colors across rendered rows', async () => {
     const hawk = await hawkWithResults({ resultAccentColors: ['#f5c2e7', '#94e2d5'] });
     const rows = document.querySelectorAll('.hawk-result-item');
     expect(rows[0].style.getPropertyValue('--hawk-result-accent')).toBe('#f5c2e7');
     expect(rows[1].style.getPropertyValue('--hawk-result-accent')).toBe('#94e2d5');
+    hawk.destroy();
+  });
+
+  it('defaults to a built-in pastel range for tagAccentColors, cycling per tag within a row', async () => {
+    const hawk = await hawkWithResults();
+    // Page One's tags: meta.section ('Guides') unshifted, then 'Pagefind', 'Hugo' — 3 tags.
+    const tags = document.querySelectorAll('.hawk-result-item')[0].querySelectorAll('.hawk-result-tag');
+    expect(tags).toHaveLength(3);
+    expect(tags[0].style.getPropertyValue('--hawk-tag-accent')).toBe('#f5c2e7');
+    expect(tags[1].style.getPropertyValue('--hawk-tag-accent')).toBe('#cba6f7');
+    expect(tags[2].style.getPropertyValue('--hawk-tag-accent')).toBe('#94e2d5');
+    hawk.destroy();
+  });
+
+  it('rotates a custom tagAccentColors list and resets its index per result row', async () => {
+    const hawk = await hawkWithResults({ tagAccentColors: ['#111111', '#222222'] });
+    const tags = document.querySelectorAll('.hawk-result-item')[0].querySelectorAll('.hawk-result-tag');
+    expect(tags[0].style.getPropertyValue('--hawk-tag-accent')).toBe('#111111');
+    expect(tags[1].style.getPropertyValue('--hawk-tag-accent')).toBe('#222222');
+    expect(tags[2].style.getPropertyValue('--hawk-tag-accent')).toBe('#111111');
+    hawk.destroy();
+  });
+
+  it('disables tag accent colors when tagAccentColors is false', async () => {
+    const hawk = await hawkWithResults({ tagAccentColors: false });
+    const tag = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-tag');
+    expect(tag.style.getPropertyValue('--hawk-tag-accent')).toBe('');
     hawk.destroy();
   });
 
@@ -1615,6 +1685,15 @@ describe('result/page metadata', () => {
     const rows = document.querySelectorAll('.hawk-result-item');
     expect(rows[0].classList.contains('hawk-result-item--subpage')).toBe(false);
     expect(rows[1].classList.contains('hawk-result-item--subpage')).toBe(true);
+    hawk.destroy();
+  });
+
+  it('renders sub-results flat, with no connector line, when showSubpageConnector is false', async () => {
+    const hawk = await hawkWithResults({ showSubpageConnector: false });
+    const rows = document.querySelectorAll('.hawk-result-item');
+    expect(rows[0].classList.contains('hawk-result-item--subpage')).toBe(false);
+    expect(rows[1].classList.contains('hawk-result-item--subpage')).toBe(false);
+    expect(hawk.state.matches[1].isAnchor).toBe(true);
     hawk.destroy();
   });
 

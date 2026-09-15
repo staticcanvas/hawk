@@ -69,6 +69,17 @@
   -webkit-backdrop-filter: var(--hawk-dialog-blur, none);
 }
 
+/* Chromium-only "squircle" corner interpolation (CSS Shapes Level 4's corner-shape property —
+   experimental, Chromium-exclusive as of 2026). @supports scopes this to browsers that actually
+   implement it instead of UA-sniffing: it costs nothing elsewhere, and picks up any other engine
+   that ships support later for free. --hawk-corner-shape stays themeable/overridable like every
+   other visual token, same pattern as --hawk-dialog-blur above. */
+@supports (corner-shape: squircle) {
+  .hawk-modal-dialog {
+    corner-shape: var(--hawk-corner-shape, squircle);
+  }
+}
+
 /* ── Modal reveal animations ──────────────────────────────────────────────────────────────
    config.revealAnimation picks one of the 5 named reveals below via [data-hawk-reveal], applied
    to .hawk-modal-backdrop/.hawk-modal-dialog only while [data-hawk-anim-state] is 'opening' or
@@ -236,6 +247,17 @@
 [data-hawk-density='compact'] .hawk-modal-dialog {
   max-width: calc(560px * var(--hawk-scale, 1));
   max-height: min(calc(520px * var(--hawk-scale, 1)), 70vh);
+}
+/* .hawk-modal-body's shared 380px min-height floor (above) assumes the ~134px of fixed chrome
+   above/below it (header + filters + footer) plus itself fits inside the dialog's own max-height.
+   That budget already has only ~6px of slack at compact density's default scale (520px - 134px =
+   386px), so any --hawk-scale below 1 — e.g. the 'simple-dark' gallery theme's 0.9 — pushes total
+   content past max-height, and since the dialog clips with overflow:hidden, the footer row
+   (hint/counter/attribution) silently disappears with no visible sign anything is missing. A
+   lower floor here keeps compact density's own already-reduced row height (below) in budget
+   across its realistic scale range instead of relying on there happening to be enough slack. */
+[data-hawk-density='compact'] .hawk-modal-body {
+  min-height: 220px;
 }
 [data-hawk-density='compact'] .hawk-results-pane {
   padding: 0.35rem;
@@ -496,14 +518,37 @@
 .hawk-modal-body[data-hawk-columns='1'] {
   grid-template-columns: 1fr;
 }
+/* #applyParams's own comment documents columns:1 as forcing "1 column like below breakpoint (or
+   compact density)" — but only the breakpoint/compact-density paths (below) actually hid the
+   preview pane to match; a theme or config setting columns:1 directly (density left at 'fit' or
+   'medium', e.g. by an in-modal density-toggle click that changes data-hawk-density without
+   recomputing data-hawk-columns — surfaced by the 'simple-dark' gallery theme, whose columns:1
+   pairs with density:'compact' by default but not once someone switches density in the open
+   modal) got a 1-column grid with BOTH panes still visible. Two items in one grid column/row
+   don't share space — the auto-placed second item (preview) gets its own implicit row sized to
+   its full content, and results (the sole item in the explicit minmax(0,1fr) row) gets squeezed
+   toward nothing competing against it, rather than either pane being hidden. */
+.hawk-modal-body[data-hawk-columns='1'] .hawk-preview-pane {
+  display: none;
+}
 [data-hawk-second-column='false'] .hawk-preview-pane {
   display: none !important;
 }
-.hawk-modal-body[data-hawk-alignment='start'] {
-  align-items: start;
+/* config.params.alignment only ever governs the preview pane's cross-axis fit (e.g. a theme that
+   doesn't want short preview content stretched to match a taller results list). It must not touch
+   .hawk-results-pane: that pane's own min-height:0 + overflow-y:auto (above) depends on the grid
+   row's default align-items:stretch to size it to the row and make its overflow reachable by
+   scrolling — align-items:start on the whole body sized it to its content instead, silently
+   clipping everything past .hawk-modal-body's max-height with no way to scroll to it (surfaced by
+   the 'simple-dark' gallery theme, which pairs alignment:'start' with a single-column layout). */
+.hawk-results-pane {
+  align-self: stretch;
 }
-.hawk-modal-body[data-hawk-alignment='center'] {
-  align-items: center;
+.hawk-modal-body[data-hawk-alignment='start'] .hawk-preview-pane {
+  align-self: start;
+}
+.hawk-modal-body[data-hawk-alignment='center'] .hawk-preview-pane {
+  align-self: center;
 }
 
 [data-hawk-compact='true'] .hawk-modal-body,
@@ -519,11 +564,16 @@
    it's otherwise hidden — the only way to reach it is via this focus-zone navigation. Scoped to
    single-column contexts only: in 2-column layouts both panes are already visible. */
 [data-hawk-compact='true'][data-hawk-show-preview='true'] .hawk-results-pane,
-[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-results-pane {
+[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-results-pane,
+/* data-hawk-show-preview lives on .hawk-modal (root); data-hawk-columns lives on the nested
+   .hawk-modal-body — an ancestor-then-descendant selector, unlike the two rules above where both
+   attributes sit on the same (root) element. */
+.hawk-modal[data-hawk-show-preview='true'] .hawk-modal-body[data-hawk-columns='1'] .hawk-results-pane {
   display: none;
 }
 [data-hawk-compact='true'][data-hawk-show-preview='true'] .hawk-preview-pane,
-[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-preview-pane {
+[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-preview-pane,
+.hawk-modal[data-hawk-show-preview='true'] .hawk-modal-body[data-hawk-columns='1'] .hawk-preview-pane {
   display: block;
 }
 
@@ -702,12 +752,19 @@
   color: var(--hawk-text-muted, #64748b);
   font-size: 0.7rem;
   white-space: nowrap;
+  /* Both zero-cost until a theme sets them — same fallback-token pattern as --hawk-dialog-blur
+     above. No theme needs a distinct date font by default, so this inherits the modal's own
+     --hawk-font-family (itself falling further back to `inherit`) rather than forcing a choice;
+     --hawk-result-date-opacity stays fully opaque until a theme wants the date to read as
+     quieter/secondary than the rest of the metadata row without a second color token. */
+  font-family: var(--hawk-result-date-font-family, var(--hawk-font-family, inherit));
+  opacity: var(--hawk-result-date-opacity, 1);
 }
 
 .hawk-result-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  gap: 0.2rem;
 }
 
 .hawk-result-tags:empty {
@@ -715,14 +772,29 @@
 }
 
 .hawk-result-tag {
-  padding: 0.05rem 0.38rem;
-  border: 1px solid var(--hawk-border-default, #253347);
+  padding: 0.05rem 0.28rem;
+  border: none;
   border-radius: 999px;
-  border-color: color-mix(in srgb, var(--hawk-result-accent, var(--hawk-accent, #38bdf8)) 45%, transparent);
-  background: color-mix(in srgb, var(--hawk-result-accent, var(--hawk-accent, #38bdf8)) 12%, transparent);
-  color: color-mix(in srgb, var(--hawk-result-accent, var(--hawk-accent, #38bdf8)) 75%, var(--hawk-text-primary, #f1f5f9));
+  /* --hawk-tag-accent (set inline per tag by config.tagAccentColors, see hawk.js's
+     #resultMetaMarkup) takes priority over the whole row's single --hawk-result-accent, so tags
+     within one result can each read as their own subtle color instead of a uniform block —
+     falls back the same as before when tagAccentColors is off.
+     No border, a paler background (12% -> 8%) and a text-color mix pulled toward
+     --hawk-text-secondary rather than --hawk-text-primary (55% vs. the old 75%, toward the
+     muted end rather than the bright one) — reads as a soft, blended hashtag label rather than a
+     bordered chip competing with the title/excerpt for attention. */
+  background: color-mix(in srgb, var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 8%, transparent);
+  color: color-mix(in srgb, var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 55%, var(--hawk-text-secondary, #94a3b8));
   font-size: 0.64rem;
   line-height: 1.35;
+}
+
+/* A CSS-only "#" prefix (not baked into hawk.js's rendered text) so a theme can hide it with one
+   rule (content: none) without touching the tag's actual text, and so the value hawk.js writes
+   here always matches what config.resultTagsMetaKey's Pagefind data — and the tag:value inline
+   filter syntax — actually contain, with no "#" to strip back out. */
+.hawk-result-tag::before {
+  content: '#';
 }
 
 .hawk-empty {

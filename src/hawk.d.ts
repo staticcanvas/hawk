@@ -139,9 +139,12 @@ export interface HawkSearchConfig {
   maxResults?: number;
   showResultDate?: boolean;
   resultDateMetaKey?: string;
+  resultDateFormat?: 'timestamp' | 'relative';
   showResultTags?: boolean;
   resultTagsMetaKey?: string;
   resultAccentColors?: string[] | false;
+  tagAccentColors?: string[] | false;
+  showSubpageConnector?: boolean;
   headerControls?: false | { density?: boolean; escape?: boolean };
   excludePages?: string | string[];
   contentSelector?: string;

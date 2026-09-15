@@ -19,6 +19,10 @@ const themeRegistry = new Map();
 const animationRegistry = new Map();
 animationRegistry.set('instant', HawkAnimationInstant);
 
+// Subtle pastel range for config.tagAccentColors' default — distinct enough to tell tags apart
+// at a glance without competing with --hawk-accent or reading as loud/saturated.
+const DEFAULT_TAG_ACCENT_COLORS = ['#f5c2e7', '#cba6f7', '#94e2d5', '#a6e3a1', '#fab387', '#89dceb'];
+
 const DEFAULT_PARAMS = {
   scale: 1,
   position: 'top-center', // 'top-center' | 'center' | 'top-left' | 'top-right'
@@ -118,6 +122,12 @@ let instanceCount = 0;
 export class HawkSearch {
   static themes = themeRegistry;
   static animations = animationRegistry;
+  // Shared across every instance/call — constructing Intl.RelativeTimeFormat isn't free, and its
+  // output depends only on the host's locale, never on instance config.
+  // numeric: 'always' (not 'auto') so every value reads as "X ago"/"in X" consistently — 'auto'
+  // would substitute "yesterday"/"last month" at exact unit boundaries, which doesn't match what
+  // was actually requested ("7 days ago", "1 month ago", not "last week"/"last month").
+  static #relativeTimeFormat = new Intl.RelativeTimeFormat(undefined, { numeric: 'always' });
 
   /**
    * Registers a theme plugin so it can be selected by name.
@@ -195,11 +205,27 @@ export class HawkSearch {
    * @param {boolean} [config.showResultDate=true] Renders the Pagefind metadata value named by
    *   resultDateMetaKey below the result excerpt.
    * @param {string} [config.resultDateMetaKey='date'] Pagefind metadata key used for result dates.
+   * @param {'timestamp'|'relative'} [config.resultDateFormat='timestamp'] `'timestamp'` renders
+   *   resultDateMetaKey's raw value as-is; `'relative'` renders it as relative time ("7 days ago",
+   *   "last month") via the host's `Intl.RelativeTimeFormat` — the `<time datetime>` attribute
+   *   always keeps the raw value either way.
    * @param {boolean} [config.showResultTags=true] Renders comma-separated Pagefind metadata from
    *   resultTagsMetaKey as tags below the result excerpt. meta.section joins this row when present.
+   *   Only page-level matches render tags — an anchor/heading sub-result (`item.isAnchor`) reuses
+   *   its parent page's meta wholesale, so repeating the same tags on every heading match under
+   *   that page would just duplicate the page row already showing them.
    * @param {string} [config.resultTagsMetaKey='tags'] Pagefind metadata key used for result tags.
    * @param {string[]|false} [config.resultAccentColors=false] Optional pastel CSS colors rotated across
    *   result rows and metadata badges; `false` disables the accent treatment.
+   * @param {string[]|false} [config.tagAccentColors] Pastel CSS colors rotated across the tags
+   *   *within* a single result — index resets per row, so each result's own first tag always gets
+   *   the first color, not a running count across the whole result list. Independent of
+   *   `resultAccentColors` (which colors a whole row uniformly); set `false` to disable and fall
+   *   back to `resultAccentColors`/`--hawk-accent`. Defaults to a small built-in pastel range.
+   * @param {boolean} [config.showSubpageConnector=true] Indents an anchor/heading-level match
+   *   (`item.isAnchor`) and draws a vertical connector line against its parent page's row above it
+   *   (`.hawk-result-item--subpage`), signaling "this is part of that page" at a glance. Set `false`
+   *   for a flat list where every row — page or heading match alike — looks the same.
    * @param {boolean|{density?: boolean, escape?: boolean}} [config.headerControls]
    *   Controls the Fit/Medium/Compact group and Escape button at the right of the search input.
    *   Pass false for a minimal input-only header, or disable either control independently.
@@ -329,11 +355,19 @@ export class HawkSearch {
     this.maxResults = config.maxResults ?? 18;
     this.showResultDate = config.showResultDate !== false;
     this.resultDateMetaKey = config.resultDateMetaKey || 'date';
+    this.resultDateFormat = config.resultDateFormat === 'relative' ? 'relative' : 'timestamp';
     this.showResultTags = config.showResultTags !== false;
     this.resultTagsMetaKey = config.resultTagsMetaKey || 'tags';
     this.resultAccentColors = Array.isArray(config.resultAccentColors)
       ? config.resultAccentColors.filter(Boolean)
       : [];
+    this.tagAccentColors =
+      config.tagAccentColors === false
+        ? []
+        : Array.isArray(config.tagAccentColors)
+          ? config.tagAccentColors.filter(Boolean)
+          : DEFAULT_TAG_ACCENT_COLORS;
+    this.showSubpageConnector = config.showSubpageConnector !== false;
     const headerControls = config.headerControls === false ? false : config.headerControls || {};
     this.headerControls = {
       density:
@@ -1463,7 +1497,7 @@ export class HawkSearch {
           ? `;--hawk-result-accent:${this.resultAccentColors[idx % this.resultAccentColors.length]}`
           : '';
         return `
-        <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${item.isAnchor ? ' hawk-result-item--subpage' : ''}${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}" style="--hawk-row-index: ${revealIndex}${accent}">
+        <a href="${item.url}" id="${this.id}-result-${idx}" class="hawk-result-item${item.isAnchor && this.showSubpageConnector ? ' hawk-result-item--subpage' : ''}${idx === this.#selectedIndex ? ' is-selected' : ''}" data-index="${idx}" role="option" tabindex="-1" aria-selected="${idx === this.#selectedIndex}" style="--hawk-row-index: ${revealIndex}${accent}">
           <div class="hawk-result-header">
             <span class="hawk-result-title">${item.title}</span>
             ${
@@ -1579,6 +1613,35 @@ export class HawkSearch {
     return groups;
   }
 
+  /**
+   * Formats a result date as relative time ("7 days ago", "last month") via the built-in
+   * Intl.RelativeTimeFormat — no date library needed. Division ladder from MDN's own
+   * RelativeTimeFormat example: walks up from seconds to years, picking the first unit the
+   * magnitude fits under. Falls back to the raw value for anything Date can't parse.
+   */
+  #formatRelativeDate(value) {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    let duration = (date.getTime() - Date.now()) / 1000;
+    // No 'week' step, unlike MDN's own version of this ladder — "7 days ago"/"1 month ago" reads
+    // more like a search result's timestamp (matches most result-list UIs) than "last week" would.
+    const divisions = [
+      { amount: 60, unit: 'second' },
+      { amount: 60, unit: 'minute' },
+      { amount: 24, unit: 'hour' },
+      { amount: 30, unit: 'day' },
+      { amount: 12, unit: 'month' },
+      { amount: Number.POSITIVE_INFINITY, unit: 'year' },
+    ];
+    for (const { amount, unit } of divisions) {
+      if (Math.abs(duration) < amount) {
+        return HawkSearch.#relativeTimeFormat.format(Math.round(duration), unit);
+      }
+      duration /= amount;
+    }
+    return String(value);
+  }
+
   /** Converts same-origin Pagefind URLs to path-relative navigation targets, preserving fragments. */
   #relativeDiscoveryUrl(value) {
     try {
@@ -1593,22 +1656,36 @@ export class HawkSearch {
 
   #resultMetaMarkup(item) {
     const dateValue = this.showResultDate ? item.meta?.[this.resultDateMetaKey] : '';
-    const rawTags = this.showResultTags ? item.meta?.[this.resultTagsMetaKey] : '';
+    // Anchor/heading sub-results reuse their parent page's meta wholesale (see #searchResults'
+    // sub_results handling) — tags are the parent page's own classification, so repeating them on
+    // every one of its heading matches just duplicates the page row above them. Date stays shown
+    // either way since it's not page-identity like tags/section are.
+    const showTags = this.showResultTags && !item.isAnchor;
+    const rawTags = showTags ? item.meta?.[this.resultTagsMetaKey] : '';
     const parsedTags = String(rawTags || '')
       .split(',')
       .map((tag) => tag.trim())
       .filter(Boolean);
-    if (this.showResultTags && item.meta?.section) {
+    if (showTags && item.meta?.section) {
       parsedTags.unshift(item.meta.section);
     }
     const tags = Array.from(new Set(parsedTags));
     if (!dateValue && !tags.length) return '';
 
+    const dateText =
+      dateValue && this.resultDateFormat === 'relative'
+        ? this.#formatRelativeDate(dateValue)
+        : String(dateValue);
     const date = dateValue
-      ? `<time class="hawk-result-date" datetime="${this.#escapeHtml(String(dateValue))}">${this.#escapeHtml(String(dateValue))}</time>`
+      ? `<time class="hawk-result-date" datetime="${this.#escapeHtml(String(dateValue))}">${this.#escapeHtml(dateText)}</time>`
       : '';
     const tagMarkup = tags
-      .map((tag) => `<span class="hawk-result-tag">${this.#escapeHtml(tag)}</span>`)
+      .map((tag, tagIndex) => {
+        const style = this.tagAccentColors.length
+          ? ` style="--hawk-tag-accent:${this.tagAccentColors[tagIndex % this.tagAccentColors.length]}"`
+          : '';
+        return `<span class="hawk-result-tag"${style}>${this.#escapeHtml(tag)}</span>`;
+      })
       .join('');
     return `<div class="hawk-result-meta">${date}<div class="hawk-result-tags">${tagMarkup}</div></div>`;
   }
@@ -1928,16 +2005,18 @@ export class HawkSearch {
   }
 
   /**
-   * True when the preview pane is actually reachable given the current layout — mirrors the
-   * CSS conditions in hawk.css's [data-hawk-compact]/[data-hawk-density='compact'] rules (hidden
-   * in single-column layouts unless focus has already revealed it). Checked in JS, not via
-   * layout/computed-style, so the focus trap stays correct without depending on real rendering
-   * (and is testable under jsdom, which never renders).
+   * True when the preview pane is actually reachable given the current layout — mirrors the CSS
+   * conditions in hawk.css's [data-hawk-compact]/[data-hawk-density='compact']/
+   * [data-hawk-columns='1'] rules (hidden in single-column layouts unless focus has already
+   * revealed it). Checked in JS, not via layout/computed-style, so the focus trap stays correct
+   * without depending on real rendering (and is testable under jsdom, which never renders).
    */
   #isPreviewPaneReachable() {
     if (!this.enableSecondColumn) return false;
     const singleColumn =
-      this.#root.dataset.hawkCompact === 'true' || this.params.density === 'compact';
+      this.#root.dataset.hawkCompact === 'true' ||
+      this.params.density === 'compact' ||
+      this.params.columns === 1;
     return !singleColumn || this.#root.dataset.hawkShowPreview === 'true';
   }
 
