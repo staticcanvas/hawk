@@ -3,6 +3,17 @@ title: API reference
 description: HawkSearch config, methods, public state, and the plugin registries.
 eyebrow: Reference
 category: Reference
+tags:
+  - api reference
+  - config options
+  - javascript api
+  - tabs
+  - hide categories
+  - instance methods
+related:
+  - /getting-started
+  - /guides/theming
+  - /playground
 ---
 
 ## `new HawkSearch(config)`
@@ -31,9 +42,14 @@ category: Reference
 | `maxResults`                   | `number`                                                                               | `18`                                                      | Maximum rendered result rows.                                                                                                                                                                                                |
 | `showResultDate`               | `boolean`                                                                              | `true`                                                    | Shows `meta[resultDateMetaKey]` beneath each result excerpt when present.                                                                                                                                                    |
 | `resultDateMetaKey`            | `string`                                                                               | `'date'`                                                  | Pagefind metadata key used for result dates.                                                                                                                                                                                 |
-| `showResultTags`               | `boolean`                                                                              | `true`                                                    | Shows comma-separated `meta[resultTagsMetaKey]` values as tags beneath each result excerpt. Also controls the `meta.section` tag.                                                                                            |
+| `resultDateFormat`             | `'timestamp' \| 'relative'`                                                            | `'timestamp'`                                              | `'relative'` renders the raw value as relative time ("7 days ago", "last month") via `Intl.RelativeTimeFormat`. The `<time datetime>` attribute always keeps the raw value.                                                 |
+| `showResultTags`               | `boolean`                                                                              | `true`                                                    | Shows comma-separated `meta[resultTagsMetaKey]` values as tags beneath each result excerpt. Also controls the `meta.section` tag. Page-level matches only — an anchor/heading sub-result reuses its parent page's meta wholesale, so it never repeats the same tags.               |
 | `resultTagsMetaKey`            | `string`                                                                               | `'tags'`                                                  | Pagefind metadata key used for result tags.                                                                                                                                                                                  |
+| `resultAccentColors`           | `string[] \| false`                                                                    | `false`                                                   | Pastel colors rotated across whole result rows (title, tags, badges uniformly). `false` disables the accent treatment.                                                                                                       |
+| `tagAccentColors`               | `string[] \| false`                                                                    | a built-in pastel range                                   | Pastel colors rotated across the tags *within* a single result — independent of `resultAccentColors`, resets per row. `false` disables it and falls back to `resultAccentColors`/`--hawk-accent`.                           |
+| `showSubpageConnector`         | `boolean`                                                                              | `true`                                                    | Indents an anchor/heading match and draws a connector line against its parent page's row above it. `false` renders every row — page or heading match alike — flat.                                                          |
 | `headerControls`               | `false \| { density?, escape? }`                                                       | both enabled                                              | Controls the density group and Escape button. `false` leaves a minimal header containing only the search input.                                                                                                              |
+| `backdrop`                     | `{ color?, gradient?, opacity?, blur? }`                                               | `{}`                                                       | Customizes the modal scrim independently of the theme's own `--hawk-backdrop*` tokens. `gradient` replaces `color` when set. Unset keys fall back to the theme.                                                              |
 | `excludePages`                 | `string \| string[]`                                                                   | `[]`                                                      | Page URLs or paths omitted from results. Query strings, hashes, and trailing slashes are ignored; excluding a page excludes its section results too.                                                                         |
 | `contentSelector`              | `string`                                                                               | `'[data-pagefind-body]'`                                  | Selects the preview pane's content from a fetched result page. See [Rich preview content](#rich-preview-content).                                                                                                            |
 | `disableDefaultMarkdownStyles` | `boolean`                                                                              | `false`                                                   | Opts out of hawk.css's own preview-content prose rules. See [Theming](#theming).                                                                                                                                             |
@@ -118,8 +134,12 @@ new HawkSearch({
   maxResults: 18,
   showResultDate: true,
   resultDateMetaKey: 'date',
+  resultDateFormat: 'timestamp',
   showResultTags: true,
   resultTagsMetaKey: 'tags',
+  resultAccentColors: false,
+  tagAccentColors: ['#f5c2e7', '#cba6f7', '#94e2d5', '#a6e3a1', '#fab387', '#89dceb'],
+  showSubpageConnector: true,
   headerControls: { density: true, escape: true },
   excludePages: [],
   contentSelector: '[data-pagefind-body]',
@@ -130,6 +150,7 @@ new HawkSearch({
   previewSectionExcerptLength: 140,
   discoveryRow: false,
   enableSecondColumn: true,
+  backdrop: {}, // {color?, gradient?, opacity?, blur?} — unset keys fall back to the theme's own tokens
   defaultPreviewTitle: '',
   revealAnimation: 'scale-fade',
   resultsReveal: true,
@@ -459,7 +480,10 @@ new HawkSearch({
 ```
 
 Set either `showResultDate` or `showResultTags` to `false` to hide that group without
-removing its values from `HawkMatch.meta`. See
+removing its values from `HawkMatch.meta`. Tags never render on an anchor/heading sub-result row
+either way — it reuses its parent page's meta wholesale, so showing them again there would just
+duplicate the page row above it; the date isn't page-identity the same way, so it still renders.
+See
 [Pagefind setup — Mapping frontmatter into Pagefind]({{< relref "/guides/pagefind-setup" >}}#mapping-frontmatter-into-pagefind)
 for Hugo layout examples.
 

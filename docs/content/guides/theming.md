@@ -3,6 +3,19 @@ title: Theming
 description: The token contract hawk themes implement, and how to write your own.
 eyebrow: Guide
 category: Guides
+tags:
+  - theming
+  - css tokens
+  - javascript tokens
+  - theme with javascript
+  - customize theme
+  - custom properties
+  - dark mode
+  - light mode
+related:
+  - /themes
+  - /playground
+  - /api
 ---
 
 ## The contract
@@ -62,7 +75,11 @@ only needs to redefine tokens:
 | Accent | `--hawk-accent-alt` | Secondary accent. |
 | Accent | `--hawk-accent-alt-dim` | Low-emphasis secondary accent surface. |
 | Accent | `--hawk-accent-alt-glow` | Secondary accent glow. |
-| Overlay | `--hawk-backdrop` | Viewport backdrop behind the dialog. |
+| Overlay | `--hawk-backdrop` | Viewport backdrop behind the dialog; `config.backdrop.color` sets this per-instance. |
+| Overlay | `--hawk-backdrop-gradient` | Replaces `--hawk-backdrop` when set; `config.backdrop.gradient` sets this per-instance. |
+| Overlay | `--hawk-backdrop-opacity` | Backdrop opacity; `config.backdrop.opacity` sets this per-instance. |
+| Overlay | `--hawk-backdrop-blur` | Backdrop `backdrop-filter` blur radius; `config.backdrop.blur` sets this per-instance. |
+| Overlay | `--hawk-dialog-blur` | The dialog's own `backdrop-filter` — `none` unless a translucent theme wants the dialog itself to keep reading page content behind it. |
 | Overlay | `--hawk-preview-bg` | Preview-column background. |
 | Shape | `--hawk-shadow` | Dialog shadow. |
 | Shape | `--hawk-radius` | Dialog corner radius. |
@@ -76,6 +93,11 @@ only needs to redefine tokens:
 | Scrollbar | `--hawk-scrollbar-thumb-active` | Active thumb in Blink/WebKit; Firefox has no separate hover state. |
 | Attribution | `--hawk-powered-by-color` | Powered-by link color. |
 | Attribution | `--hawk-powered-by-opacity` | Powered-by link opacity. |
+| Result | `--hawk-result-date-font-family` | Result date font; falls back to `--hawk-font-family`. |
+| Result | `--hawk-result-date-opacity` | Result date opacity — lower it to read as quieter/secondary metadata. |
+| Result | `--hawk-result-accent` | Set inline per result row by `config.resultAccentColors`; colors title/tags/badges uniformly for that row. |
+| Result | `--hawk-tag-accent` | Set inline per tag by `config.tagAccentColors`; falls back to `--hawk-result-accent`, then `--hawk-accent`. |
+| Shape | `--hawk-corner-shape` | Chromium-only corner interpolation (`corner-shape`); defaults to `squircle` where supported. |
 
 ## A JS-only theming path: `theme.tokens`
 
@@ -104,6 +126,33 @@ properties from a theme's CSS file.
 `config.disableDefaultMarkdownStyles: true` turns off every `h1`-`h6`/`p`/`ul`/`table`/`code`/etc.
 rule hawk.css defines for `.hawk-preview-content` — target that class with your own CSS instead
 (an existing site-wide `.prose` class, for example) rather than out-specificity-ing hawk's rules.
+
+## Gallery preset CSS files
+
+Every theme shown in the [gallery]({{< relref "/themes" >}}) — built-in and palette-template alike
+— also ships as its own tiny, standalone CSS file at `assets/themes/<id>.css` (e.g.
+`assets/themes/simple-dark.css`), generated from that theme's tokens by
+`scripts/generate-theme-css.mjs`. Each file only ever contains one theme's `--hawk-*` properties
+scoped under `[data-hawk-theme-preset='<id>']` (typically well under 1&nbsp;KB), so linking one
+costs nothing for the other thirteen:
+
+```html
+<link rel="stylesheet" href="/assets/themes/simple-dark.css">
+```
+
+```js
+theme: {
+  name: 'simple-dark',
+  apply(el) {
+    el.dataset.hawkTheme = 'typeflow'; // structural base — see "The contract" above
+    el.dataset.hawkThemePreset = 'simple-dark'; // matches the linked file's selector
+  },
+}
+```
+
+These files are generated, not hand-authored — re-run `npm run themes:css` after changing a
+theme's tokens in `HAWK_GALLERY_THEMES` or a `theme-templates/*.json` palette, rather than editing
+a file under `assets/themes/` directly.
 
 ## Registering a theme
 

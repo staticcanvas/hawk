@@ -3,6 +3,15 @@ title: Density and keyboard navigation
 description: Fit/medium/compact density modes, two-pane keyboard navigation, and initial popup state.
 eyebrow: Guide
 category: Guides
+tags:
+  - density
+  - fit medium compact
+  - keyboard navigation
+  - layout
+  - columns
+related:
+  - /api
+  - /playground
 ---
 
 ## Density modes
@@ -68,18 +77,18 @@ The modal's Tab order is: search input → filter tabs → results pane → prev
 panes are real focus stops (`tabindex="0"`), so this is reachable from a plain keyboard, not just
 the mouse:
 
-- **Input focused (default):** ArrowUp/ArrowDown move the selection, wrapping around; Enter
-  navigates to the selected result.
-- **Results pane focused:** identical ArrowUp/ArrowDown/Enter behavior. Typing any printable
-  character refocuses the input and forwards the keystroke, so you can resume typing without an
-  extra click.
-- **Preview pane focused:** ArrowUp/ArrowDown/PageUp/PageDown/Home/End scroll its content instead
-  of changing selection.
+- **Input focused (default):** <kbd>↑</kbd>/<kbd>↓</kbd> move the selection, wrapping around;
+  <kbd>Enter</kbd> navigates to the selected result.
+- **Results pane focused:** identical <kbd>↑</kbd>/<kbd>↓</kbd>/<kbd>Enter</kbd> behavior. Typing
+  any printable character refocuses the input and forwards the keystroke, so you can resume
+  typing without an extra click.
+- **Preview pane focused:** <kbd>↑</kbd>/<kbd>↓</kbd>/<kbd>PgUp</kbd>/<kbd>PgDn</kbd>/<kbd>Home</kbd>/<kbd>End</kbd>
+  scroll its content instead of changing selection.
 
 The results pane exposes the current selection via `aria-activedescendant` rather than making
 every result individually tabbable (the correct pattern for its `role="listbox"`), so pressing
-Tab moves from "the list" to "the preview" in one step regardless of how many results are
-showing.
+<kbd>Tab</kbd> moves from "the list" to "the preview" in one step regardless of how many results
+are showing.
 
 ### Reaching the preview pane in compact layouts
 

@@ -3,6 +3,15 @@ title: Animation Plugins
 description: The reveal-animation driver contract, the built-in drivers, and how to write your own.
 eyebrow: Guide
 category: Guides
+tags:
+  - animation
+  - typeflow
+  - reveal animation
+  - custom animation driver
+  - modal open close animation
+related:
+  - /guides/theming
+  - /playground
 ---
 
 ## The contract

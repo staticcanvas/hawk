@@ -6,4 +6,13 @@ category: Tools
 type: playground
 layout: single
 noToc: true
+tags:
+  - playground
+  - live editor
+  - try hawk
+  - workbench
+  - customize theme
+related:
+  - /themes
+  - /guides/theming
 ---

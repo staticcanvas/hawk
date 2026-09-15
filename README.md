@@ -82,6 +82,9 @@ interfaces.
   included). Ships with `hawk-theme-typeflow`, the visual identity ported from typeflow's docs
   search. `theme.tokens` offers a JS-only alternative to a CSS file for a few color/font tweaks;
   `disableDefaultMarkdownStyles` opts out of the built-in preview-content prose rules entirely.
+  The modal dialog opts into a Chromium-only rounded-corner style (`corner-shape: squircle`,
+  themeable via `--hawk-corner-shape`) behind an `@supports` check, so it costs nothing and does
+  nothing on engines that don't implement the property yet.
 - Animation driver plugin system: `typeTitle` / `typeContent` / `rotatePlaceholder` / `stop`.
   Ships with `hawk-animation-instant` (default, zero dependencies) and `hawk-animation-typeflow`
   (wraps `TypeFlow.type()`/`TypeFlow.rotate()`). Every surface (title, anchor title, content, and
@@ -93,8 +96,18 @@ interfaces.
 - Structured inline filter syntax (`inlineFilters: true`): typing `category:Guides responsive`
   parses out a Pagefind filter and searches only the remaining text.
 - Result/page metadata: every match carries Pagefind's full `meta` object, with configurable
-  date/tag rows beneath excerpts; anchor results are visually indented beneath
-  their parent page; `state.pageCount` tracks distinct pages separately from the flattened row count.
+  date/tag rows beneath excerpts (`resultAccentColors`/`tagAccentColors` pastel-color rows/tags
+  independently); anchor results are visually indented beneath their parent page by default
+  (`showSubpageConnector: false` renders every row flat); `state.pageCount` tracks distinct pages
+  separately from the flattened row count. A `related` frontmatter/metadata key is supported for
+  editorially curated "related pages," resolved to page titles — see
+  [Frontmatter, metadata, and filters](#frontmatter-metadata-and-filters).
+  `resultDateFormat: 'relative'` renders the date as relative time ("7 days ago", "1 month ago")
+  via the host's own `Intl.RelativeTimeFormat` — no date library needed; the `<time datetime>`
+  attribute always keeps the raw value.
+- Configurable modal scrim: `config.backdrop` (`color`/`gradient`/`opacity`/`blur`) customizes the
+  backdrop independently of the theme's own `--hawk-backdrop` token; `gradient` replaces `color`
+  when set.
 - Optional discovery row: three independently configurable groups expose marked query terms,
   related pages, and Pagefind heading deep links beneath the main results without changing ranking.
 - Configurable search-header controls: show or hide the Fit/Medium/Compact group and Escape
@@ -206,14 +219,23 @@ syntax](docs/content/guides/pagefind-setup.md),
 
 Pagefind indexes generated HTML, so framework frontmatter must be emitted by the site's layout.
 `data-pagefind-meta` returns values on `HawkMatch.meta`; `data-pagefind-filter` makes values
-filterable; and `data-pagefind-sort` makes values sortable.
+filterable; and `data-pagefind-sort` makes values sortable. Pair `data-pagefind-meta`/
+`data-pagefind-filter` with `data-pagefind-ignore` on the *same* element — extraction still
+happens, but the element's own text is excluded from the page's indexed body content, so a
+value doesn't also resurface verbatim inside that page's own result excerpt (a wrapping ancestor
+would skip extraction too; it has to be the same element):
 
 ```html
 <article data-pagefind-body>
-  <span hidden data-pagefind-meta="author">Ada Lovelace</span>
-  <span hidden data-pagefind-meta="date" data-pagefind-sort="date">2026-09-09</span>
-  <span hidden data-pagefind-filter="tag">Pagefind</span>
-  <span hidden data-pagefind-meta="tags">Pagefind, Search</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="author">Ada Lovelace</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="date" data-pagefind-sort="date">2026-09-09</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="category">Guides</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="category">Guides</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="tag">Pagefind</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="tags">Pagefind, Search</span>
+  <!-- related: names other pages, resolved to their titles by the layout — see the frontmatter
+       mapping guide linked below for how this site's own Hugo partial does it. -->
+  <span hidden data-pagefind-ignore data-pagefind-meta="related">Getting started, Theming</span>
   <!-- rendered page content -->
 </article>
 ```
@@ -267,6 +289,8 @@ Full type declarations in `src/hawk.d.ts` (core), `src/hawk-theme-typeflow.d.ts`
 | `npm run test:e2e`                          | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Runs in CI as `test:e2e` (`allow_failure: true` until it's proven stable there — see `.gitlab-ci.yml`). |
 | `npm run lint` / `npm run lint:fix`         | ESLint                                                                                                                                                                                                                                                                |
 | `npm run docs:build` / `npm run docs:serve` | Builds and serves hawk's own Hugo docs site                                                                                                                                                                                                                           |
+| `npm run themes:css`                        | Generates one small standalone CSS file per gallery/template theme into `docs/static/assets/themes/` — see `scripts/generate-theme-css.mjs`                                                                                                                          |
+| `npm run docs:scss`                         | Compiles `docs/static/assets/scss/*.scss` into `docs/static/assets/docs.css`/`playground.css` — see `scripts/compile-docs-scss.mjs`. Also runs automatically as part of `docs:build`/`docs:serve`                                                                    |
 | `npm run check:size`                        | Enforces the gzip bundle size budget                                                                                                                                                                                                                                  |
 | `npm run validate:release`                  | CI release-artifact validation                                                                                                                                                                                                                                        |
 

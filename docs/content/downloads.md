@@ -3,6 +3,15 @@ title: Downloads
 description: Download every published Hawk release and its archive or distribution assets.
 eyebrow: Release downloads
 category: Resources
+tags:
+  - downloads
+  - releases
+  - dist
+  - cdn
+  - archive
+related:
+  - /getting-started
+  - /changelog
 ---
 
 ## Choose a release

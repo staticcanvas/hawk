@@ -8,6 +8,10 @@ tagged release yet — the versions below track `package.json`'s history, not pu
 
 ### Added
 
+- 10 new theme-gallery palette templates (Amaranth, Blush, Crimson Ledger, Glacier Blue,
+  Honeycomb, Indigo Night, Obsidian, Seafoam, Solar Flare, Verdant), bringing the gallery to 24
+  profiles. Each passes the same WCAG AA contrast audit (`tests/hawk-docs-themes.test.js`) as the
+  existing set and is selectable from both the theme gallery and the playground's preset dropdown.
 - Frontmatter-to-Pagefind mapping in the Hugo docs for category, author, tags, and last-modified
   date metadata/filter/sort values.
 - Result-row date and tag metadata with configurable keys and independent visibility controls;
@@ -43,6 +47,31 @@ tagged release yet — the versions below track `package.json`'s history, not pu
 - **Playground page** (`/playground/`) — a real, linked page on hawk's own docs site with controls
   to toggle theme, animation driver, modal reveal animation, results reveal, scale/position/
   columns/density live against the site's own real Pagefind index, plus Debug/Metrics toggles.
+- `tagAccentColors` rotates a color *per tag within a single result* (independent of
+  `resultAccentColors`, which colors a whole row uniformly), defaulting to a built-in pastel
+  range; result tags are now borderless, prefixed with `#` (CSS-only, via `::before`), and paler
+  by default. `showSubpageConnector: false` turns off the anchor/heading-match indent and
+  connector line for a flat result list. A Chromium-only `corner-shape: squircle` (behind
+  `@supports`, themeable via `--hawk-corner-shape`) rounds the modal dialog's corners where
+  supported. `--hawk-result-date-font-family`/`--hawk-result-date-opacity` theme the result date
+  independently of the rest of the row.
+- A `related` frontmatter/metadata key is supported end-to-end (Hugo partial, docs, and the
+  frontmatter-mapping guide) for editorially curated "related pages," resolved to page titles
+  rather than raw paths.
+- Fixed a real bug: hidden Pagefind metadata spans (category/date/tags) lacked
+  `data-pagefind-ignore`, so their text was indexed as ordinary body content in addition to being
+  captured as metadata — a page's own category/date could resurface verbatim inside its own
+  result excerpt, duplicating the structured badges already rendered from that same data.
+- `resultDateFormat: 'relative'` renders a result's date as relative time ("7 days ago", "1 month
+  ago") via `Intl.RelativeTimeFormat` — no date library needed; `resultDateFormat: 'timestamp'`
+  (the default) keeps the current raw-value behavior, and `<time datetime>` always carries the raw
+  value regardless.
+- Fixed a real bug in `@staticcanvas/hawk/debug`'s UMD build: it externalizes
+  `@staticcanvas/logcad` as a plain global, but logcad's own UMD build assigns that global as
+  `{ default: {...} }` rather than the flat object a same-toolchain import normally resolves to —
+  `logcad.logd` was silently `undefined` even with logcad staged and loaded, so debugging always
+  fell back to the plain console path. `createHawkDebug` now unwraps `.default` when present,
+  working correctly against both shapes.
 
 ## [0.5.2] - 2026-08-31
 

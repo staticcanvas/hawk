@@ -3,6 +3,17 @@ title: Getting started
 description: Install hawk, index a built site with Pagefind, and mount the search modal.
 eyebrow: Guide
 category: Guides
+tags:
+  - installation
+  - npm
+  - esm
+  - umd
+  - quick start
+  - pagefind index
+related:
+  - /guides/pagefind-setup
+  - /api
+  - /guides/theming
 ---
 
 ## Install

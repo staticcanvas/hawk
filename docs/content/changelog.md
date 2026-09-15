@@ -4,6 +4,13 @@ description: Release history for @staticcanvas/hawk.
 eyebrow: Resources
 category: Resources
 noToc: true
+tags:
+  - changelog
+  - release notes
+  - versions
+related:
+  - /downloads
+  - /getting-started
 ---
 
 ## Changelog
@@ -13,9 +20,13 @@ in the repository, following [Keep a Changelog](https://keepachangelog.com/en/1.
 pre-1.0 and hasn't cut a tagged release yet — the versions there track `package.json`'s history,
 not published tags.
 
-- **Unreleased** — Hugo frontmatter mapping into Pagefind metadata/filters/sorts, configurable
-  date and tag rows beneath result descriptions, indented anchor results, and independently
-  configurable density/Escape header controls.
+- **Unreleased** — Hugo frontmatter mapping into Pagefind metadata/filters/sorts (including a new
+  `related` key resolved to page titles), configurable date and tag rows beneath result
+  descriptions with per-tag pastel accent colors and a relative-time format ("7 days ago"),
+  indented anchor results (now optional via `showSubpageConnector`), independently configurable
+  density/Escape header controls, a Chromium-only squircle corner treatment, a fix for metadata
+  text leaking into result excerpts, and a fix for `@staticcanvas/hawk/debug`'s UMD build silently
+  never reaching `@staticcanvas/logcad` even when staged.
 - **0.5.2** — fixed a real, confirmed reflected-XSS vulnerability (the typed search query reached
   `innerHTML` unescaped via `strings.noResults`).
 - **0.5.1** — a real search-results race condition (`#searchGeneration`), a modal-chrome

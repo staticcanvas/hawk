@@ -7,6 +7,12 @@ tags:
   - Pagefind
   - metadata
   - frontmatter
+  - category
+  - tags
+  - related pages
+related:
+  - /getting-started
+  - /api
 ---
 
 ## Scope the index before you run it
@@ -110,9 +116,17 @@ frontmatter value into a Pagefind attribute inside the page's `data-pagefind-bod
 | `data-pagefind-filter="key"` | Adds the element text as a filter value.               | Auto-derived tabs, explicit tab filters, and inline filters.               |
 | `data-pagefind-sort="key"`   | Adds the element text as a sortable value.             | `pagefindOptions.sort` and `HawkTab.sort`.                                 |
 
-Keep the emitted names (`category`, `author`, `date`, `tag`, and `tags`) consistent across
-generators so one Hawk configuration can search every index. The examples below belong in the
-layout that wraps an individual content page.
+Keep the emitted names (`category`, `author`, `date`, `tag`, `tags`, and `related`) consistent
+across generators so one Hawk configuration can search every index. The examples below belong in
+the layout that wraps an individual content page.
+
+`related` is the odd one out — every other key mirrors a frontmatter value onto the page's own
+element, but `related` names *other* pages (e.g. a `related: [guides/theming, api]` frontmatter
+list), so the layout resolving it needs to look each one up and emit *their* titles, not the raw
+paths — `result.data().meta.related` then reads as page names a caller can show directly, without
+a second lookup. This site's own `docs/layouts/partials/pagefind-frontmatter.html` does this via
+Hugo's `site.GetPage`, silently dropping any path that doesn't resolve (a typo, a moved/renamed
+page) instead of emitting a broken entry.
 
 ### Hugo
 
@@ -130,6 +144,14 @@ Hugo exposes page frontmatter through `.Params` and the resolved modification da
   <span hidden data-pagefind-filter="tag">{{ . }}</span>
   {{ end }}
   <span hidden data-pagefind-meta="tags">{{ delimit .Params.tags ", " }}</span>
+
+  {{ $relatedTitles := slice }}
+  {{ range .Params.related }}
+    {{ with site.GetPage . }}{{ $relatedTitles = $relatedTitles | append .Title }}{{ end }}
+  {{ end }}
+  {{ with $relatedTitles }}
+  <span hidden data-pagefind-meta="related">{{ delimit . ", " }}</span>
+  {{ end }}
 
   {{ .Content }}
 </article>
@@ -153,13 +175,13 @@ const date = frontmatter.date
 ---
 
 <article data-pagefind-body>
-  {categories.map((category) => <span hidden data-pagefind-filter="category">{category}</span>)}
-  {categories.length > 0 && <span hidden data-pagefind-meta="category">{categories.join(', ')}</span>}
-  {authors.map((author) => <span hidden data-pagefind-filter="author">{author}</span>)}
-  {authors.length > 0 && <span hidden data-pagefind-meta="author">{authors.join(', ')}</span>}
-  {date && <span hidden data-pagefind-meta="date" data-pagefind-sort="date">{date}</span>}
-  {tags.map((tag) => <span hidden data-pagefind-filter="tag">{tag}</span>)}
-  {tags.length > 0 && <span hidden data-pagefind-meta="tags">{tags.join(', ')}</span>}
+  {categories.map((category) => <span hidden data-pagefind-ignore data-pagefind-filter="category">{category}</span>)}
+  {categories.length > 0 && <span hidden data-pagefind-ignore data-pagefind-meta="category">{categories.join(', ')}</span>}
+  {authors.map((author) => <span hidden data-pagefind-ignore data-pagefind-filter="author">{author}</span>)}
+  {authors.length > 0 && <span hidden data-pagefind-ignore data-pagefind-meta="author">{authors.join(', ')}</span>}
+  {date && <span hidden data-pagefind-ignore data-pagefind-meta="date" data-pagefind-sort="date">{date}</span>}
+  {tags.map((tag) => <span hidden data-pagefind-ignore data-pagefind-filter="tag">{tag}</span>)}
+  {tags.length > 0 && <span hidden data-pagefind-ignore data-pagefind-meta="tags">{tags.join(', ')}</span>}
   <slot />
 </article>
 ```
@@ -172,22 +194,22 @@ Jekyll makes custom frontmatter available on `page`; its layout content is alrea
 ```liquid
 <article data-pagefind-body>
   {% for category in page.categories %}
-  <span hidden data-pagefind-filter="category">{{ category | escape }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="category">{{ category | escape }}</span>
   {% endfor %}
-  <span hidden data-pagefind-meta="category">{{ page.categories | join: ", " | escape }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="category">{{ page.categories | join: ", " | escape }}</span>
 
   {% if page.author %}
-  <span hidden data-pagefind-filter="author">{{ page.author | escape }}</span>
-  <span hidden data-pagefind-meta="author">{{ page.author | escape }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="author">{{ page.author | escape }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="author">{{ page.author | escape }}</span>
   {% endif %}
 
-  <span hidden data-pagefind-meta="date" data-pagefind-sort="date">
+  <span hidden data-pagefind-ignore data-pagefind-meta="date" data-pagefind-sort="date">
     {{ page.date | date: "%Y-%m-%d" }}
   </span>
   {% for tag in page.tags %}
-  <span hidden data-pagefind-filter="tag">{{ tag | escape }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="tag">{{ tag | escape }}</span>
   {% endfor %}
-  <span hidden data-pagefind-meta="tags">{{ page.tags | join: ", " | escape }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="tags">{{ page.tags | join: ", " | escape }}</span>
 
   {{ content }}
 </article>
@@ -201,22 +223,22 @@ This Nunjucks layout expects `categories` and `tags` to be arrays in the content
 ```njk
 <article data-pagefind-body>
   {% for category in categories or [] %}
-  <span hidden data-pagefind-filter="category">{{ category }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="category">{{ category }}</span>
   {% endfor %}
-  <span hidden data-pagefind-meta="category">{{ (categories or []) | join(", ") }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="category">{{ (categories or []) | join(", ") }}</span>
 
   {% if author %}
-  <span hidden data-pagefind-filter="author">{{ author }}</span>
-  <span hidden data-pagefind-meta="author">{{ author }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="author">{{ author }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="author">{{ author }}</span>
   {% endif %}
 
-  <span hidden data-pagefind-meta="date" data-pagefind-sort="date">
+  <span hidden data-pagefind-ignore data-pagefind-meta="date" data-pagefind-sort="date">
     {{ page.date.toISOString().slice(0, 10) }}
   </span>
   {% for tag in tags or [] %}
-  <span hidden data-pagefind-filter="tag">{{ tag }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-filter="tag">{{ tag }}</span>
   {% endfor %}
-  <span hidden data-pagefind-meta="tags">{{ (tags or []) | join(", ") }}</span>
+  <span hidden data-pagefind-ignore data-pagefind-meta="tags">{{ (tags or []) | join(", ") }}</span>
 
   {{ content | safe }}
 </article>

@@ -2,6 +2,16 @@
 title: Hawk
 description: Themeable, pluggable command-palette search widget for static sites.
 category: Overview
+tags:
+  - search
+  - pagefind
+  - command palette
+  - theming
+  - typeflow
+related:
+  - /getting-started
+  - /guides/theming
+  - /themes
 hero:
   tagline: Pagefind-backed <strong>command-palette search</strong> you can <em>make match your site</em> — theme it, tab it, pin it, or use the defaults.
   install: npm install @staticcanvas/hawk
@@ -33,7 +43,7 @@ features:
   - title: Keyboard-first
     icon: keyboard
     href: api/#instance-methods
-    body: A <strong>modal focus trap</strong>, two-pane Tab navigation, arrow-key movement, Escape, and <em>Ctrl/Cmd+K</em> are included.
+    body: A <strong>modal focus trap</strong>, two-pane <kbd>Tab</kbd> navigation, <kbd>↑</kbd>/<kbd>↓</kbd> movement, <kbd>Esc</kbd>, and <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>K</kbd> are included.
   - title: Pins and inline filters
     icon: pin
     href: guides/pins-and-embedding/
@@ -44,5 +54,4 @@ features:
     body: Start with <strong>one constructor call</strong>, a Pagefind index, and a trigger. The TypeFlow driver and <em>built-in trigger</em> remain optional.
 ---
 
-This site's own search box (top of every page, or Ctrl+K) is hawk searching itself — there's no
-separate demo page, because dogfooding it here is the demo.
+This site's own search box (top of every page, or <kbd>Ctrl</kbd>+<kbd>K</kbd>) is hawk searching itself -- Use Playground and Themes to further explore.

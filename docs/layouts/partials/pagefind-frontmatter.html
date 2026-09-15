@@ -16,14 +16,24 @@
 {{ end }}
 {{ $categories = $categories | uniq }}
 
+{{/*
+  data-pagefind-ignore alongside data-pagefind-meta/-filter on the SAME element (not a wrapping
+  ancestor — that would skip meta/filter extraction for everything inside it too) keeps these
+  values available as result.data().meta/filters while excluding their own text from the page's
+  indexed body content. Without it, Pagefind indexes this hidden span's text like any other body
+  text, so the category/date/tags values it carries can resurface verbatim inside a result's
+  excerpt right alongside the structured badges hawk.js already renders for that same data —
+  e.g. an excerpt reading "Guides Guides 2026-08-29 Guides. <real description>" for a page whose
+  own title and category both happen to be "Guides".
+*/}}
 {{ range $categories }}
-<span hidden data-pagefind-filter="category">{{ . }}</span>
+<span hidden data-pagefind-ignore data-pagefind-filter="category">{{ . }}</span>
 {{ end }}
 {{ with $categories }}
-<span hidden data-pagefind-meta="category">{{ delimit . ", " }}</span>
+<span hidden data-pagefind-ignore data-pagefind-meta="category">{{ delimit . ", " }}</span>
 {{ end }}
 
-<span hidden data-pagefind-meta="date" data-pagefind-sort="date">{{ $page.Lastmod.Format "2006-01-02" }}</span>
+<span hidden data-pagefind-ignore data-pagefind-meta="date" data-pagefind-sort="date">{{ $page.Lastmod.Format "2006-01-02" }}</span>
 
 {{ $authors := slice }}
 {{ with $page.Params.author }}
@@ -42,10 +52,10 @@
 {{ end }}
 {{ $authors = $authors | uniq }}
 {{ range $authors }}
-<span hidden data-pagefind-filter="author">{{ . }}</span>
+<span hidden data-pagefind-ignore data-pagefind-filter="author">{{ . }}</span>
 {{ end }}
 {{ with $authors }}
-<span hidden data-pagefind-meta="author">{{ delimit . ", " }}</span>
+<span hidden data-pagefind-ignore data-pagefind-meta="author">{{ delimit . ", " }}</span>
 {{ end }}
 
 {{ $tags := slice }}
@@ -59,7 +69,25 @@
 {{ $tags = $tags | uniq }}
 {{ with $tags }}
   {{ range . }}
-<span hidden data-pagefind-filter="tag">{{ . }}</span>
+<span hidden data-pagefind-ignore data-pagefind-filter="tag">{{ . }}</span>
   {{ end }}
-<span hidden data-pagefind-meta="tags">{{ delimit . ", " }}</span>
+<span hidden data-pagefind-ignore data-pagefind-meta="tags">{{ delimit . ", " }}</span>
+{{ end }}
+
+{{/*
+  related: a list of content paths (e.g. "guides/theming"), resolved to their titles here so
+  result.data().meta.related reads as page names, not raw paths — useful directly in a result
+  list without a second lookup. A path that doesn't resolve (typo, moved/renamed page) is
+  silently dropped rather than emitting an empty/broken entry.
+*/}}
+{{ $relatedTitles := slice }}
+{{ with $page.Params.related }}
+  {{ range . }}
+    {{ with site.GetPage . }}
+      {{ $relatedTitles = $relatedTitles | append .Title }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+{{ with $relatedTitles }}
+<span hidden data-pagefind-ignore data-pagefind-meta="related">{{ delimit . ", " }}</span>
 {{ end }}

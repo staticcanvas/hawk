@@ -1,6 +1,6 @@
 {{ $page := . }}
 <nav class="breadcrumbs" aria-label="Breadcrumb">
-  <ol>
+  <ol data-typeflow-target="breadcrumbs">
     <li><a href="{{ "" | relURL }}">Docs</a></li>
     {{ range .Ancestors.Reverse }}
       {{ if not .IsHome }}

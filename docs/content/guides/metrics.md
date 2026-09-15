@@ -3,6 +3,14 @@ title: Metrics
 description: Headless counters and timings for a HawkSearch instance — Pagefind query stats, tab/pin usage, and session duration.
 eyebrow: Guide
 category: Guides
+tags:
+  - metrics
+  - analytics
+  - counters
+  - timings
+related:
+  - /guides/debug
+  - /api
 ---
 
 ## What it does

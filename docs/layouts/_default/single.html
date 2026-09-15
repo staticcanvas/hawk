@@ -1,52 +1,52 @@
-{{ define "main" }}
-{{/*
-  single.html — Renders a documentation page with:
-    - doc-page grid (content | TOC)
-    - doc-header (eyebrow, h1, lead)
-    - doc-content (markdown body)
-    - doc-toc (sticky right rail, only when headings exist)
-
-  A page flags itself for one or more hawk search tabs via frontmatter: `category: Guides` for
-  one, or `categories: [Guides, Reference]` for several — each renders its own
-  data-pagefind-filter marker, and Pagefind aggregates all of them, so the page shows up under
-  every tab it's flagged for.
-*/}}
-<div class="doc-page{{ if or (eq (len .TableOfContents) 0) .Params.noToc }} doc-page--no-toc{{ end }}">
-
+{{ define "main" }} {{/* single.html — Renders a documentation page with: - doc-page grid (content |
+TOC) - doc-header (eyebrow, h1, lead) - doc-content (markdown body) - doc-toc (sticky right rail,
+only when headings exist) A page flags itself for one or more hawk search tabs via frontmatter:
+`category: Guides` for one, or `categories: [Guides, Reference]` for several — each renders its own
+data-pagefind-filter marker, and Pagefind aggregates all of them, so the page shows up under every
+tab it's flagged for. */}}
+<div
+  class="doc-page{{ if or (eq (len .TableOfContents) 0) .Params.noToc }} doc-page--no-toc{{ end }}"
+>
   {{/* ── Left: article column ───────────────────────────────── */}}
   <article class="doc-article">
-    {{ partial "pagefind-frontmatter.html" . }}
-    {{ partial "breadcrumbs.html" . }}
+    {{ partial "pagefind-frontmatter.html" . }} {{ partial "breadcrumbs.html" . }}
     <header class="doc-header">
-      {{ if eq .Section "guides" }}{{ with .Params.eyebrow }}<span class="doc-eyebrow">{{ . }}</span>{{ end }}{{ end }}
+      {{ if eq .Section "guides" }}{{ end }}
       <h1>{{ .Title }}</h1>
-      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+      {{ with .Description }}
+      <p class="doc-lead">{{ . }}</p>
+      {{ end }}
     </header>
 
-    <div class="doc-content">
-      {{ .Content }}
-    </div>
+    <div class="doc-content">{{ .Content }}</div>
     {{ partial "page-nav.html" . }}
   </article>
 
-  {{/* ── Right: sticky table of contents ───────────────────── */}}
-  {{ if and (gt (len .TableOfContents) 0) (not .Params.noToc) }}
+  {{/* ── Right: sticky table of contents ───────────────────── */}} {{ if and (gt (len
+  .TableOfContents) 0) (not .Params.noToc) }}
   <aside class="doc-toc" aria-label="On this page">
     <details class="toc-disclosure" data-toc-disclosure>
       <summary class="toc-summary">
         <span>On this page</span>
-        <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <svg
+          viewBox="0 0 20 20"
+          width="18"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          aria-hidden="true"
+        >
           <path d="m5 7.5 5 5 5-5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </summary>
       <div class="toc-panel">
         <span class="toc-title">On this page</span>
-        {{ .TableOfContents }}
+        <div class="toc-list" data-typeflow-target="toc">{{ .TableOfContents }}</div>
         {{ partial "toc-details.html" . }}
       </div>
     </details>
   </aside>
   {{ end }}
-
 </div>
 {{ end }}
