@@ -6,6 +6,14 @@
 
 import logcad from '@staticcanvas/logcad';
 
+// The UMD build (this module's own hawk-debug.js output) externalizes @staticcanvas/logcad as a
+// plain `global.logcad` — but logcad's *own* UMD build assigns that global as `{ default: {...
+// logd, logc, logdrl } }`, the same shape a CJS `require()` of an ESM module gets, not the
+// flattened module a same-toolchain `import logcad from` normally resolves to. The ESM/CJS builds
+// of this file bundle the real package directly, so `logcad` is already the flat object there —
+// `logcad.default ?? logcad` covers both without needing to know which build is running.
+const logcadApi = logcad?.default ?? logcad;
+
 /** @returns {number} A monotonic timestamp when available. */
 const now = () => (typeof performance !== 'undefined' ? performance.now() : Date.now());
 
@@ -49,8 +57,8 @@ export function createHawkDebug(hawk, options = {}) {
   const write = (level, action, message, detail) => {
     if (!enabled) return;
 
-    if (typeof logcad?.logd === 'function') {
-      logcad.logd(
+    if (typeof logcadApi?.logd === 'function') {
+      logcadApi.logd(
         {
           name: label,
           color: '#04121c',
