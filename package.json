@@ -1,6 +1,6 @@
 {
   "name": "@staticcanvas/hawk",
-  "version": "0.11.0",
+  "version": "0.43.0",
   "description": "Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations (a TypeFlow typewriter driver ships built-in), swappable visual themes.",
   "type": "module",
   "main": "./dist/hawk.cjs",
