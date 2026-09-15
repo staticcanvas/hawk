@@ -1,312 +1,116 @@
 # Changelog
 
-All notable changes to this project are documented in this file. The format is based on
-[Keep a Changelog](https://keepachangelog.com/en/1.0.0/). Hawk is pre-1.0 and hasn't cut a
-tagged release yet — the versions below track `package.json`'s history, not published tags.
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+<!-- rivet:changelog:start -->
+
 ### Added
 
-- 10 new theme-gallery palette templates (Amaranth, Blush, Crimson Ledger, Glacier Blue,
-  Honeycomb, Indigo Night, Obsidian, Seafoam, Solar Flare, Verdant), bringing the gallery to 24
-  profiles. Each passes the same WCAG AA contrast audit (`tests/hawk-docs-themes.test.js`) as the
-  existing set and is selectable from both the theme gallery and the playground's preset dropdown.
-- Frontmatter-to-Pagefind mapping in the Hugo docs for category, author, tags, and last-modified
-  date metadata/filter/sort values.
-- Result-row date and tag metadata with configurable keys and independent visibility controls;
-  Pagefind anchor/sub-results are now indented beneath their parent page.
-- `headerControls` can hide the density switcher and Escape button independently, or hide both
-  for a minimal search-input-only header.
-- Recently viewed search history, persisted in `localStorage` and exposed through a synthetic
-  tab after the first result selection. Configure it with `enableRecentlyViewed`,
-  `recentlyViewedStorageKey`, and `maxRecentlyViewed`.
-- `enableSecondColumn` controls whether the preview pane is available; it defaults to `true` and
-  forces a single results column when disabled.
-- `excludePages` provides a small, URL-based result exclusion list; excluding a page also omits
-  its Pagefind section/anchor matches. Hawk's own docs use it to keep the home page out of search.
-- The TypeFlow animation adapter now integrates the released `@staticcanvas/typeflow` 0.34 line
-  directly and exports a ready-to-use `HawkAnimationTypeflow` driver; the configurable factory
-  remains available. Its typed configuration and playground now expose character, word,
-  scramble, fade-trail, word-fade, directional float, spatial zoom, and expanded erase styles
-  across titles, preview content, and rotating placeholders.
-- The Typeflow theme now follows `prefers-color-scheme` when its host has no explicit
-  `data-theme` selection, while preserving explicit light/dark and Dark Reader scheme state.
-- `pagefindInitOptions` and `pagefindMergeIndexes` expose Pagefind browser configuration,
-  ranking, cache/worker controls, and multi-index search before Hawk derives its tabs.
-
-- **`@staticcanvas/hawk/debug`** — optional, non-invasive console diagnostics for a `HawkSearch`
-  instance (opens/closes/query changes/settled results/tab switches/pin changes/errors), routed
-  through `@staticcanvas/logcad` when installed, else a styled `console.*` fallback.
-- **`@staticcanvas/hawk/metrics`** — optional, headless counters/timings for a `HawkSearch`
-  instance: Pagefind query stats (`zeroResultRate`, `averageMatches`, `averageQueryLatencyMs`),
-  tab/pin usage, and session duration. No DOM of its own — draw a UI from `.snapshot()`.
-  Both follow the same shape (wrap the instance's public methods/callbacks, poll its public
-  `state` getter) as `@staticcanvas/lume`'s own `lume-debug`/`lume-metrics`; see
-  `architecture/README.md`.
-- **Playground page** (`/playground/`) — a real, linked page on hawk's own docs site with controls
-  to toggle theme, animation driver, modal reveal animation, results reveal, scale/position/
-  columns/density live against the site's own real Pagefind index, plus Debug/Metrics toggles.
-- `tagAccentColors` rotates a color *per tag within a single result* (independent of
-  `resultAccentColors`, which colors a whole row uniformly), defaulting to a built-in pastel
-  range; result tags are now borderless, prefixed with `#` (CSS-only, via `::before`), and paler
-  by default. `showSubpageConnector: false` turns off the anchor/heading-match indent and
-  connector line for a flat result list. A Chromium-only `corner-shape: squircle` (behind
-  `@supports`, themeable via `--hawk-corner-shape`) rounds the modal dialog's corners where
-  supported. `--hawk-result-date-font-family`/`--hawk-result-date-opacity` theme the result date
-  independently of the rest of the row.
-- A `related` frontmatter/metadata key is supported end-to-end (Hugo partial, docs, and the
-  frontmatter-mapping guide) for editorially curated "related pages," resolved to page titles
-  rather than raw paths.
-- Fixed a real bug: hidden Pagefind metadata spans (category/date/tags) lacked
-  `data-pagefind-ignore`, so their text was indexed as ordinary body content in addition to being
-  captured as metadata — a page's own category/date could resurface verbatim inside its own
-  result excerpt, duplicating the structured badges already rendered from that same data.
-- `resultDateFormat: 'relative'` renders a result's date as relative time ("7 days ago", "1 month
-  ago") via `Intl.RelativeTimeFormat` — no date library needed; `resultDateFormat: 'timestamp'`
-  (the default) keeps the current raw-value behavior, and `<time datetime>` always carries the raw
-  value regardless.
-- Fixed a real bug in `@staticcanvas/hawk/debug`'s UMD build: it externalizes
-  `@staticcanvas/logcad` as a plain global, but logcad's own UMD build assigns that global as
-  `{ default: {...} }` rather than the flat object a same-toolchain import normally resolves to —
-  `logcad.logd` was silently `undefined` even with logcad staged and loaded, so debugging always
-  fell back to the plain console path. `createHawkDebug` now unwraps `.default` when present,
-  working correctly against both shapes.
-
-## [0.5.2] - 2026-08-31
-
-### Security
-
-- **Reflected XSS via the search query.** `strings.noResults(query)` interpolated the visitor's
-  typed query directly into a template literal assigned to `innerHTML`, with no escaping —
-  confirmed exploitable: typing `<img src=x onerror="...">` executed arbitrary JS in the page's
-  context. Distinct from the documented preview-pane trust boundary (which is specifically about
-  *your own site's already-built content*, not visitor input). Fixed by escaping the `query`
-  argument before it reaches `noResults` — protects a custom `strings.noResults` override too,
-  not just the default. Added regression tests, including one confirming a custom override still
-  receives an escaped query.
-
-### Fixed
-
-- `test:bun`/`test:coverage:bun` were picking up `tests/e2e/hawk.spec.mjs` (a Playwright file, not
-  a unit test) and failing on every `test.describe()` call. Scoped both scripts to `tests/*.test.js`.
-  Bun's own `vi` mock still doesn't implement `vi.stubGlobal`/`vi.unstubAllGlobals`
-  (used in `tests/hawk.test.js`'s `beforeEach`/`afterEach`), so `test:bun` remains broken beyond
-  this — not attempted here; tracked as a known gap, not fixed.
-
-### Docs
-
-- API reference's trust-boundary note now explicitly distinguishes "your site's content" (not
-  sanitized, deliberately) from "the visitor's typed query" (escaped, always).
-
-## [0.5.1] - 2026-08-31
-
-### Fixed
-
-- **Out-of-order search results.** `#executeSearch` could apply a stale, earlier-started call's
-  results after a newer one had already committed, if the earlier call happened to resolve
-  second (e.g. `eagerResults`' own empty-query listing racing a query typed right after `open()`
-  — both await the same in-flight Pagefind load, with no guarantee `debouncedSearch()`/`search()`
-  settle in call order). Added `#searchGeneration`, a monotonic counter captured before any
-  `await` and checked before committing — the same staleness-guard pattern `#loadPreviewContent`
-  already used for `#previewKey`. Also the source of real (not just theoretical) e2e flakiness:
-  `tests/e2e/hawk.spec.mjs`'s wait conditions now wait for query-specific content (the "N matching
-  results" counter text) instead of "any result exists", which the transient eager listing could
-  satisfy on its own.
-- **Modal chrome (header/filter-tabs/footer) could compress vertically at a narrow width.**
-  `.hawk-modal-dialog`'s column-flex layout had no `flex-shrink: 0` on any row but
-  `.hawk-modal-body` — if the footer's hint text ever wrapped onto a second line (nothing in it
-  was `nowrap`-protected either), the resulting height deficit got redistributed across every
-  row once the body hit its own `min-height` floor, squeezing filter-pill padding down to ~10px
-  (from 24px) at some width/height combinations. Fixed with `flex-shrink: 0` on the header,
-  filter-tabs, and footer rows, plus `overflow-x: auto` + `white-space: nowrap` on the footer's
-  hints so they scroll instead of wrapping in the first place.
-- **A markdown table could overflow its column and run past the page's TOC.** `table { width:
-  100% }` is only ever a *preferred* width under the default `table-layout: auto` — a cell with a
-  long unbroken token (e.g. a `code`-spanned union type) still forces the table to its content's
-  real minimum width. `api.md`'s config-option table rendered ~920px wide inside a ~570px column.
-  Fixed with `display: block; overflow-x: auto` directly on `.doc-content table` (a Hugo
-  render-hook wrapper div would be the more conventional fix, but table render hooks aren't
-  supported until Hugo v0.134 — this project's Hugo build is v0.131).
-- **A long unbroken word in prose could overflow the article column** (e.g. a real sentence in
-  the density-and-navigation guide: `ArrowUp/ArrowDown/PageUp/PageDown/Home/End`, where `/` isn't
-  a CSS line-break opportunity) — on a narrow viewport this took the whole page past its own
-  width. Fixed with `overflow-wrap: break-word` on `.doc-content`.
-- **The header's icon-link row overflowed the viewport by a few px on every page at ~375px
-  width** — `.header-inner`'s content needed more room than a phone-width viewport has, and
-  nothing in the row shrank to compensate. Fixed by hiding the "Ctrl+K" hint (genuinely
-  meaningless on a touch device with no physical keyboard) below 480px, which reclaims more than
-  the row was short by.
-- **The homepage hero's content column didn't align with the feature/guides sections below it.**
-  `.hero-inner` added its own `max-width: 720px` on top of `.shell`'s shared 1100px container,
-  re-centering a narrower box and pulling its left edge inward relative to everything below it.
-  Removed; the tagline's own `max-width: 56ch` already handles readable line length locally.
+- Remove homepage search-model gallery. ([37b1c2e](https://gitlab.com/staticcanvas/hawk/-/commit/37b1c2e96cd8b80b5e2dae0a12805540fb00088c) — @sgkens)
+- Split site JS/CSS into scoped modules and SCSS partials. ([e312459](https://gitlab.com/staticcanvas/hawk/-/commit/e3124597f8785ccc79506f59995c6290b3c73253) — @sgkens)
+- Add 10 new theme-gallery palettes and per-theme CSS generation. ([d6fa347](https://gitlab.com/staticcanvas/hawk/-/commit/d6fa347d752fc3d6ce6156fa0d4cd34401844a09) — @sgkens)
+- Add relative dates, tag accent colors, and subpage connector toggle. ([796c9ef](https://gitlab.com/staticcanvas/hawk/-/commit/796c9efc89e4e213bb8acaf864b00c8a921aa104) — @sgkens)
+- Add vertical fit density mode. ([dd203b8](https://gitlab.com/staticcanvas/hawk/-/commit/dd203b8f4951645398c5bcbc23da67ce1d609824) — @sgkens)
+- Add configurable result accent colors. ([f48fe39](https://gitlab.com/staticcanvas/hawk/-/commit/f48fe39eef83d01eed7bbb890ea8e3238027887e) — @sgkens)
+- Configure modal backdrop scrim. ([6a985c2](https://gitlab.com/staticcanvas/hawk/-/commit/6a985c20e6bb7ab6b0a31fbe6809693c0498f981) — @sgkens)
+- Add feature capability icons. ([1349459](https://gitlab.com/staticcanvas/hawk/-/commit/13494596af771ba1558bfb18ac6f78e84e109d0b) — @sgkens)
+- Link homepage features to guides. ([84aad91](https://gitlab.com/staticcanvas/hawk/-/commit/84aad91f82f6892662aee65b2aef0fe6f6a2534c) — @sgkens)
+- Add seamless minimal theme. ([0f53d60](https://gitlab.com/staticcanvas/hawk/-/commit/0f53d60fb347c77905fff4668d528e5881ec5a21) — @sgkens)
+- Add icon adapters, frontmatter fixture coverage, and responsive audits. ([b8ae828](https://gitlab.com/staticcanvas/hawk/-/commit/b8ae8289a20dba095ffdffc2f149294720ed5a5e) — @sgkens)
+- Refine homepage capability cards. ([ae78730](https://gitlab.com/staticcanvas/hawk/-/commit/ae787309427821d796260701844510caa4734101) — @sgkens)
+- Add manifest-driven search gallery. ([695af58](https://gitlab.com/staticcanvas/hawk/-/commit/695af58d90fe9afce8a69f113afc261931f5768f) — @sgkens)
+- Refine homepage hero lockup. ([cfa284c](https://gitlab.com/staticcanvas/hawk/-/commit/cfa284cbfb19c336a5e118366ed7528a93444a5f) — @sgkens)
+- Add responsive navigation menu. ([204d5bc](https://gitlab.com/staticcanvas/hawk/-/commit/204d5bc5b013995cbfa02c6fe1db5b8e1d86a233) — @sgkens)
+- Add responsive table of contents. ([d96823d](https://gitlab.com/staticcanvas/hawk/-/commit/d96823d6bac923199bbdc1cd26fd8368ee48358e) — @sgkens)
+- Link gallery presets to playground. ([ada9066](https://gitlab.com/staticcanvas/hawk/-/commit/ada9066916f791be0a01215cbf268fdcb38ab60e) — @sgkens)
+- Integrate theme gallery, docs profile adapter, and playground workbench. ([555b3f9](https://gitlab.com/staticcanvas/hawk/-/commit/555b3f9c91ebf80d8a7736f0027d4821fbc208a5) — @sgkens)
+- Add customization, diagnostics, metrics and docs playground. ([b36d406](https://gitlab.com/staticcanvas/hawk/-/commit/b36d406bc3e8604a90ad4b34fa16d59630bf0889) — @sgkens)
+- Expose every TypeFlow option and copy-pasteable code on the playground. ([c9bc080](https://gitlab.com/staticcanvas/hawk/-/commit/c9bc080cee37a984f5198c3ebdb29b26e74c310f) — @sgkens)
+- Add debug/metrics plugin packages and a live playground page. ([ac7ecc9](https://gitlab.com/staticcanvas/hawk/-/commit/ac7ecc9c20d3520a01f4441067e9ad3d18987f10) — @sgkens)
+- Staggered results reveal and per-tab accent colors. ([d9d7ab1](https://gitlab.com/staticcanvas/hawk/-/commit/d9d7ab19772b8f9d8d14cd48bf47dd905be398fa) — @sgkens)
+- Curated/sorted tabs and loading tabs from JSON. ([6c7c844](https://gitlab.com/staticcanvas/hawk/-/commit/6c7c8443100080f4c1f9851c96113cb8c0a53726) — @sgkens)
+- Per-tab default previews and 5 built-in modal reveal animations. ([969c815](https://gitlab.com/staticcanvas/hawk/-/commit/969c815b73d081878eaa0f3301a16d382a641a0e) — @sgkens)
+- Add section-outline previews for page-level matches. ([78050ba](https://gitlab.com/staticcanvas/hawk/-/commit/78050baa13b334f1a5451560c05175a7e9552015) — @sgkens)
+- Explicit content-driven tabs, sidebar nav, header icons/theme toggle, scroll-reveal. ([5faf8da](https://gitlab.com/staticcanvas/hawk/-/commit/5faf8dac0a43e2542c41996f4853c46e75b70e90) — @sgkens)
+- Add a logo placeholder and a proper homepage splash page. ([dccc65e](https://gitlab.com/staticcanvas/hawk/-/commit/dccc65e0c95393a501e5988ae6655129642daa90) — @sgkens)
+- Add a built-in trigger element (config.trigger). ([9a441dc](https://gitlab.com/staticcanvas/hawk/-/commit/9a441dc8bc6c53a446864dfbebd4a17ed5a1bef9) — @sgkens)
+- Add structured inline filter query syntax. ([888cb1c](https://gitlab.com/staticcanvas/hawk/-/commit/888cb1c3eb27d83765ea9ec6affde56aefca79df) — @sgkens)
+- Add pin system. ([f8002f5](https://gitlab.com/staticcanvas/hawk/-/commit/f8002f592998d7527506363d8913c4b756861364) — @sgkens)
+- Add powered-by-Pagefind attribution. ([eb1ae85](https://gitlab.com/staticcanvas/hawk/-/commit/eb1ae859a5c0727eeef03d4dc8dc1103d642d4c7) — @sgkens)
+- Expose result/page metadata (match.meta, section badges, page count). ([d9b2e3b](https://gitlab.com/staticcanvas/hawk/-/commit/d9b2e3ba9ff51eda6e1bb4ef102929997c6a9ec4) — @sgkens)
+- Theming depth (fonts, JS tokens, scrollbars, mark styling) + rotating placeholder. ([7a8fcb5](https://gitlab.com/staticcanvas/hawk/-/commit/7a8fcb592984c1308ea3d352f72c0d0395b8c4f4) — @sgkens)
+- Pagefind as a real dependency; typeflow theme/animation self-register. ([10c42dc](https://gitlab.com/staticcanvas/hawk/-/commit/10c42dc85ad15d8fe9b1fbd25f9e7ed0245eee59) — @sgkens)
+- Add default preview page and eager default results listing. ([c963f98](https://gitlab.com/staticcanvas/hawk/-/commit/c963f9801ac055823e87fd7072070322b5cf193e) — @sgkens)
+- Add two-pane keyboard navigation for results and preview. ([27d0009](https://gitlab.com/staticcanvas/hawk/-/commit/27d00091e9d674768983731dc983380bdb6876a4) — @sgkens)
+- Add fit/medium/compact density modes with persisted preference. ([1d85261](https://gitlab.com/staticcanvas/hawk/-/commit/1d85261240b1eef01f70a12fee010797871acb64) — @sgkens)
+- Add dev-controlled tabs and Pagefind options passthrough. ([2a0bab8](https://gitlab.com/staticcanvas/hawk/-/commit/2a0bab86a136c70006a6bcaeb38b7cc583e2a09e) — @sgkens)
+- Rich preview content and polished category tabs. ([a408c58](https://gitlab.com/staticcanvas/hawk/-/commit/a408c588b47dec2e49d559a0d4b16d0236e364af) — @sgkens)
+- Add typeflow animation driver plugin. ([9fd65f0](https://gitlab.com/staticcanvas/hawk/-/commit/9fd65f0902d239e69e8b82a2fbbd7b34c0967c7e) — @sgkens)
+- Add default theme plugin. ([8b8a2af](https://gitlab.com/staticcanvas/hawk/-/commit/8b8a2af22b251b5f6f728ecf3616e7ba93de7b12) — @sgkens)
+- Add core search engine. ([0cd7aa4](https://gitlab.com/staticcanvas/hawk/-/commit/0cd7aa466b4d08413a213182d53f743e6929f2ad) — @sgkens)
 
 ### Changed
 
-- Homepage feature grid refreshed from 6 to 9 cards for parity with hawk's actual feature surface
-  — added modal reveal animations, real (fetched, not excerpt) page previews with section
-  outlines, density modes, and curated/JSON-driven tabs, none of which were mentioned before.
-  Added a "Features" heading above the grid, matching the existing "Guides" section's own pattern.
-
-## [0.5.0] - 2026-08-30
-
-### Added
-
-- **Curated/sorted tabs**: `HawkTab.sort` (sugar for `pagefindOptions.sort`) turns a tab into a
-  listing ordered by a Pagefind-indexed field instead of relevance — e.g. `{ sort: { date: 'desc'
-  } }` for a "Recently updated" tab, given pages marked with `data-pagefind-sort="date"`. Wired
-  into hawk's own docs site as a working example (every content page now carries a
-  `data-pagefind-sort="date"` marker from its Hugo `.Lastmod`).
-- **Loading tabs from JSON**: `config.tabsUrl` fetches a JSON file (the same shape as
-  `config.tabs`) once Pagefind loads, instead of requiring the tab list to live in the mount
-  script — lets a non-JS site maintainer, or a separate build step, edit tabs directly. Falls back
-  to auto-derived tabs (with a console warning) on a fetch failure, invalid JSON, or a
-  non-array response. Ignored if `config.tabs`/`config.categories` is also given.
-
-### Testing
-
-- Unit test count: 115 (0.4.0) → 120 (0.5.0).
-
-## [0.4.0] - 2026-08-30
-
-### Added
-
-- **Section-outline previews**: `config.previewSections` renders a page-level match's preview as
-  clickable heading+excerpt rows (one per heading matching `previewSectionSelector`, default
-  `'h2, h3'`) instead of the full page dump. An anchor/sub-result match is unaffected — it still
-  shows its one matched section in full. Falls back to the full page dump if the page has no
-  matching headings. New `previewSectionExcerptLength` (default `140`).
-- **Per-tab default previews**: `HawkTab.defaultPreviewUrl`/`defaultPreviewTitle` set a landing
-  page for one tab specifically, shown whenever that tab is active and nothing is selected (zero
-  matches, or no query typed yet) — overriding `config.defaultPreviewUrl` while that tab is
-  active, falling back to it otherwise.
-- **Modal reveal animations**: `config.revealAnimation` — 5 built-in named CSS-keyframe reveals
-  (`'fade'`, `'scale-fade'` (default), `'slide-down'`, `'blur-zoom'`, `'spring'`), `false` for
-  instant show/hide, or a custom name paired with your own `[data-hawk-reveal="name"]` keyframes.
-  `config.revealDuration` overrides the built-in per-name timing. Always skipped (instant) under
-  `prefers-reduced-motion: reduce`.
+- Update metadata for v0.43.0 release. ([9871787](https://gitlab.com/staticcanvas/hawk/-/commit/98717872f6a32d40a58cec4b1a8a7ce574cf847b) — @sgkens)
+- Update guide content, frontmatter contract, and article chrome. ([3079f6c](https://gitlab.com/staticcanvas/hawk/-/commit/3079f6c8b832d5333e0f876005874dd301027a86) — @sgkens)
+- Add SCSS compilation, theme CSS generation, and lume/sass tooling. ([7a0cbb0](https://gitlab.com/staticcanvas/hawk/-/commit/7a0cbb0b2cb7b456823c9c99cb224992a7d19523) — @sgkens)
+- Add release gate audit. ([117549a](https://gitlab.com/staticcanvas/hawk/-/commit/117549a74ca8d5334ad93c9479c02e881829fbf5) — @sgkens)
+- Add zero-TypeFlow mount example. ([f4db773](https://gitlab.com/staticcanvas/hawk/-/commit/f4db7737b580970f8263b5a9b9d81210ef79e9e1) — @sgkens)
+- Add frontmatter mapping examples. ([271b28c](https://gitlab.com/staticcanvas/hawk/-/commit/271b28cfc40242bf943750c96fe64aac8cacfead) — @sgkens)
+- Fix e2e ci job stage failure - Wider tablet/desktop layouts retain scrollbar stabilization. ([3b4c27a](https://gitlab.com/staticcanvas/hawk/-/commit/3b4c27aeebad14d1202aa86915020a8ab7fea7ad) — @sgkens)
+- Exclude generated site snapshot from lint. ([df60429](https://gitlab.com/staticcanvas/hawk/-/commit/df604294c3aac94965244df55432a2119b39d323) — @sgkens)
+- Update gitignore and readme. ([848d5ee](https://gitlab.com/staticcanvas/hawk/-/commit/848d5ee680ecb55f053c5b0473876fe57c8baf79) — @sgkens)
+- 0.5.2 changelog. ([c422854](https://gitlab.com/staticcanvas/hawk/-/commit/c422854e1378f76227f691ec756077f926c6f706) — @sgkens)
+- Bump to 0.5.1. ([fff2759](https://gitlab.com/staticcanvas/hawk/-/commit/fff275982ed5347e0d5939d1b84dcac708b04f57) — @sgkens)
+- Refresh homepage feature grid for parity with hawk's features. ([60f43b3](https://gitlab.com/staticcanvas/hawk/-/commit/60f43b3f43ac894028abe3966b6b4a31899586d3) — @sgkens)
+- Bump to 0.5.0. ([93fe4cd](https://gitlab.com/staticcanvas/hawk/-/commit/93fe4cdae9cd6cad25cf47da1f8103b8729538eb) — @sgkens)
+- Wire a real "Recently updated" tab into hawk's own search. ([e29902d](https://gitlab.com/staticcanvas/hawk/-/commit/e29902d8617304d009920e03bf2f84d1df20a812) — @sgkens)
+- Bump to 0.4.0. ([0266071](https://gitlab.com/staticcanvas/hawk/-/commit/0266071514481b6d09c8e6e93fcf91ca998b0a42) — @sgkens)
+- Declutter header nav and wire per-tab default previews. ([9638f73](https://gitlab.com/staticcanvas/hawk/-/commit/9638f7336ae67a595d2975563f6d03eeb2b4cdac) — @sgkens)
+- Document the customization pass, reposition guides, and add CHANGELOG.md. ([dad2aa1](https://gitlab.com/staticcanvas/hawk/-/commit/dad2aa12e2752a3fafc90f62a931623263c8b3af) — @sgkens)
+- Wire the Playwright e2e suite into the test stage. ([5ee2bb1](https://gitlab.com/staticcanvas/hawk/-/commit/5ee2bb17bdc9354b50f9515b42f29a093c3c23be) — @sgkens)
+- Add real-browser e2e coverage against the built docs site. ([a16e0cd](https://gitlab.com/staticcanvas/hawk/-/commit/a16e0cd26436421d67fb6dcdaddc18f636a1e9fd) — @sgkens)
+- Document dev-controlled tabs, density, keyboard nav, and initial popup state. ([c0d71d9](https://gitlab.com/staticcanvas/hawk/-/commit/c0d71d9e7d9c2bef4c0e2e6f02e737f3ea782cf2) — @sgkens)
+- Rebuild webutil/libs bundle output. ([bf48e96](https://gitlab.com/staticcanvas/hawk/-/commit/bf48e96ec58439209c6c38c3dae06e77316004d9) — @sgkens)
+- Track the CSS files the build fix now generates. ([d064ba0](https://gitlab.com/staticcanvas/hawk/-/commit/d064ba0c74680dee8cb885d7aabcd88a93d9c915) — @sgkens)
+- Populate hawk-specific repo_config and repo_meta. ([6767bd4](https://gitlab.com/staticcanvas/hawk/-/commit/6767bd4ec02f8a5aa6d64711ab6f245a86cae7d1) — @sgkens)
+- Scaffold Hugo docs site and architecture design docs. ([a621422](https://gitlab.com/staticcanvas/hawk/-/commit/a621422bf95be2a6272c1f775dcd9021df997ccb) — @sgkens)
+- Add Pagefind indexing recipe and typeflow dev-loop script. ([da90e22](https://gitlab.com/staticcanvas/hawk/-/commit/da90e22befff11d6434ec13a3c957857fdff985b) — @sgkens)
+- Add core engine test suite. ([972e749](https://gitlab.com/staticcanvas/hawk/-/commit/972e749b3eecff3a6c3b3e699a7465685356253b) — @sgkens)
+- Scaffold package from lume template. ([2a7b529](https://gitlab.com/staticcanvas/hawk/-/commit/2a7b529acb4469fa0eb98e15a05d9bc96ec9898c) — @sgkens)
+- Initial commit. ([3cb5baa](https://gitlab.com/staticcanvas/hawk/-/commit/3cb5baa59305dd6cd406a73aa8028c8a094952ec) — Garvey Snow)
 
 ### Fixed
 
-- **Empty-query listings never actually populated against a real Pagefind index.** `eagerResults`
-  and a just-activated tab's own initial listing both called `pagefind.search('', options)` —
-  Pagefind treats `''` as a real (zero-match) search term, not "no term". Its documented
-  filter-only listing mode is `search(null, options)`. Every unit test mocked Pagefind and never
-  caught the distinction; found by testing hawk's own docs site against its real built index. Now
-  passes `null`, so the results pane actually lists matching pages on open/tab-switch as designed.
+- Normalize logcad's UMD default export shape. ([d7f6da6](https://gitlab.com/staticcanvas/hawk/-/commit/d7f6da6f75d0686d11f6c5279eb84b561b5d5a1b) — @sgkens)
+- Tighten compact result density. ([ccd5e92](https://gitlab.com/staticcanvas/hawk/-/commit/ccd5e92b8f37251c65098de02abc38c301d203a5) — @sgkens)
+- Prioritize result metadata and contrast. ([9465432](https://gitlab.com/staticcanvas/hawk/-/commit/94654321bc6222a595773c7713aed368aa9a8f22) — @sgkens)
+- Use explicit feature read more links. ([022789e](https://gitlab.com/staticcanvas/hawk/-/commit/022789ebd54515e8bccb1bf02a404763a88ae0ec) — @sgkens)
+- Use explicit feature read more links. ([cb34bdc](https://gitlab.com/staticcanvas/hawk/-/commit/cb34bdc35139333d78a451e7ef1cf2a8ca76e66b) — @sgkens)
+- Consolidate search gallery heading. ([1580885](https://gitlab.com/staticcanvas/hawk/-/commit/158088580111f73229becd2700e7527c76b4f87c) — @sgkens)
+- Widen search model gallery. ([a6834aa](https://gitlab.com/staticcanvas/hawk/-/commit/a6834aa57bb93901f9bc3021b849456e6bef25da) — @sgkens)
+- Audit theme gallery palettes. ([6a63638](https://gitlab.com/staticcanvas/hawk/-/commit/6a636386168f7b4ec212fbbdc827af57f258d1c7) — @sgkens)
+- Simplify configured model gallery. ([e40d224](https://gitlab.com/staticcanvas/hawk/-/commit/e40d2241accd02b23e7f38ad26f32293ef3d0db3) — @sgkens)
+- Align animation defaults. ([a353bbf](https://gitlab.com/staticcanvas/hawk/-/commit/a353bbfae53a705e173245f6943621fca39f1209) — @sgkens)
+- Compact markdown tables. ([7195cbd](https://gitlab.com/staticcanvas/hawk/-/commit/7195cbd9b9f05378cf89aced7464c366879365c5) — @sgkens)
+- Stabilise modal hover, add playground persistence, restyle pattern, update TypeFlow animation, add page transitions, restrict eyebrow to guides. ([d728a83](https://gitlab.com/staticcanvas/hawk/-/commit/d728a831784d21706616c9ab284c1e9e5d981858) — @sgkens)
+- Align playground workbench with header. ([5d9fd20](https://gitlab.com/staticcanvas/hawk/-/commit/5d9fd202ddc185f5fff05859e7b6a230d92a82ab) — @sgkens)
+- Scope bun test scripts away from the Playwright e2e directory. ([04e7968](https://gitlab.com/staticcanvas/hawk/-/commit/04e7968fa598feecce1e2dd2619456303a29ead7) — @sgkens)
+- Escape the search query before it reaches noResults()/innerHTML. ([51d6904](https://gitlab.com/staticcanvas/hawk/-/commit/51d690485c6563e987d2196d840acc9d547d98c1) — @sgkens)
+- Table/word overflow past the TOC, header overflow, hero alignment. ([1151a48](https://gitlab.com/staticcanvas/hawk/-/commit/1151a48cf8e74ac266bc251e2061610b30b3ccf3) — @sgkens)
+- Out-of-order search results and narrow-width chrome squish. ([6c2f647](https://gitlab.com/staticcanvas/hawk/-/commit/6c2f6470fbfaf68f509dab50d613f0830722598a) — @sgkens)
+- Resolve directory-index URLs in the fixture server. ([ae0dd40](https://gitlab.com/staticcanvas/hawk/-/commit/ae0dd40b140499040bd8bb93259ff809cab3b7d5) — @sgkens)
+- Results/preview panes now actually clamp and scroll (were silently clipping). ([d06f110](https://gitlab.com/staticcanvas/hawk/-/commit/d06f11020a5643967592ea5f7a9c88ebeba1f566) — @sgkens)
+- Brighten scrollbars on actual scroll activity, not just hover. ([f3203d2](https://gitlab.com/staticcanvas/hawk/-/commit/f3203d21053e7fff84bde36a2130e7f37f13cebc) — @sgkens)
+- Isolate the e2e build from the shared public/ directory. ([68a2408](https://gitlab.com/staticcanvas/hawk/-/commit/68a240849a6b5a3856607828518d8472f90ec950) — @sgkens)
+- Default typeflow animations to respect prefers-reduced-motion. ([a03835b](https://gitlab.com/staticcanvas/hawk/-/commit/a03835b54346b29cd5b486c70a41fed193b59b94) — @sgkens)
+- Trap modal focus, add i18n strings, and handle search failures gracefully. ([e90fca1](https://gitlab.com/staticcanvas/hawk/-/commit/e90fca1a16c48353f8c0b5d56c6341269a5d6ed5) — @sgkens)
+- Guard build-only vite plugins from firing under vitest. ([8f645f3](https://gitlab.com/staticcanvas/hawk/-/commit/8f645f37892648e2f40d2d75cc389cdb8f3f9a82) — @sgkens)
+- Copy CSS into webutil/libs during build, not just JS bundles. ([99890dd](https://gitlab.com/staticcanvas/hawk/-/commit/99890dd0410cfbbf5d02b78e439592509912d4e6) — @sgkens)
 
-### Changed
-
-- Docs site header: the top nav (`Overview`, `Get started`, `Guides`, ...) only renders on the
-  home page now — every interior page already carries the same tree in the sidebar, so repeating
-  it in the header was pure duplication. Even on the home page, the `Overview`/home entry itself
-  is dropped, since the brand logo already links there.
-- Docs site tabs (`Guides`/`Reference`/`Resources`) each get a `defaultPreviewUrl` computed at
-  build time: a same-named section's index page if one exists (`Guides` → `/guides/`), else the
-  earliest matching content page (`Reference` → `/api/`).
-- Bundle-size budget raised 9KB → 10KB gzip, tracking the reveal animations and per-tab defaults
-  above — see `scripts/check-bundle-size.mjs` for the itemized history.
-
-### Testing
-
-- Unit test count: 90 (0.3.0) → 115 (0.4.0).
-
-## [0.3.0] - 2026-08-29
-
-Customization and reliability pass — see `plan-hawk-customization-prd.md` for the full design
-rationale behind each item.
-
-### Added
-
-- **Theming depth**: `--hawk-font-family`/`--hawk-font-size-base` tokens; `theme.tokens`, an
-  optional `Record<string, string>` of `--hawk-*` overrides applied inline on `apply()` — a
-  JS-only theming path alongside writing a full CSS file; `config.disableDefaultMarkdownStyles`,
-  an escape hatch that opts out of hawk.css's own preview-content prose rules entirely so a
-  consumer can bring their own.
-- **Themed scrollbars**: results pane, preview pane, and the filter strip — `scrollbar-color` for
-  Firefox/standards-track, `::-webkit-scrollbar*` for the idle-low-opacity/brighten-on-hover
-  interaction. New `--hawk-scrollbar-thumb`/`-active` tokens.
-- **Match-highlight tokens**: `mark` styling moved off a direct `--hawk-accent-glow` reference
-  onto dedicated `--hawk-mark-bg`/`-color`/`-weight`/`-style` tokens.
-- **Rotating placeholder**: `config.rotatingPlaceholders` cycles example queries through the
-  search input via the animation driver's `rotatePlaceholder` (defined in the driver contract
-  since 0.2.0, previously never called). Only runs while the modal is open and the input is
-  empty.
-- **Result/page metadata**: `match.meta` now carries Pagefind's full `data.meta` object (not just
-  `.title`); `meta.section`, when present, renders as a badge on the result row and preview
-  header. `pageCount` (distinct pages among the current matches) exposed on `state` and passed
-  as a second argument to `strings.matchingResults`/`entries`.
-- **Powered-by-Pagefind attribution**: `config.showPoweredBy` (default `true`) /
-  `config.poweredByHref`, text-only.
-- **Pin system**: a pin toggle on every result row (`config.enablePins`, default `true`),
-  persisted to `localStorage` (`config.pinStorageKey`, `config.maxPins`). A synthetic "Pinned"
-  tab appears once at least one pin exists, listing pins directly with no Pagefind call.
-  `state.pins` exposed for a custom pinned-items UI.
-- **Structured inline filter syntax**: `config.inlineFilters` (default `false`) lets a visitor
-  type `dimension:value` tokens (`category:Guides`, `tag:"multi word"`) directly into the search
-  box — parsed out as a Pagefind filters object merged over the active tab's own `filter`, and
-  stripped from the text actually searched.
-- **Built-in trigger element**: `config.trigger` (`kind: 'minimal' | 'compact' | 'default'`,
-  `container`) renders hawk's own trigger button instead of requiring the consumer to build one.
-
-### Fixed
-
-- **Focus trap**: Tab/Shift+Tab now cycle within the modal instead of escaping to the page behind
-  the backdrop (WAI-ARIA modal dialog requirement, previously missing).
-- **Search/load error handling**: a failed Pagefind runtime load, or any rejecting search call,
-  now renders a "search unavailable" state instead of an unhandled promise rejection. Surfaced on
-  `state.error`.
-- **`respectReducedMotion`** now defaults `true` in every typeflow animation config (was `false`
-  — a visitor with OS-level reduced motion still got the full typewriter effect).
-- iOS Safari auto-zoom-on-focus: the search input's font-size is now clamped to the 16px
-  threshold.
-
-### Changed
-
-- `pagefind` moved from an optional `peerDependency` to a real `dependency` — it's required at
-  runtime. `@staticcanvas/typeflow` stays an optional `peerDependency` (not published to npm yet).
-- `hawk-theme-typeflow.js`/`hawk-animation-typeflow.js` self-register against `window.Hawk` in
-  script-tag usage — no manual `registerTheme`/`registerAnimation` calls needed in that load order.
-- Every UI string is now `DEFAULT_STRINGS`, overridable via `config.strings` (no i18n before).
-- Bundle-size budget raised 6KB → 9KB gzip across this and the prior release, tracking real added
-  functionality — see `scripts/check-bundle-size.mjs` for the itemized history.
-
-### Testing
-
-- Added real-browser Playwright coverage (`tests/e2e/`) against hawk's own docs site build and a
-  real Pagefind index — not a synthetic fixture. Wired into CI (`test:e2e`, `allow_failure: true`
-  pending a track record there).
-- Unit test count: 19 (0.1.0) → 53 (0.2.0) → 90 (0.3.0).
-
-## [0.2.0] - 2026-08-29
-
-Dev-controlled tabs, search QOL, and widget positioning — see `plan-hawk-prd.md`.
-
-### Added
-
-- **Tabs**: explicit `config.tabs` (each tab's `filter` a raw Pagefind filters object — full
-  multi-dimension/multi-value power) alongside the existing auto-derived-from-`filters()` default.
-  `config.categories` kept as sugar over `tabs`. `includeAllTab`, `defaultTab`.
-- **`pagefindOptions`**: a raw options passthrough merged into every search call, at the
-  top level and per-tab.
-- **Density modes**: `params.density` (`'fit' | 'medium' | 'compact'`), an in-modal switcher
-  persisted to `localStorage`.
-- **Two-pane keyboard navigation**: results pane and preview pane are real Tab stops;
-  `aria-activedescendant` on the results listbox instead of individually-tabbable rows; arrow keys
-  scroll the preview pane when it has focus.
-- **Initial popup state**: `defaultPreviewUrl`/`defaultPreviewTitle` (show a page before any
-  selection), `eagerResults` (default `true` — a populated listing on open instead of empty).
-
-### Changed
-
-- Repositioned hawk as a general-purpose, JS-embeddable search widget rather than
-  "the typeflow docs search" — README/docs rewritten accordingly.
-
-## [0.1.0]
-
-Initial extraction from typeflow's docs site search: the core Pagefind-backed search engine,
-the default (`instant`) and `typeflow` animation driver plugins, the `hawk-theme-typeflow` theme
-plugin, the theme/animation-driver plugin registries, category filter pills derived from
-Pagefind's `filters()`, rich preview content (fetched and narrowed to `contentSelector`, not just
-Pagefind's excerpt), and the Hugo docs site / Pagefind indexing recipe scaffold.
+<!-- rivet:changelog:end -->
