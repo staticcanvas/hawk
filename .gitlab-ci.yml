@@ -112,7 +112,7 @@ build:
   needs: []
   before_script:
     - echo "🔵 Preparing build..."
-    - command -v jq >/dev/null 2>&1 && command -v zip >/dev/null 2>&1 || (apt-get update && apt-get install -y jq zip)
+    # - command -v jq >/dev/null 2>&1 && command -v zip >/dev/null 2>&1 || (apt-get update && apt-get install -y jq zip)
   script:
     - echo "🟢 Building package..."
     - VERSION=$(jq -r .version package.json)
