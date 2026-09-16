@@ -8,7 +8,7 @@
     "defaultBranch": "main",
     "npmPackage": "@staticcanvas/hawk",
     "jsrPackage": "@staticcanvas/hawk",
-    "bannerUrl": "https://r2os.staticcanvas.me/logos/hawk/hawk-banner.svg",
+    "bannerUrl": "https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-128x51.webp",
     "documentationUrl": "https://staticcanvas.gitlab.io/hawk"
   },
   "readmeHeader": {
@@ -89,7 +89,7 @@
           "editors/**",
           "branding/**",
           "architecture/**",
-          "README*.md"
+          "README*.md"https://r2os.staticcanvas.me/logos/hawk/hawk-banner.svg
         ]
       },
       {

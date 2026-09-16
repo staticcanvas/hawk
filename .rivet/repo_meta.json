@@ -3,10 +3,13 @@
   "provider": "gitlab",
   "scope": "project",
   "project": {
-    "description": "Hawk is a themeable, pluggable command-palette search UI for static sites, powered by Pagefind indexing with swappable reveal animations and visual themes.",
+    "description": "Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.",
     "topics": [
       "search",
       "command-palette",
+      "modal",
+      "ESM",
+      "UMD",
       "pagefind",
       "static-site",
       "theming",
