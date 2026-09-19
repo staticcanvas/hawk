@@ -1,8 +1,14 @@
-# hawk
+![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/hawk-banner.svg)
 
 Themeable, pluggable command-palette search for static sites. [Pagefind](https://pagefind.app/)
 does indexing and ranking; hawk owns the modal, keyboard navigation, and result rendering; themes
 and reveal animations are swappable plugins.
+
+---
+
+> 🔹 Read the full documentation [here](https://staticcanvas.gitlab.io/hawk/)
+
+> 🔹 Use the playground [here](https://staticcanvas.gitlab.io/hawk/playground/)
 
 ## Installation
 
