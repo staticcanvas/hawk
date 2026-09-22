@@ -27,6 +27,7 @@ function resultFor(data) {
 
 beforeEach(() => {
   document.body.innerHTML = '';
+  localStorage.clear();
   // No test relies on a real network — default fetch to rejecting so #loadPreviewContent
   // falls back to the Pagefind excerpt unless a test stubs its own response.
   vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('no network in tests')));
@@ -74,7 +75,11 @@ describe('constructor validation', () => {
 
 describe('theme.tokens', () => {
   it('applies token overrides as inline CSS custom properties on mount', () => {
-    const theme = { name: 'custom', apply: vi.fn(), tokens: { '--hawk-accent': '#22d3ee', '--hawk-font-family': 'Inter' } };
+    const theme = {
+      name: 'custom',
+      apply: vi.fn(),
+      tokens: { '--hawk-accent': '#22d3ee', '--hawk-font-family': 'Inter' },
+    };
     const hawk = new HawkSearch({ pagefind: mockPagefind(), theme });
     const root = document.getElementById(hawk.id);
     expect(root.style.getPropertyValue('--hawk-accent')).toBe('#22d3ee');
@@ -111,14 +116,21 @@ describe('rotatingPlaceholders', () => {
   });
 
   it('renders the ghost with the first string set synchronously, empty native placeholder', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), rotatingPlaceholders: ['Try "tabs"...', 'Try "density"...'] });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      rotatingPlaceholders: ['Try "tabs"...', 'Try "density"...'],
+    });
     expect(document.querySelector('.hawk-input-ghost').textContent).toBe('Try "tabs"...');
     expect(document.querySelector('.hawk-modal-input').placeholder).toBe('');
     hawk.destroy();
   });
 
   it('starts rotation on open (instant driver) and stops it on close', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), rotatingPlaceholders: ['a', 'b'], animation: false });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      rotatingPlaceholders: ['a', 'b'],
+      animation: false,
+    });
     const wrap = document.querySelector('.hawk-input-wrap');
     // Closed: ghost stays hidden (data-hawk-input-active='true' suppresses it) — never rotates in the background.
     expect(wrap.dataset.hawkInputActive).toBe('true');
@@ -133,7 +145,11 @@ describe('rotatingPlaceholders', () => {
   });
 
   it('hides the ghost the instant the input has a value, and restores it when cleared', async () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), rotatingPlaceholders: ['a'], animation: false });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      rotatingPlaceholders: ['a'],
+      animation: false,
+    });
     hawk.open();
     const input = document.querySelector('.hawk-modal-input');
     const wrap = document.querySelector('.hawk-input-wrap');
@@ -167,8 +183,13 @@ describe('powered-by attribution', () => {
   });
 
   it('respects a custom poweredByHref', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), poweredByHref: 'https://example.com/search' });
-    expect(document.querySelector('.hawk-powered-by').getAttribute('href')).toBe('https://example.com/search');
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      poweredByHref: 'https://example.com/search',
+    });
+    expect(document.querySelector('.hawk-powered-by').getAttribute('href')).toBe(
+      'https://example.com/search'
+    );
     hawk.destroy();
   });
 });
@@ -219,6 +240,32 @@ describe('density', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind(), params: { allowDensityToggle: false } });
     expect(document.querySelectorAll('.hawk-density-btn')).toHaveLength(0);
     hawk.destroy();
+  });
+
+  it('supports a minimal search header with all right-side controls hidden', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), headerControls: false });
+    expect(document.querySelector('.hawk-density-toggle')).toBeNull();
+    expect(document.querySelector('.hawk-modal-esc')).toBeNull();
+    expect(document.querySelector('.hawk-modal-header').children).toHaveLength(1);
+    hawk.destroy();
+  });
+
+  it('can hide density and Escape controls independently', () => {
+    const noDensity = new HawkSearch({
+      pagefind: mockPagefind(),
+      headerControls: { density: false },
+    });
+    expect(document.querySelector('.hawk-density-toggle')).toBeNull();
+    expect(document.querySelector('.hawk-modal-esc')).toBeTruthy();
+    noDensity.destroy();
+
+    const noEscape = new HawkSearch({
+      pagefind: mockPagefind(),
+      headerControls: { escape: false },
+    });
+    expect(document.querySelector('.hawk-density-toggle')).toBeTruthy();
+    expect(document.querySelector('.hawk-modal-esc')).toBeNull();
+    noEscape.destroy();
   });
 
   it('clicking a density button updates state, dataset, and persists the choice', () => {
@@ -346,7 +393,14 @@ describe('explicit tabs config', () => {
     const pagefind = mockPagefind();
     const hawk = new HawkSearch({
       pagefind,
-      tabs: [{ id: 'recent', label: 'Recently updated', sort: { date: 'desc' }, pagefindOptions: { ranking: { termFrequency: 0 } } }],
+      tabs: [
+        {
+          id: 'recent',
+          label: 'Recently updated',
+          sort: { date: 'desc' },
+          pagefindOptions: { ranking: { termFrequency: 0 } },
+        },
+      ],
       defaultTab: 'recent',
     });
     hawk.open();
@@ -365,13 +419,16 @@ describe('explicit tabs config', () => {
 describe('config.tabsUrl', () => {
   it('fetches and renders tabs from a JSON file once Pagefind loads', async () => {
     fetch.mockResolvedValue({
-      json: () => Promise.resolve([{ id: 'guides', label: 'Guides', filter: { category: 'Guides' } }]),
+      json: () =>
+        Promise.resolve([{ id: 'guides', label: 'Guides', filter: { category: 'Guides' } }]),
     });
     const hawk = new HawkSearch({ pagefind: mockPagefind(), tabsUrl: '/tabs.json' });
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(fetch).toHaveBeenCalledWith('/tabs.json');
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['all', 'guides']);
     hawk.destroy();
   });
@@ -379,11 +436,15 @@ describe('config.tabsUrl', () => {
   it('falls back to auto-derived tabs (with a console warning) when the fetch fails', async () => {
     // beforeEach's default fetch mock already rejects.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const pagefind = mockPagefind({ filters: vi.fn().mockResolvedValue({ category: { Reference: 1 } }) });
+    const pagefind = mockPagefind({
+      filters: vi.fn().mockResolvedValue({ category: { Reference: 1 } }),
+    });
     const hawk = new HawkSearch({ pagefind, tabsUrl: '/tabs.json' });
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['all', 'Reference']);
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('/tabs.json'), expect.anything());
     warn.mockRestore();
@@ -393,18 +454,26 @@ describe('config.tabsUrl', () => {
   it('falls back to auto-derived tabs when the response is valid JSON but not an array', async () => {
     fetch.mockResolvedValue({ json: () => Promise.resolve({ not: 'an array' }) });
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const pagefind = mockPagefind({ filters: vi.fn().mockResolvedValue({ category: { Reference: 1 } }) });
+    const pagefind = mockPagefind({
+      filters: vi.fn().mockResolvedValue({ category: { Reference: 1 } }),
+    });
     const hawk = new HawkSearch({ pagefind, tabsUrl: '/tabs.json' });
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
-    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map((el) => el.dataset.filter);
+    const pills = Array.from(document.querySelectorAll('.hawk-filter-pill')).map(
+      (el) => el.dataset.filter
+    );
     expect(pills).toEqual(['all', 'Reference']);
     warn.mockRestore();
     hawk.destroy();
   });
 
   it('is ignored when config.tabs is also given (the synchronous list always wins)', async () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), tabs: [{ id: 'inline', label: 'Inline' }], tabsUrl: '/tabs.json' });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      tabs: [{ id: 'inline', label: 'Inline' }],
+      tabsUrl: '/tabs.json',
+    });
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(fetch).not.toHaveBeenCalledWith('/tabs.json');
@@ -413,6 +482,35 @@ describe('config.tabsUrl', () => {
 });
 
 describe('pagefindOptions passthrough', () => {
+  it('configures Pagefind and merges additional indexes before deriving tabs', async () => {
+    const events = [];
+    const pagefind = mockPagefind({
+      options: vi.fn(async (options) => events.push(['options', options])),
+      init: vi.fn(async () => events.push(['init'])),
+      mergeIndex: vi.fn(async (path, options) => events.push(['merge', path, options])),
+      filters: vi.fn(async () => {
+        events.push(['filters']);
+        return { category: { Guides: 1 } };
+      }),
+    });
+    const hawk = new HawkSearch({
+      pagefind,
+      pagefindInitOptions: { excerptLength: 20, ranking: { pageLength: 0.5 } },
+      pagefindMergeIndexes: [
+        { bundlePath: 'https://docs.example/pagefind', options: { indexWeight: 0.5 } },
+      ],
+    });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(events.slice(0, 4)).toEqual([
+      ['options', { excerptLength: 20, ranking: { pageLength: 0.5 } }],
+      ['init'],
+      ['merge', 'https://docs.example/pagefind', { indexWeight: 0.5 }],
+      ['filters'],
+    ]);
+    hawk.destroy();
+  });
+
   it('merges top-level pagefindOptions into every search call', async () => {
     const pagefind = mockPagefind();
     const hawk = new HawkSearch({ pagefind, pagefindOptions: { sort: { date: 'desc' } } });
@@ -504,6 +602,73 @@ describe('inlineFilters', () => {
   });
 });
 
+describe('inlineFilters', () => {
+  it('is a no-op when not enabled — a literal colon stays part of the search term', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'category:Guides responsive';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'category:Guides responsive',
+      expect.not.objectContaining({ filters: expect.anything() })
+    );
+    hawk.destroy();
+  });
+
+  it('parses a dimension:value token out, filters on it, and searches only the remaining text', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind, inlineFilters: true });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'category:Guides responsive nav';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'responsive nav',
+      expect.objectContaining({ filters: { category: 'Guides' } })
+    );
+    hawk.destroy();
+  });
+
+  it('keeps spaces in a quoted value and collects repeated dimensions into an array', async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind, inlineFilters: true });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'tag:api tag:"multi word" auth';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'auth',
+      expect.objectContaining({ filters: { tag: ['api', 'multi word'] } })
+    );
+    hawk.destroy();
+  });
+
+  it("merges with the active tab's own filter, inline winning on a dimension collision", async () => {
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({
+      pagefind,
+      inlineFilters: true,
+      tabs: [{ id: 'guides', label: 'Guides', filter: { category: 'Guides', lang: 'en' } }],
+      defaultTab: 'guides',
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'category:Reference nav';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'nav',
+      expect.objectContaining({ filters: { category: 'Reference', lang: 'en' } })
+    );
+    hawk.destroy();
+  });
+});
+
 describe('categories shorthand still expands to tabs', () => {
   it('produces the same pills as before, filtering on categoryFilterName', async () => {
     const pagefind = mockPagefind();
@@ -518,11 +683,15 @@ describe('categories shorthand still expands to tabs', () => {
 describe('initial popup state', () => {
   const htmlPage = (bodyInner) => `<!doctype html><html><body>${bodyInner}</body></html>`;
 
-  it('passes null (not an empty string) to search() for every empty-query call, matching Pagefind\'s filter-only listing mode', async () => {
+  it("passes null (not an empty string) to search() for every empty-query call, matching Pagefind's filter-only listing mode", async () => {
     const pagefind = mockPagefind({
       search: vi.fn().mockResolvedValue({ results: [] }),
     });
-    const hawk = new HawkSearch({ pagefind, tabs: [{ id: 'guides', label: 'Guides', filter: { category: 'Guides' } }], defaultTab: 'guides' });
+    const hawk = new HawkSearch({
+      pagefind,
+      tabs: [{ id: 'guides', label: 'Guides', filter: { category: 'Guides' } }],
+      defaultTab: 'guides',
+    });
     hawk.open();
     await new Promise((resolve) => setTimeout(resolve, 0));
     for (const [term] of pagefind.search.mock.calls) {
@@ -595,12 +764,20 @@ describe('initial popup state', () => {
 
   it("a tab's own defaultPreviewUrl renders on mount when it's the active tab, overriding the top-level default", async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>guides landing content</p></main>')),
+      text: () =>
+        Promise.resolve(htmlPage('<main data-pagefind-body><p>guides landing content</p></main>')),
     });
     const hawk = new HawkSearch({
       pagefind: mockPagefind(),
       eagerResults: false,
-      tabs: [{ id: 'guides', label: 'Guides', defaultPreviewUrl: '/guides/', defaultPreviewTitle: 'Guides' }],
+      tabs: [
+        {
+          id: 'guides',
+          label: 'Guides',
+          defaultPreviewUrl: '/guides/',
+          defaultPreviewTitle: 'Guides',
+        },
+      ],
       defaultTab: 'guides',
       defaultPreviewUrl: '/top-level/',
       defaultPreviewTitle: 'Top level',
@@ -614,7 +791,8 @@ describe('initial popup state', () => {
 
   it("falls back to the active tab's own defaultPreviewUrl when a search on that tab returns zero matches", async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>guides landing content</p></main>')),
+      text: () =>
+        Promise.resolve(htmlPage('<main data-pagefind-body><p>guides landing content</p></main>')),
     });
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({ results: [] }),
@@ -622,7 +800,14 @@ describe('initial popup state', () => {
     const hawk = new HawkSearch({
       pagefind,
       eagerResults: false,
-      tabs: [{ id: 'guides', label: 'Guides', defaultPreviewUrl: '/guides/', defaultPreviewTitle: 'Guides' }],
+      tabs: [
+        {
+          id: 'guides',
+          label: 'Guides',
+          defaultPreviewUrl: '/guides/',
+          defaultPreviewTitle: 'Guides',
+        },
+      ],
       defaultTab: 'guides',
     });
     hawk.open();
@@ -637,7 +822,8 @@ describe('initial popup state', () => {
 
   it('a tab with no defaultPreviewUrl of its own falls back to the top-level default when its search returns zero matches', async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>top level content</p></main>')),
+      text: () =>
+        Promise.resolve(htmlPage('<main data-pagefind-body><p>top level content</p></main>')),
     });
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({ results: [] }),
@@ -670,7 +856,9 @@ describe('initial popup state', () => {
     input.value = 'nomatch';
     input.dispatchEvent(new Event('input'));
     await new Promise((resolve) => setTimeout(resolve, 0));
-    expect(document.querySelector('.hawk-preview-empty').textContent).toBe(hawk.strings.previewEmpty);
+    expect(document.querySelector('.hawk-preview-empty').textContent).toBe(
+      hawk.strings.previewEmpty
+    );
     hawk.destroy();
   });
 });
@@ -708,6 +896,38 @@ describe('search results and keyboard navigation', () => {
     hawk.destroy();
   });
 
+  it('excludePages omits a page and its anchors while backfilling later results', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'Home' },
+            url: '/?source=search',
+            excerpt: 'home',
+            sub_results: [{ title: 'Features', url: '/#features', excerpt: 'features' }],
+          }),
+          resultFor({
+            meta: { title: 'Guide' },
+            url: '/guide/',
+            excerpt: 'guide',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, excludePages: '/', maxResults: 1 });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'page';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(hawk.state.matches.map((match) => match.url)).toEqual(['/guide/']);
+    expect(hawk.state.pageCount).toBe(1);
+    hawk.destroy();
+  });
+
   it('wraps ArrowDown/ArrowUp selection around the match list', async () => {
     const hawk = await hawkWithResults();
     const input = document.querySelector('.hawk-modal-input');
@@ -736,8 +956,18 @@ describe('search race safety (#searchGeneration)', () => {
     const pagefind = mockPagefind({
       debouncedSearch: vi
         .fn()
-        .mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve; }))
-        .mockImplementationOnce(() => new Promise((resolve) => { resolveSecond = resolve; })),
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              resolveFirst = resolve;
+            })
+        )
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              resolveSecond = resolve;
+            })
+        ),
     });
     const hawk = new HawkSearch({ pagefind });
     hawk.open();
@@ -753,11 +983,20 @@ describe('search race safety (#searchGeneration)', () => {
     // Resolve out of call order: the second (newer) call settles first, then the first (older,
     // now-stale) call settles after it — the reverse of a well-behaved network round trip.
     resolveSecond({
-      results: [resultFor({ meta: { title: 'Second' }, url: '/second/', excerpt: 'second', sub_results: [] })],
+      results: [
+        resultFor({
+          meta: { title: 'Second' },
+          url: '/second/',
+          excerpt: 'second',
+          sub_results: [],
+        }),
+      ],
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
     resolveFirst({
-      results: [resultFor({ meta: { title: 'First' }, url: '/first/', excerpt: 'first', sub_results: [] })],
+      results: [
+        resultFor({ meta: { title: 'First' }, url: '/first/', excerpt: 'first', sub_results: [] }),
+      ],
     });
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -776,8 +1015,18 @@ describe('pin system', () => {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
         results: [
-          resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] }),
-          resultFor({ meta: { title: 'Page Two' }, url: '/two/', excerpt: 'second match', sub_results: [] }),
+          resultFor({
+            meta: { title: 'Page One' },
+            url: '/one/',
+            excerpt: 'first match',
+            sub_results: [],
+          }),
+          resultFor({
+            meta: { title: 'Page Two' },
+            url: '/two/',
+            excerpt: 'second match',
+            sub_results: [],
+          }),
         ],
       }),
     });
@@ -811,9 +1060,13 @@ describe('pin system', () => {
     firstPinBtn.click();
     expect(onSelect).not.toHaveBeenCalled();
     expect(hawk.state.pins).toEqual([{ url: '/one/', title: 'Page One', isAnchor: false }]);
-    expect(JSON.parse(localStorage.getItem('hawk:pins'))).toEqual([{ url: '/one/', title: 'Page One', isAnchor: false }]);
+    expect(JSON.parse(localStorage.getItem('hawk:pins'))).toEqual([
+      { url: '/one/', title: 'Page One', isAnchor: false },
+    ]);
     expect(document.querySelectorAll('.hawk-pin-btn')[0].textContent).toBe('Unpin');
-    expect(document.querySelectorAll('.hawk-pin-btn')[0].classList.contains('is-pinned')).toBe(true);
+    expect(document.querySelectorAll('.hawk-pin-btn')[0].classList.contains('is-pinned')).toBe(
+      true
+    );
 
     hawk.destroy();
   });
@@ -821,33 +1074,33 @@ describe('pin system', () => {
   it('a "Pinned" tab appears once a pin exists and disappears once the last one is removed', async () => {
     const hawk = await hawkWithResults();
     // Baseline pills come from mockPagefind()'s default filters() — category derivation, not pins.
-    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
-      'all',
-      'Guides',
-      'Reference',
-    ]);
+    expect(
+      Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)
+    ).toEqual(['all', 'Guides', 'Reference']);
 
     document.querySelectorAll('.hawk-pin-btn')[0].click();
-    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
-      'pinned',
-      'all',
-      'Guides',
-      'Reference',
-    ]);
+    expect(
+      Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)
+    ).toEqual(['pinned', 'all', 'Guides', 'Reference']);
 
     document.querySelectorAll('.hawk-pin-btn')[0].click(); // unpin the only pin
-    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
-      'all',
-      'Guides',
-      'Reference',
-    ]);
+    expect(
+      Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)
+    ).toEqual(['all', 'Guides', 'Reference']);
     hawk.destroy();
   });
 
   it('the Pinned tab lists pins directly (no Pagefind call) and clears any typed query', async () => {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Page One' },
+            url: '/one/',
+            excerpt: 'first match',
+            sub_results: [],
+          }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind });
@@ -862,7 +1115,9 @@ describe('pin system', () => {
 
     document.querySelector('.hawk-filter-pill[data-filter="pinned"]').click();
     expect(pagefind.debouncedSearch).toHaveBeenCalledTimes(1); // still just the one call — pinned view didn't search
-    expect(hawk.state.matches).toEqual([{ title: 'Page One', url: '/one/', excerpt: '', isAnchor: false, meta: {} }]);
+    expect(hawk.state.matches).toEqual([
+      { title: 'Page One', url: '/one/', excerpt: '', isAnchor: false, meta: {} },
+    ]);
     expect(input.value).toBe('');
     hawk.destroy();
   });
@@ -876,16 +1131,17 @@ describe('pin system', () => {
     document.querySelector('.hawk-pin-btn').click(); // unpin the only item while viewing it
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(hawk.state.activeTab).toBe('all');
-    expect(Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)).toEqual([
-      'all',
-      'Guides',
-      'Reference',
-    ]);
+    expect(
+      Array.from(document.querySelectorAll('.hawk-filter-pill')).map((p) => p.dataset.filter)
+    ).toEqual(['all', 'Guides', 'Reference']);
     hawk.destroy();
   });
 
   it('persists pins across a fresh instance (localStorage) and shows the Pinned tab once tabs resolve', async () => {
-    localStorage.setItem('hawk:pins', JSON.stringify([{ url: '/one/', title: 'Page One', isAnchor: false }]));
+    localStorage.setItem(
+      'hawk:pins',
+      JSON.stringify([{ url: '/one/', title: 'Page One', isAnchor: false }])
+    );
     const hawk = new HawkSearch({ pagefind: mockPagefind() });
     expect(hawk.state.pins).toEqual([{ url: '/one/', title: 'Page One', isAnchor: false }]);
     hawk.open();
@@ -903,18 +1159,260 @@ describe('pin system', () => {
   });
 });
 
+describe('recently viewed history', () => {
+  afterEach(() => {
+    localStorage.clear();
+  });
+
+  async function hawkWithResult(config = {}) {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'History page' },
+            url: '/history/',
+            excerpt: 'history match',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind, ...config });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'history';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return hawk;
+  }
+
+  it('records a selected result and exposes a synthetic Recently viewed tab', async () => {
+    const hawk = await hawkWithResult();
+    const row = document.querySelector('.hawk-result-item');
+    row.addEventListener('click', (event) => event.preventDefault());
+    row.click();
+
+    expect(hawk.state.recentlyViewed).toEqual([
+      expect.objectContaining({
+        url: '/history/',
+        title: 'History page',
+        isAnchor: false,
+        viewedAt: expect.any(String),
+      }),
+    ]);
+    expect(document.querySelector('[data-filter="recently-viewed"]')).toBeTruthy();
+    expect(JSON.parse(localStorage.getItem('hawk:recently-viewed'))).toHaveLength(1);
+    hawk.destroy();
+  });
+
+  it('loads persisted history newest-first and lists it without Pagefind', async () => {
+    localStorage.setItem(
+      'hawk:recently-viewed',
+      JSON.stringify([
+        { url: '/new/', title: 'New', isAnchor: false, viewedAt: '2026-09-09T02:00:00.000Z' },
+        { url: '/old/', title: 'Old', isAnchor: false, viewedAt: '2026-09-09T01:00:00.000Z' },
+      ])
+    );
+    const pagefind = mockPagefind();
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('[data-filter="recently-viewed"]').click();
+
+    expect(pagefind.debouncedSearch).not.toHaveBeenCalled();
+    expect(hawk.state.matches.map((item) => item.title)).toEqual(['New', 'Old']);
+    hawk.destroy();
+  });
+
+  it('can disable recently viewed history', async () => {
+    const hawk = await hawkWithResult({ enableRecentlyViewed: false });
+    const row = document.querySelector('.hawk-result-item');
+    row.addEventListener('click', (event) => event.preventDefault());
+    row.click();
+
+    expect(hawk.state.recentlyViewed).toEqual([]);
+    expect(document.querySelector('[data-filter="recently-viewed"]')).toBeNull();
+    expect(localStorage.getItem('hawk:recently-viewed')).toBeNull();
+    hawk.destroy();
+  });
+});
+
+describe('second column configuration', () => {
+  it('enables the preview column by default', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    const root = document.getElementById(hawk.id);
+    expect(root.dataset.hawkSecondColumn).toBe('true');
+    expect(root.querySelector('.hawk-modal-body').dataset.hawkColumns).toBe('2');
+    expect(hawk.state.secondColumnEnabled).toBe(true);
+    hawk.destroy();
+  });
+
+  it('forces a single results column when enableSecondColumn is false', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), enableSecondColumn: false });
+    const root = document.getElementById(hawk.id);
+    expect(root.dataset.hawkSecondColumn).toBe('false');
+    expect(root.querySelector('.hawk-modal-body').dataset.hawkColumns).toBe('1');
+    expect(hawk.state.secondColumnEnabled).toBe(false);
+    hawk.destroy();
+  });
+});
+
+describe('discovery row', () => {
+  async function hawkWithDiscovery(config = {}, searchImpl) {
+    const deferredSearch =
+      searchImpl ||
+      vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'Page One', category: 'Guides' },
+            url: '/one/',
+            excerpt: 'Learn <mark>Pagefind</mark> search with <mark>metadata</mark>.',
+            sub_results: [
+              {
+                title: 'Metadata contract',
+                url: '/one/#metadata-contract',
+                excerpt: '<mark>Metadata</mark> fields.',
+              },
+            ],
+          }),
+          resultFor({
+            meta: { title: 'Page Two', category: 'Reference' },
+            url: '/two/?view=full',
+            excerpt: 'A second <mark>Pagefind</mark> result.',
+            sub_results: [
+              {
+                title: 'API details',
+                url: '/two/?view=full#api-details',
+                excerpt: '<mark>API</mark> details.',
+              },
+            ],
+          }),
+        ],
+      });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind({ debouncedSearch: deferredSearch }),
+      tabs: [],
+      discoveryRow: {},
+      eagerResults: false,
+      ...config,
+    });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'pagefind metadata';
+    input.dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return { hawk, deferredSearch };
+  }
+
+  it('is opt-in and renders no DOM row by default', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind() });
+    expect(document.querySelector('.hawk-discovery-row')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('renders ranked, deduplicated matches, pages, and fragment links from Pagefind data', async () => {
+    const { hawk } = await hawkWithDiscovery();
+    const row = document.querySelector('.hawk-discovery-row');
+    expect(row.getAttribute('aria-busy')).toBe('false');
+    expect(row.querySelectorAll('.hawk-discovery-group')).toHaveLength(3);
+    expect(
+      Array.from(
+        row.querySelectorAll('[data-hawk-discovery-group="matches"] a'),
+        (el) => el.textContent
+      )
+    ).toEqual(['Pagefind', 'metadata', 'API']);
+    expect(
+      Array.from(
+        row.querySelectorAll('[data-hawk-discovery-group="pages"] a'),
+        (el) => el.textContent
+      )
+    ).toEqual(['Page One', 'Page Two']);
+    expect(
+      Array.from(row.querySelectorAll('[data-hawk-discovery-group="headings"] a'), (el) =>
+        el.getAttribute('href')
+      )
+    ).toEqual(['/one/#metadata-contract', '/two/?view=full#api-details']);
+    hawk.destroy();
+  });
+
+  it('supports independent disabled, renamed, limited, and empty group states', async () => {
+    const { hawk } = await hawkWithDiscovery({
+      discoveryRow: {
+        matches: false,
+        pages: { label: 'Pages', maxItems: 1 },
+        headings: { maxItems: 0 },
+      },
+    });
+    expect(document.querySelector('[data-hawk-discovery-group="matches"]')).toBeNull();
+    expect(
+      document.querySelector('[data-hawk-discovery-group="pages"] .hawk-discovery-title')
+        .textContent
+    ).toBe('Pages');
+    expect(document.querySelectorAll('[data-hawk-discovery-group="pages"] a')).toHaveLength(1);
+    expect(
+      document.querySelector('[data-hawk-discovery-group="headings"] .hawk-discovery-empty')
+        .textContent
+    ).toBe('No links available.');
+    hawk.destroy();
+  });
+
+  it('announces loading while Pagefind is pending and includes links in the modal focus trap', async () => {
+    let resolveSearch;
+    const pending = new Promise((resolve) => {
+      resolveSearch = resolve;
+    });
+    const search = vi.fn().mockReturnValue(pending);
+    const setup = hawkWithDiscovery({}, search);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const row = document.querySelector('.hawk-discovery-row');
+    expect(row.getAttribute('aria-busy')).toBe('true');
+    expect(row.querySelector('[role="status"]').textContent).toBe('Finding links…');
+    resolveSearch({
+      results: [
+        resultFor({
+          meta: { title: 'One' },
+          url: '/one/',
+          excerpt: '<mark>one</mark>',
+          sub_results: [],
+        }),
+      ],
+    });
+    const { hawk } = await setup;
+    const links = document.querySelectorAll('.hawk-discovery-link');
+    const lastLink = links[links.length - 1];
+    lastLink.focus();
+    lastLink.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    expect(document.activeElement).toBe(document.querySelector('.hawk-modal-input'));
+    hawk.destroy();
+  });
+});
+
 describe('result/page metadata', () => {
   async function hawkWithResults(config = {}) {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
         results: [
           resultFor({
-            meta: { title: 'Page One', section: 'Guides' },
+            meta: {
+              title: 'Page One',
+              section: 'Guides',
+              date: '2026-09-09',
+              tags: 'Pagefind, Hugo',
+              published: '2026-09-01',
+              topics: 'Search, Metadata',
+            },
             url: '/one/',
             excerpt: 'first match',
             sub_results: [{ title: 'A Section', url: '/one/#section', excerpt: 'section text' }],
           }),
-          resultFor({ meta: { title: 'Page Two' }, url: '/two/', excerpt: 'second match', sub_results: [] }),
+          resultFor({
+            meta: { title: 'Page Two' },
+            url: '/two/',
+            excerpt: 'second match',
+            sub_results: [],
+          }),
         ],
       }),
     });
@@ -929,20 +1427,273 @@ describe('result/page metadata', () => {
 
   it('exposes the full meta object on each match, including sub_results reusing the parent page meta', async () => {
     const hawk = await hawkWithResults();
-    expect(hawk.state.matches[0].meta).toEqual({ title: 'Page One', section: 'Guides' });
-    expect(hawk.state.matches[1].meta).toEqual({ title: 'Page One', section: 'Guides' }); // the sub_result row
+    expect(hawk.state.matches[0].meta).toEqual({
+      title: 'Page One',
+      section: 'Guides',
+      date: '2026-09-09',
+      tags: 'Pagefind, Hugo',
+      published: '2026-09-01',
+      topics: 'Search, Metadata',
+    });
+    expect(hawk.state.matches[1].meta).toEqual(hawk.state.matches[0].meta); // the sub_result row
     expect(hawk.state.matches[2].meta).toEqual({ title: 'Page Two' });
     hawk.destroy();
   });
 
-  it('renders a meta.section badge on the result row and, once selected, the preview header', async () => {
+  it('renders the date as relative time when resultDateFormat is "relative"', async () => {
+    // Only Date.now() is stubbed (not full fake timers), so hawk.js's own internal
+    // setTimeout-based debounce/search flow — and this test file's own `await new Promise(...)`
+    // ticks — keep working exactly as in every other test here.
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-09-16T00:00:00.000Z').getTime());
+    const hawk = await hawkWithResults({ resultDateFormat: 'relative' });
+    const dateEl = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-date');
+    expect(dateEl.getAttribute('datetime')).toBe('2026-09-09'); // raw value untouched
+    expect(dateEl.textContent).toBe('7 days ago');
+    hawk.destroy();
+    nowSpy.mockRestore();
+  });
+
+  it('crosses over to "months ago" past the day-ladder threshold', async () => {
+    const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(new Date('2026-10-19T00:00:00.000Z').getTime());
+    const hawk = await hawkWithResults({ resultDateFormat: 'relative' });
+    const dateEl = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-date');
+    expect(dateEl.textContent).toBe('1 month ago');
+    hawk.destroy();
+    nowSpy.mockRestore();
+  });
+
+  it('defaults resultDateFormat to "timestamp", leaving the raw value as visible text', async () => {
+    const hawk = await hawkWithResults();
+    const dateEl = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-date');
+    expect(dateEl.textContent).toBe('2026-09-09');
+    hawk.destroy();
+  });
+
+  it('renders date and tags before the description and keeps the section badge in the preview', async () => {
     const hawk = await hawkWithResults();
     const firstRow = document.querySelectorAll('.hawk-result-item')[0];
-    expect(firstRow.querySelector('.hawk-meta-badge').textContent).toBe('Guides');
-    expect(document.querySelector('.hawk-preview-header .hawk-meta-badge').textContent).toBe('Guides');
+    expect(firstRow.querySelector('.hawk-result-meta').nextElementSibling).toBe(
+      firstRow.querySelector('.hawk-result-desc')
+    );
+    expect(firstRow.querySelector('.hawk-result-date').textContent).toBe('2026-09-09');
+    expect(
+      Array.from(firstRow.querySelectorAll('.hawk-result-tag'), (tag) => tag.textContent)
+    ).toEqual(['Guides', 'Pagefind', 'Hugo']);
+    expect(document.querySelector('.hawk-preview-header .hawk-meta-badge').textContent).toBe(
+      'Guides'
+    );
 
     const secondRow = document.querySelectorAll('.hawk-result-item')[2]; // Page Two, no meta.section
     expect(secondRow.querySelector('.hawk-meta-badge')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('omits tags on an anchor/heading sub-result row, since it reuses its parent page meta wholesale', async () => {
+    const hawk = await hawkWithResults();
+    const rows = document.querySelectorAll('.hawk-result-item');
+    const anchorRow = rows[1]; // "A Section" — Page One's sub_result
+    expect(hawk.state.matches[1].isAnchor).toBe(true);
+    expect(anchorRow.querySelectorAll('.hawk-result-tag')).toHaveLength(0);
+    // Date isn't page-identity like tags/section are, so it's untouched by this scoping.
+    expect(anchorRow.querySelector('.hawk-result-date').textContent).toBe('2026-09-09');
+
+    const parentRow = rows[0]; // Page One itself keeps its own tags
+    expect(parentRow.querySelectorAll('.hawk-result-tag')).toHaveLength(3);
+    hawk.destroy();
+  });
+
+  it('rotates configured result accent colors across rendered rows', async () => {
+    const hawk = await hawkWithResults({ resultAccentColors: ['#f5c2e7', '#94e2d5'] });
+    const rows = document.querySelectorAll('.hawk-result-item');
+    expect(rows[0].style.getPropertyValue('--hawk-result-accent')).toBe('#f5c2e7');
+    expect(rows[1].style.getPropertyValue('--hawk-result-accent')).toBe('#94e2d5');
+    hawk.destroy();
+  });
+
+  it('defaults to a built-in pastel range for tagAccentColors, cycling per tag within a row', async () => {
+    const hawk = await hawkWithResults();
+    // Page One's tags: meta.section ('Guides') unshifted, then 'Pagefind', 'Hugo' — 3 tags.
+    const tags = document.querySelectorAll('.hawk-result-item')[0].querySelectorAll('.hawk-result-tag');
+    expect(tags).toHaveLength(3);
+    expect(tags[0].style.getPropertyValue('--hawk-tag-accent')).toBe('#f5c2e7');
+    expect(tags[1].style.getPropertyValue('--hawk-tag-accent')).toBe('#cba6f7');
+    expect(tags[2].style.getPropertyValue('--hawk-tag-accent')).toBe('#94e2d5');
+    hawk.destroy();
+  });
+
+  it('rotates a custom tagAccentColors list and resets its index per result row', async () => {
+    const hawk = await hawkWithResults({ tagAccentColors: ['#111111', '#222222'] });
+    const tags = document.querySelectorAll('.hawk-result-item')[0].querySelectorAll('.hawk-result-tag');
+    expect(tags[0].style.getPropertyValue('--hawk-tag-accent')).toBe('#111111');
+    expect(tags[1].style.getPropertyValue('--hawk-tag-accent')).toBe('#222222');
+    expect(tags[2].style.getPropertyValue('--hawk-tag-accent')).toBe('#111111');
+    hawk.destroy();
+  });
+
+  it('disables tag accent colors when tagAccentColors is false', async () => {
+    const hawk = await hawkWithResults({ tagAccentColors: false });
+    const tag = document.querySelectorAll('.hawk-result-item')[0].querySelector('.hawk-result-tag');
+    expect(tag.style.getPropertyValue('--hawk-tag-accent')).toBe('');
+    hawk.destroy();
+  });
+
+  it('can disable result dates and tags independently', async () => {
+    const noDate = await hawkWithResults({ showResultDate: false });
+    expect(document.querySelector('.hawk-result-date')).toBeNull();
+    expect(document.querySelector('.hawk-result-tag')).toBeTruthy();
+    noDate.destroy();
+
+    const noTags = await hawkWithResults({ showResultTags: false });
+    expect(document.querySelector('.hawk-result-date')).toBeTruthy();
+    expect(document.querySelector('.hawk-result-tag')).toBeNull();
+    expect(document.querySelector('.hawk-preview-header .hawk-meta-badge')).toBeNull();
+    noTags.destroy();
+  });
+
+  it('uses configurable Pagefind metadata keys for dates and tags', async () => {
+    const hawk = await hawkWithResults({
+      resultDateMetaKey: 'published',
+      resultTagsMetaKey: 'topics',
+    });
+    const firstRow = document.querySelector('.hawk-result-item');
+    expect(firstRow.querySelector('.hawk-result-date').textContent).toBe('2026-09-01');
+    expect(
+      Array.from(firstRow.querySelectorAll('.hawk-result-tag'), (tag) => tag.textContent)
+    ).toEqual(['Guides', 'Search', 'Metadata']);
+    hawk.destroy();
+  });
+
+  it('suppresses duplicate tags when section and tags overlap or tags repeat', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: {
+              title: 'Dup Page',
+              section: 'Guides',
+              tags: 'Guides, API, API, Guides',
+            },
+            url: '/dup/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'dup';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const row = document.querySelector('.hawk-result-item');
+    const tags = Array.from(row.querySelectorAll('.hawk-result-tag'), (t) => t.textContent);
+    expect(tags).toEqual(['Guides', 'API']); // duplicates suppressed
+    hawk.destroy();
+  });
+
+  it('escapes special characters in date and tag values safely in HTML', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: {
+              title: 'Escaped Page',
+              date: '2026-09-10"><script>alert(1)</script>',
+              tags: '<b>XSS</b>, "quoted"',
+            },
+            url: '/escaped/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'esc';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const row = document.querySelector('.hawk-result-item');
+    expect(row.querySelector('script')).toBeNull();
+    expect(row.querySelector('b')).toBeNull();
+    expect(row.querySelector('.hawk-result-date').getAttribute('datetime')).toBe(
+      '2026-09-10"><script>alert(1)</script>'
+    );
+    expect(row.querySelector('.hawk-result-date').textContent).toBe(
+      '2026-09-10"><script>alert(1)</script>'
+    );
+    expect(row.innerHTML).toContain('&lt;b&gt;XSS&lt;/b&gt;');
+    hawk.destroy();
+  });
+
+  it('passes date sorting options to Pagefind when sort option or tab sort is configured', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({ results: [] }),
+    });
+    const hawk = new HawkSearch({
+      pagefind,
+      pagefindOptions: { sort: { date: 'desc' } },
+    });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'sorted';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(pagefind.debouncedSearch).toHaveBeenCalledWith(
+      'sorted',
+      expect.objectContaining({
+        sort: { date: 'desc' },
+      })
+    );
+    hawk.destroy();
+  });
+
+  it('renders without error when date or tag metadata keys are completely missing or null', async () => {
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'Missing Meta Page' },
+            url: '/missing/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const hawk = new HawkSearch({ pagefind });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    document.querySelector('.hawk-modal-input').value = 'missing';
+    document.querySelector('.hawk-modal-input').dispatchEvent(new Event('input'));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const row = document.querySelector('.hawk-result-item');
+    expect(row.querySelector('.hawk-result-meta')).toBeNull();
+    expect(row.querySelector('.hawk-result-date')).toBeNull();
+    expect(row.querySelector('.hawk-result-tag')).toBeNull();
+    hawk.destroy();
+  });
+
+  it('indents Pagefind sub-results beneath their parent page', async () => {
+    const hawk = await hawkWithResults();
+    const rows = document.querySelectorAll('.hawk-result-item');
+    expect(rows[0].classList.contains('hawk-result-item--subpage')).toBe(false);
+    expect(rows[1].classList.contains('hawk-result-item--subpage')).toBe(true);
+    hawk.destroy();
+  });
+
+  it('renders sub-results flat, with no connector line, when showSubpageConnector is false', async () => {
+    const hawk = await hawkWithResults({ showSubpageConnector: false });
+    const rows = document.querySelectorAll('.hawk-result-item');
+    expect(rows[0].classList.contains('hawk-result-item--subpage')).toBe(false);
+    expect(rows[1].classList.contains('hawk-result-item--subpage')).toBe(false);
+    expect(hawk.state.matches[1].isAnchor).toBe(true);
     hawk.destroy();
   });
 
@@ -955,7 +1706,9 @@ describe('result/page metadata', () => {
 
   it('the default counter text includes page count only when it differs from the match count', async () => {
     const hawk = await hawkWithResults();
-    expect(document.querySelector('.hawk-modal-counter').textContent).toBe('3 matching results across 2 pages');
+    expect(document.querySelector('.hawk-modal-counter').textContent).toBe(
+      '3 matching results across 2 pages'
+    );
     hawk.destroy();
   });
 });
@@ -1040,7 +1793,14 @@ describe('scroll-triggered scrollbar brighten', () => {
   async function hawkWithResults() {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Page One' }, url: '/one/', excerpt: 'first match', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Page One' },
+            url: '/one/',
+            excerpt: 'first match',
+            sub_results: [],
+          }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind });
@@ -1170,6 +1930,21 @@ describe('focus trap', () => {
     input.focus();
     document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
     expect(document.activeElement).toBe(resultsPane);
+    hawk.destroy();
+  });
+
+  it('marks compact result rows with the compact density contract', async () => {
+    const hawk = await hawkWithResults({ params: { density: 'compact' } });
+    const row = document.querySelector('.hawk-result-item');
+    expect(row.closest('.hawk-modal').getAttribute('data-hawk-density')).toBe('compact');
+    hawk.destroy();
+  });
+
+  it('applies vertical-fit mode to fit and compact layouts', async () => {
+    const hawk = await hawkWithResults({ params: { density: 'fit', verticalFit: true } });
+    expect(document.querySelector('.hawk-modal').dataset.hawkVerticalFit).toBe('true');
+    hawk.setParams({ density: 'compact' });
+    expect(document.querySelector('.hawk-modal').dataset.hawkVerticalFit).toBe('true');
     hawk.destroy();
   });
 });
@@ -1329,6 +2104,94 @@ describe('category tabs (keyboard + ARIA)', () => {
 describe('rich preview content', () => {
   const htmlPage = (bodyInner) => `<!doctype html><html><body>${bodyInner}</body></html>`;
 
+  it('stops the previous title animation and ignores stale content when selection changes quickly', async () => {
+    let resolveFirstPage;
+    let resolveSecondPage;
+    fetch.mockImplementation(
+      (url) =>
+        new Promise((resolve) => {
+          if (url === '/first/') resolveFirstPage = resolve;
+          else resolveSecondPage = resolve;
+        })
+    );
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({
+        results: [
+          resultFor({
+            meta: { title: 'First page' },
+            url: '/first/',
+            excerpt: 'first',
+            sub_results: [],
+          }),
+          resultFor({
+            meta: { title: 'Second page' },
+            url: '/second/',
+            excerpt: 'second',
+            sub_results: [],
+          }),
+        ],
+      }),
+    });
+    const titleControllers = [];
+    const contentControllers = [];
+    const animation = {
+      typeTitle: vi.fn(() => {
+        const controller = { stop: vi.fn() };
+        titleControllers.push(controller);
+        return controller;
+      }),
+      typeContent: vi.fn((element, html) => {
+        element.innerHTML = html;
+        const controller = { stop: vi.fn() };
+        contentControllers.push(controller);
+        return controller;
+      }),
+      rotatePlaceholder() {
+        return null;
+      },
+      stop(controller) {
+        controller?.stop();
+      },
+    };
+    const hawk = new HawkSearch({ pagefind, animation });
+    hawk.open();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'page';
+    input.dispatchEvent(new Event('input'));
+    await vi.waitFor(() => expect(document.querySelectorAll('.hawk-result-item')).toHaveLength(2));
+
+    document
+      .querySelectorAll('.hawk-result-item')[1]
+      .dispatchEvent(new Event('mouseenter', { bubbles: true }));
+    expect(titleControllers[0].stop).toHaveBeenCalledOnce();
+
+    resolveSecondPage({
+      text: () =>
+        Promise.resolve(htmlPage('<main data-pagefind-body><p>second page content</p></main>')),
+    });
+    await vi.waitFor(() => expect(animation.typeContent).toHaveBeenCalledOnce());
+    expect(document.querySelector('.hawk-preview-content').textContent).toContain(
+      'second page content'
+    );
+
+    resolveFirstPage({
+      text: () =>
+        Promise.resolve(
+          htmlPage('<main data-pagefind-body><p>stale first page content</p></main>')
+        ),
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(animation.typeContent).toHaveBeenCalledOnce();
+    expect(document.querySelector('.hawk-preview-content').textContent).not.toContain(
+      'stale first page content'
+    );
+
+    hawk.destroy();
+    expect(titleControllers[1].stop).toHaveBeenCalledOnce();
+    expect(contentControllers[0].stop).toHaveBeenCalledOnce();
+  });
+
   it('fetches the result page and injects only the contentSelector region', async () => {
     fetch.mockResolvedValue({
       text: () =>
@@ -1446,7 +2309,10 @@ describe('built-in trigger (config.trigger)', () => {
   });
 
   it('renders a default-kind trigger (icon + label + kbd hint) into a selector container', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: '#trigger-host' } });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      trigger: { container: '#trigger-host' },
+    });
     const btn = host.querySelector('.hawk-trigger');
     expect(btn).toBeTruthy();
     expect(btn.classList.contains('hawk-trigger-default')).toBe(true);
@@ -1463,7 +2329,10 @@ describe('built-in trigger (config.trigger)', () => {
   });
 
   it('minimal kind renders icon-only with an aria-label, no label/kbd', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { kind: 'minimal', container: host } });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      trigger: { kind: 'minimal', container: host },
+    });
     const btn = host.querySelector('.hawk-trigger');
     expect(btn.querySelector('.hawk-trigger-label')).toBeNull();
     expect(btn.querySelector('.hawk-trigger-kbd')).toBeNull();
@@ -1472,7 +2341,10 @@ describe('built-in trigger (config.trigger)', () => {
   });
 
   it('compact kind renders icon + label, no kbd hint', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { kind: 'compact', container: host } });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      trigger: { kind: 'compact', container: host },
+    });
     const btn = host.querySelector('.hawk-trigger');
     expect(btn.querySelector('.hawk-trigger-label').textContent).toBe('Search');
     expect(btn.querySelector('.hawk-trigger-kbd')).toBeNull();
@@ -1480,7 +2352,11 @@ describe('built-in trigger (config.trigger)', () => {
   });
 
   it('omits the kbd hint when hotkeys.open is disabled', () => {
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: host }, hotkeys: { open: false } });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      trigger: { container: host },
+      hotkeys: { open: false },
+    });
     expect(host.querySelector('.hawk-trigger-kbd')).toBeNull();
     hawk.destroy();
   });
@@ -1493,7 +2369,11 @@ describe('built-in trigger (config.trigger)', () => {
   });
 
   it('applies the theme to the trigger button too, since it renders outside #root', () => {
-    const theme = { name: 'custom', apply: vi.fn((el) => (el.dataset.hawkTheme = 'custom')), tokens: { '--hawk-accent': '#22d3ee' } };
+    const theme = {
+      name: 'custom',
+      apply: vi.fn((el) => (el.dataset.hawkTheme = 'custom')),
+      tokens: { '--hawk-accent': '#22d3ee' },
+    };
     const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: host }, theme });
     const btn = host.querySelector('.hawk-trigger');
     expect(theme.apply).toHaveBeenCalledWith(btn);
@@ -1504,7 +2384,10 @@ describe('built-in trigger (config.trigger)', () => {
 
   it('warns and renders nothing when the container selector matches nothing', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), trigger: { container: '#does-not-exist' } });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      trigger: { container: '#does-not-exist' },
+    });
     expect(document.querySelector('.hawk-trigger')).toBeNull();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining('does-not-exist'));
     warn.mockRestore();
@@ -1525,7 +2408,14 @@ describe('previewSections', () => {
   async function selectFirstResult(config = {}) {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'Theming' }, url: '/guides/theming/', excerpt: 'excerpt', sub_results: [] })],
+        results: [
+          resultFor({
+            meta: { title: 'Theming' },
+            url: '/guides/theming/',
+            excerpt: 'excerpt',
+            sub_results: [],
+          }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind, ...config });
@@ -1540,7 +2430,12 @@ describe('previewSections', () => {
 
   it('is off by default — a page-level match still shows the full content view', async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><h2 id="contract">The contract</h2><p>A theme is two things.</p></main>')),
+      text: () =>
+        Promise.resolve(
+          htmlPage(
+            '<main data-pagefind-body><h2 id="contract">The contract</h2><p>A theme is two things.</p></main>'
+          )
+        ),
     });
     const hawk = await selectFirstResult();
     const content = document.querySelector('.hawk-preview-content');
@@ -1565,7 +2460,9 @@ describe('previewSections', () => {
     });
     const hawk = await selectFirstResult({ previewSections: true });
     const content = document.querySelector('.hawk-preview-content');
-    await vi.waitFor(() => expect(content.querySelectorAll('.hawk-preview-section-row')).toHaveLength(2));
+    await vi.waitFor(() =>
+      expect(content.querySelectorAll('.hawk-preview-section-row')).toHaveLength(2)
+    );
 
     const rows = content.querySelectorAll('.hawk-preview-section-row');
     expect(rows[0].querySelector('.hawk-preview-section-title').textContent).toBe('The contract');
@@ -1577,12 +2474,48 @@ describe('previewSections', () => {
     hawk.destroy();
   });
 
+  it('routes structured section rows through the content animation driver', async () => {
+    fetch.mockResolvedValue({
+      text: () =>
+        Promise.resolve(
+          htmlPage(
+            '<main data-pagefind-body><h2 id="contract">The contract</h2><p>Body text.</p></main>'
+          )
+        ),
+    });
+    const typeContent = vi.fn((el, html) => {
+      el.innerHTML = html;
+      return null;
+    });
+    const animation = {
+      typeTitle(el, text) {
+        el.textContent = text;
+        return null;
+      },
+      typeContent,
+      rotatePlaceholder() {
+        return null;
+      },
+      stop() {},
+    };
+    const hawk = await selectFirstResult({ previewSections: true, animation });
+    await vi.waitFor(() => expect(typeContent).toHaveBeenCalled());
+    expect(typeContent.mock.calls[0][1]).toContain('hawk-preview-section-row');
+    hawk.destroy();
+  });
+
   it('truncates a long excerpt to previewSectionExcerptLength with an ellipsis', async () => {
     const longText = 'word '.repeat(60).trim();
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage(`<main data-pagefind-body><h2 id="a">A</h2><p>${longText}</p></main>`)),
+      text: () =>
+        Promise.resolve(
+          htmlPage(`<main data-pagefind-body><h2 id="a">A</h2><p>${longText}</p></main>`)
+        ),
     });
-    const hawk = await selectFirstResult({ previewSections: true, previewSectionExcerptLength: 20 });
+    const hawk = await selectFirstResult({
+      previewSections: true,
+      previewSectionExcerptLength: 20,
+    });
     const content = document.querySelector('.hawk-preview-content');
     await vi.waitFor(() => expect(content.querySelector('.hawk-preview-section-row')).toBeTruthy());
     const excerpt = content.querySelector('.hawk-preview-section-excerpt').textContent;
@@ -1593,11 +2526,16 @@ describe('previewSections', () => {
 
   it('falls back to the full content view when the page has no matching headings', async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><p>No headings on this page at all.</p></main>')),
+      text: () =>
+        Promise.resolve(
+          htmlPage('<main data-pagefind-body><p>No headings on this page at all.</p></main>')
+        ),
     });
     const hawk = await selectFirstResult({ previewSections: true });
     const content = document.querySelector('.hawk-preview-content');
-    await vi.waitFor(() => expect(content.textContent).toContain('No headings on this page at all.'));
+    await vi.waitFor(() =>
+      expect(content.textContent).toContain('No headings on this page at all.')
+    );
     expect(document.querySelector('.hawk-preview-section-row')).toBeNull();
     hawk.destroy();
   });
@@ -1606,19 +2544,28 @@ describe('previewSections', () => {
     fetch.mockResolvedValue({
       text: () =>
         Promise.resolve(
-          htmlPage('<main data-pagefind-body><h2 id="skip">Skip me</h2><p>x</p><h4 id="keep">Keep me</h4><p>y</p></main>')
+          htmlPage(
+            '<main data-pagefind-body><h2 id="skip">Skip me</h2><p>x</p><h4 id="keep">Keep me</h4><p>y</p></main>'
+          )
         ),
     });
     const hawk = await selectFirstResult({ previewSections: true, previewSectionSelector: 'h4' });
     const content = document.querySelector('.hawk-preview-content');
-    await vi.waitFor(() => expect(content.querySelectorAll('.hawk-preview-section-row')).toHaveLength(1));
+    await vi.waitFor(() =>
+      expect(content.querySelectorAll('.hawk-preview-section-row')).toHaveLength(1)
+    );
     expect(content.querySelector('.hawk-preview-section-title').textContent).toBe('Keep me');
     hawk.destroy();
   });
 
   it('clicking a section row reports through onSelect with an anchor-shaped match', async () => {
     fetch.mockResolvedValue({
-      text: () => Promise.resolve(htmlPage('<main data-pagefind-body><h2 id="contract">The contract</h2><p>Body text.</p></main>')),
+      text: () =>
+        Promise.resolve(
+          htmlPage(
+            '<main data-pagefind-body><h2 id="contract">The contract</h2><p>Body text.</p></main>'
+          )
+        ),
     });
     const onSelect = vi.fn();
     const hawk = await selectFirstResult({ previewSections: true, onSelect });
@@ -1627,7 +2574,11 @@ describe('previewSections', () => {
 
     content.querySelector('.hawk-preview-section-row').click();
     expect(onSelect).toHaveBeenCalledWith(
-      expect.objectContaining({ title: 'The contract', url: '/guides/theming/#contract', isAnchor: true })
+      expect.objectContaining({
+        title: 'The contract',
+        url: '/guides/theming/#contract',
+        isAnchor: true,
+      })
     );
     hawk.destroy();
   });
@@ -1640,7 +2591,9 @@ describe('previewSections', () => {
             meta: { title: 'Theming' },
             url: '/guides/theming/',
             excerpt: 'excerpt',
-            sub_results: [{ title: 'Token list', url: '/guides/theming/#tokens', excerpt: 'sub excerpt' }],
+            sub_results: [
+              { title: 'Token list', url: '/guides/theming/#tokens', excerpt: 'sub excerpt' },
+            ],
           }),
         ],
       }),
@@ -1665,9 +2618,13 @@ describe('previewSections', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     // Row 1 is the "Token list" sub_result (row 0 is the page itself).
-    document.querySelectorAll('.hawk-result-item')[1].dispatchEvent(new Event('mouseenter', { bubbles: true }));
+    document
+      .querySelectorAll('.hawk-result-item')[1]
+      .dispatchEvent(new Event('mouseenter', { bubbles: true }));
     const content = document.querySelector('.hawk-preview-content');
-    await vi.waitFor(() => expect(content.innerHTML).toContain('hawk.css reads every color through a token.'));
+    await vi.waitFor(() =>
+      expect(content.innerHTML).toContain('hawk.css reads every color through a token.')
+    );
     expect(document.querySelector('.hawk-preview-section-row')).toBeNull();
     hawk.destroy();
   });
@@ -1692,7 +2649,9 @@ describe('tab accentColor', () => {
   it('escapes a stray double-quote in accentColor so it cannot break out of the style attribute', async () => {
     const hawk = new HawkSearch({
       pagefind: mockPagefind(),
-      tabs: [{ id: 'x', label: 'X', accentColor: 'red" onmouseover="window.__hawkAccentProbe = true' }],
+      tabs: [
+        { id: 'x', label: 'X', accentColor: 'red" onmouseover="window.__hawkAccentProbe = true' },
+      ],
     });
     const pill = document.querySelector('[data-filter="x"]');
     // The real security property: the quote never breaks out of the style attribute to create a
@@ -1710,7 +2669,9 @@ describe('staggered results reveal', () => {
   it('defaults to direction "up", writing --hawk-results-stagger and a per-row --hawk-row-index', async () => {
     const pagefind = mockPagefind({
       debouncedSearch: vi.fn().mockResolvedValue({
-        results: [resultFor({ meta: { title: 'One' }, url: '/one/', excerpt: 'x', sub_results: [] })],
+        results: [
+          resultFor({ meta: { title: 'One' }, url: '/one/', excerpt: 'x', sub_results: [] }),
+        ],
       }),
     });
     const hawk = new HawkSearch({ pagefind });
@@ -1748,11 +2709,19 @@ describe('staggered results reveal', () => {
   });
 
   it('resultsRevealDirection and resultsReveal: false are configurable', () => {
-    const hawkRight = new HawkSearch({ pagefind: mockPagefind(), id: 'hawk-right', resultsRevealDirection: 'right' });
+    const hawkRight = new HawkSearch({
+      pagefind: mockPagefind(),
+      id: 'hawk-right',
+      resultsRevealDirection: 'right',
+    });
     expect(document.getElementById('hawk-right').dataset.hawkResultsReveal).toBe('right');
     hawkRight.destroy();
 
-    const hawkOff = new HawkSearch({ pagefind: mockPagefind(), id: 'hawk-off', resultsReveal: false });
+    const hawkOff = new HawkSearch({
+      pagefind: mockPagefind(),
+      id: 'hawk-off',
+      resultsReveal: false,
+    });
     expect(document.getElementById('hawk-off').dataset.hawkResultsReveal).toBeUndefined();
     hawkOff.destroy();
   });
@@ -1825,6 +2794,24 @@ describe('modal reveal animation', () => {
     hawk.destroy();
   });
 
+  it('applies configurable backdrop scrim tokens to the mounted modal', () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      backdrop: {
+        color: 'rgba(10, 10, 15, 0.6)',
+        gradient: 'radial-gradient(circle at 50% 0%, red, blue)',
+        opacity: 0.8,
+        blur: '18px',
+      },
+    });
+    const root = document.querySelector('.hawk-modal');
+    expect(root.style.getPropertyValue('--hawk-backdrop')).toBe('rgba(10, 10, 15, 0.6)');
+    expect(root.style.getPropertyValue('--hawk-backdrop-gradient')).toContain('radial-gradient');
+    expect(root.style.getPropertyValue('--hawk-backdrop-opacity')).toBe('0.8');
+    expect(root.style.getPropertyValue('--hawk-backdrop-blur')).toBe('18px');
+    hawk.destroy();
+  });
+
   it('revealAnimation: false keeps open()/close() instant, with no [data-hawk-reveal]/[data-hawk-anim-state] attributes', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind(), revealAnimation: false });
     const root = document.querySelector('.hawk-modal');
@@ -1843,7 +2830,12 @@ describe('modal reveal animation', () => {
     // Also covers #applyParams' own matchMedia() call (breakpoint tracking) — same mocked
     // function, a different query string — so the return value needs a real-enough
     // MediaQueryList shape (addEventListener/removeEventListener), not just `matches`.
-    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }));
+    vi.stubGlobal(
+      'matchMedia',
+      vi
+        .fn()
+        .mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() })
+    );
     const hawk = new HawkSearch({ pagefind: mockPagefind() });
     const root = document.querySelector('.hawk-modal');
 
@@ -1866,7 +2858,11 @@ describe('modal reveal animation', () => {
 
   it('config.revealDuration overrides the built-in per-name default', () => {
     vi.useFakeTimers();
-    const hawk = new HawkSearch({ pagefind: mockPagefind(), revealAnimation: 'fade', revealDuration: 500 });
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      revealAnimation: 'fade',
+      revealDuration: 500,
+    });
     const root = document.querySelector('.hawk-modal');
     expect(root.style.getPropertyValue('--hawk-reveal-duration')).toBe('500ms');
 

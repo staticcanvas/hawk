@@ -8,15 +8,15 @@
     "defaultBranch": "main",
     "npmPackage": "@staticcanvas/hawk",
     "jsrPackage": "@staticcanvas/hawk",
-    "bannerUrl": "https://example.invalid/hawk-banner.svg",
+    "bannerUrl": "https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-128x51.webp",
     "documentationUrl": "https://staticcanvas.gitlab.io/hawk"
   },
   "readmeHeader": {
     "alignment": "left",
     "badgeStyle": "flat-square",
-    "badgeColor": "#0087af",
-    "labelColor": "#1c1c1c",
-    "logoColor": "#ffffff",
+    "badgeColor": "#2C3E50",
+    "labelColor": "#2C3E50",
+    "logoColor": "#4CA1AF",
     "codecovToken": ""
   },
   "readme": {
@@ -48,14 +48,69 @@
       { "name": "revert", "description": "revert an earlier commit" }
     ],
     "scopes": [
-      { "name": "rivet", "description": "repository metadata automation", "paths": ["rivet.ps1", ".rivet/**"] },
-      { "name": "core", "description": "search engine, DOM/keyboard/preview logic, layout params", "paths": ["src/hawk.js", "src/hawk.d.ts", "src/hawk.css", "tests/**", "vite*.js", "bunfig.toml"] },
-      { "name": "theme", "description": "theme plugin system and the default typeflow theme", "paths": ["src/hawk-theme-*.js", "src/hawk-theme-*.d.ts", "src/hawk-theme-*.css"] },
-      { "name": "animation", "description": "animation driver plugin system and drivers", "paths": ["src/hawk-animation-*.js", "src/hawk-animation-*.d.ts"] },
-      { "name": "pagefind", "description": "Pagefind indexing integration and recipes", "paths": ["scripts/pagefind-index.mjs"] },
-      { "name": "docs", "description": "documentation site, guides, and architecture notes", "paths": ["docs/**", "public/**", "editors/**", "branding/**", "architecture/**", "README*.md"] },
-      { "name": "release", "description": "versioning and release assets", "paths": ["CHANGELOG.md", "release-notes.md", "package*.json", "bun.lock", "jsr.jsonc", "scripts/**", "docs/data/changelog.json", "README*.md"] },
-      { "name": "ci", "description": "pipeline configuration and quality gates", "paths": [".gitlab-ci.yml", "ci-failures.md"] },
+      {
+        "name": "rivet",
+        "description": "repository metadata automation",
+        "paths": ["rivet.ps1", ".rivet/**"]
+      },
+      {
+        "name": "core",
+        "description": "search engine, DOM/keyboard/preview logic, layout params",
+        "paths": [
+          "src/hawk.js",
+          "src/hawk.d.ts",
+          "src/hawk.css",
+          "tests/**",
+          "vite*.js",
+          "bunfig.toml"
+        ]
+      },
+      {
+        "name": "theme",
+        "description": "theme plugin system and the default typeflow theme",
+        "paths": ["src/hawk-theme-*.js", "src/hawk-theme-*.d.ts", "src/hawk-theme-*.css"]
+      },
+      {
+        "name": "animation",
+        "description": "animation driver plugin system and drivers",
+        "paths": ["src/hawk-animation-*.js", "src/hawk-animation-*.d.ts"]
+      },
+      {
+        "name": "pagefind",
+        "description": "Pagefind indexing integration and recipes",
+        "paths": ["scripts/pagefind-index.mjs"]
+      },
+      {
+        "name": "docs",
+        "description": "documentation site, guides, and architecture notes",
+        "paths": [
+          "docs/**",
+          "public/**",
+          "editors/**",
+          "branding/**",
+          "architecture/**",
+          "README*.md"
+        ]
+      },
+      {
+        "name": "release",
+        "description": "versioning and release assets",
+        "paths": [
+          "CHANGELOG.md",
+          "release-notes.md",
+          "package*.json",
+          "bun.lock",
+          "jsr.jsonc",
+          "scripts/**",
+          "docs/data/changelog.json",
+          "README*.md"
+        ]
+      },
+      {
+        "name": "ci",
+        "description": "pipeline configuration and quality gates",
+        "paths": [".gitlab-ci.yml", "ci-failures.md"]
+      },
       { "name": "none", "description": "omit the commit scope", "paths": ["**"] }
     ],
     "preview": {

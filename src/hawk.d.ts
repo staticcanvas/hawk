@@ -20,6 +20,7 @@ export interface HawkParams {
   breakpoint?: number;
   density?: 'fit' | 'medium' | 'compact';
   allowDensityToggle?: boolean;
+  verticalFit?: boolean;
 }
 
 export interface HawkMatch {
@@ -30,10 +31,28 @@ export interface HawkMatch {
   meta: Record<string, string>;
 }
 
+export interface HawkDiscoveryGroupConfig {
+  label?: string;
+  maxItems?: number;
+}
+
+export interface HawkDiscoveryRowConfig {
+  matches?: boolean | HawkDiscoveryGroupConfig;
+  pages?: boolean | HawkDiscoveryGroupConfig;
+  headings?: boolean | HawkDiscoveryGroupConfig;
+}
+
 export interface HawkPin {
   url: string;
   title: string;
   isAnchor: boolean;
+}
+
+export interface HawkRecentlyViewedItem {
+  url: string;
+  title: string;
+  isAnchor: boolean;
+  viewedAt: string;
 }
 
 export interface HawkState {
@@ -43,6 +62,8 @@ export interface HawkState {
   matches: HawkMatch[];
   pageCount: number;
   pins: HawkPin[];
+  recentlyViewed: HawkRecentlyViewedItem[];
+  secondColumnEnabled: boolean;
   activeTab: string;
   error: Error | null;
 }
@@ -73,6 +94,12 @@ export interface HawkStrings {
   hintClose?: string;
   previewEmpty?: string;
   previewLoading?: string;
+  discoveryLabel?: string;
+  discoveryMatches?: string;
+  discoveryPages?: string;
+  discoveryHeadings?: string;
+  discoveryEmpty?: string;
+  discoveryLoading?: string;
   sectionBadge?: string;
   untitled?: string;
   typeToSearch?: string;
@@ -81,11 +108,13 @@ export interface HawkStrings {
   entries?: (count: number) => string;
   unavailable?: string;
   unavailableCounter?: string;
+  recentlyViewedTab?: string;
 }
 
 export interface HawkTriggerConfig {
   kind?: 'minimal' | 'compact' | 'default';
   container: string | HTMLElement;
+  icon?: string;
 }
 
 export interface HawkSearchConfig {
@@ -104,8 +133,20 @@ export interface HawkSearchConfig {
   includeAllTab?: boolean;
   defaultTab?: string;
   pagefindOptions?: Record<string, unknown>;
+  pagefindInitOptions?: Record<string, unknown>;
+  pagefindMergeIndexes?: Array<{ bundlePath: string; options?: Record<string, unknown> }>;
   categoryFilterName?: string;
   maxResults?: number;
+  showResultDate?: boolean;
+  resultDateMetaKey?: string;
+  resultDateFormat?: 'timestamp' | 'relative';
+  showResultTags?: boolean;
+  resultTagsMetaKey?: string;
+  resultAccentColors?: string[] | false;
+  tagAccentColors?: string[] | false;
+  showSubpageConnector?: boolean;
+  headerControls?: false | { density?: boolean; escape?: boolean };
+  excludePages?: string | string[];
   contentSelector?: string;
   disableDefaultMarkdownStyles?: boolean;
   hotkeys?: { open?: boolean; slash?: boolean; escape?: boolean };
@@ -119,12 +160,23 @@ export interface HawkSearchConfig {
   enablePins?: boolean;
   pinStorageKey?: string;
   maxPins?: number;
+  enableRecentlyViewed?: boolean;
+  recentlyViewedStorageKey?: string;
+  maxRecentlyViewed?: number;
+  enableSecondColumn?: boolean;
   inlineFilters?: boolean;
   previewSections?: boolean;
   previewSectionSelector?: string;
   previewSectionExcerptLength?: number;
+  discoveryRow?: false | HawkDiscoveryRowConfig;
   revealAnimation?: 'fade' | 'scale-fade' | 'slide-down' | 'blur-zoom' | 'spring' | string | false;
   revealDuration?: number;
+  backdrop?: {
+    color?: string;
+    gradient?: string;
+    opacity?: number | string;
+    blur?: string;
+  };
   resultsReveal?: boolean;
   resultsRevealDirection?: 'up' | 'down' | 'left' | 'right';
   resultsRevealStagger?: number;

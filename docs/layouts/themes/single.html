@@ -1,0 +1,25 @@
+{{ define "main" }}
+<div class="doc-page doc-page--no-toc theme-gallery-page">
+  <article class="doc-article">
+    {{ partial "pagefind-frontmatter.html" . }}
+    <header class="doc-header">
+      {{ partial "breadcrumbs.html" . }}
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="doc-lead">{{ . }}</p>{{ end }}
+    </header>
+
+    <div class="theme-gallery" id="theme-gallery" aria-live="polite"></div>
+    <p class="theme-gallery-status" id="theme-gallery-status">Choose a profile to open its isolated search preview.</p>
+  </article>
+</div>
+
+{{/* playgroundUrl/templateUrl are baseURL-correct absolute paths only Hugo can compute — see
+     assets/js/theme-gallery.js's fileoverview for how the external module consumes them. */}}
+<script>
+  window.__HAWK_THEME_GALLERY_DATA__ = {
+    playgroundUrl: {{ ("playground/" | relURL) | jsonify | safeJS }},
+    templateUrl: {{ ("assets/theme-templates/" | relURL) | jsonify | safeJS }},
+  };
+</script>
+<script type="module" src="{{ "assets/js/theme-gallery.js" | relURL }}"></script>
+{{ end }}

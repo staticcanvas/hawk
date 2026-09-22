@@ -1,0 +1,42 @@
+{
+  "name": "Afterglow",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette (independent of the existing published \"Afterglow\" theme by juanghurtado)",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#1b1714",
+      "bgAlt": "#221c18",
+      "bgElev": "#2b241f",
+      "border": "#3a2f27",
+      "text": "#f0e4d8",
+      "textMuted": "#b89c85",
+      "textFaint": "#7a6552",
+      "selection": "#4a3527",
+      "accent": "#ef9d5c"
+    },
+    "syntax": {
+      "comment": "#7a6552",
+      "keyword": "#ef9d5c",
+      "string": "#d4986e",
+      "function": "#f2b86b",
+      "variable": "#f0e4d8",
+      "constant": "#e2735a",
+      "number": "#e2735a",
+      "type": "#c88a9e",
+      "operator": "#b89c85",
+      "tag": "#e2735a",
+      "attribute": "#f2b86b",
+      "punctuation": "#b89c85",
+      "error": "#da5854",
+      "warning": "#f2b86b",
+      "info": "#d4986e",
+      "success": "#a6b56a",
+      "deleted": "#c46862"
+    }
+  }
+}

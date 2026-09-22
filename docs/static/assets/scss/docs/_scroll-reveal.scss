@@ -1,0 +1,38 @@
+/* Scroll-reveal state classes for [data-reveal] elements — see docs/static/assets/js/scroll-effects.js. */
+
+/* ── Scroll-reveal (IntersectionObserver, see baseof.html) ────────────────── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal-group] > [data-reveal]:nth-child(2) {
+  transition-delay: 0.06s;
+}
+[data-reveal-group] > [data-reveal]:nth-child(3) {
+  transition-delay: 0.12s;
+}
+[data-reveal-group] > [data-reveal]:nth-child(4) {
+  transition-delay: 0.18s;
+}
+[data-reveal-group] > [data-reveal]:nth-child(5) {
+  transition-delay: 0.24s;
+}
+[data-reveal-group] > [data-reveal]:nth-child(6) {
+  transition-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+

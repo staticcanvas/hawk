@@ -1,0 +1,42 @@
+{
+  "name": "Crimson Ledger",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#1a1112",
+      "bgAlt": "#201517",
+      "bgElev": "#2a1c1e",
+      "border": "#3d2427",
+      "text": "#f3e4e2",
+      "textMuted": "#c99a97",
+      "textFaint": "#8a6360",
+      "selection": "#4a2226",
+      "accent": "#e14b4b"
+    },
+    "syntax": {
+      "comment": "#8a6360",
+      "keyword": "#e14b4b",
+      "string": "#c97a63",
+      "function": "#e0834a",
+      "variable": "#f3e4e2",
+      "constant": "#d68a3e",
+      "number": "#d68a3e",
+      "type": "#c9757f",
+      "operator": "#c99a97",
+      "tag": "#d68a3e",
+      "attribute": "#e0834a",
+      "punctuation": "#c99a97",
+      "error": "#ff6b6b",
+      "warning": "#e0834a",
+      "info": "#c97a63",
+      "success": "#9fae6a",
+      "deleted": "#c4514f"
+    }
+  }
+}

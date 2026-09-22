@@ -1,0 +1,42 @@
+{
+  "name": "Honeycomb",
+  "variant": "original",
+  "mode": "light",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#fdfaf2",
+      "bgAlt": "#faf1de",
+      "bgElev": "#f3e3c0",
+      "border": "#e5cd8e",
+      "text": "#2c2106",
+      "textMuted": "#6b5622",
+      "textFaint": "#937b45",
+      "selection": "#efdca4",
+      "accent": "#b56e0f"
+    },
+    "syntax": {
+      "comment": "#937b45",
+      "keyword": "#b56e0f",
+      "string": "#7a8a1e",
+      "function": "#a05a12",
+      "variable": "#2c2106",
+      "constant": "#a05a12",
+      "number": "#a05a12",
+      "type": "#8a6a2e",
+      "operator": "#6b5622",
+      "tag": "#a05a12",
+      "attribute": "#b56e0f",
+      "punctuation": "#6b5622",
+      "error": "#b8342f",
+      "warning": "#a05a12",
+      "info": "#5a7a9e",
+      "success": "#5a8a1e",
+      "deleted": "#a3324a"
+    }
+  }
+}

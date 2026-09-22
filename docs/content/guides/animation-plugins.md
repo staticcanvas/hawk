@@ -3,6 +3,15 @@ title: Animation Plugins
 description: The reveal-animation driver contract, the built-in drivers, and how to write your own.
 eyebrow: Guide
 category: Guides
+tags:
+  - animation
+  - typeflow
+  - reveal animation
+  - custom animation driver
+  - modal open close animation
+related:
+  - /guides/theming
+  - /playground
 ---
 
 ## The contract
@@ -26,16 +35,64 @@ back into `stop()`, which runs before every preview re-render and on `destroy()`
 ## Built-in drivers
 
 - **`instant`** (default, zero dependencies) — direct `textContent`/`innerHTML` writes.
-- **`typeflow`** — wraps `TypeFlow.type()` / `TypeFlow.rotate()`. Anchor/section titles
-  scramble-decode; page titles type plainly; preview content types HTML-aware.
+- **`typeflow`** — wraps `TypeFlow.type()` / `TypeFlow.rotate()`. Page titles, anchor/section
+  titles, HTML-aware preview content, and the rotating placeholder default to `zoom-in-space`,
+  left direction, 2ms speed, and no cursor.
 
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
-import { createHawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
-import TypeFlow from '@staticcanvas/typeflow';
+import { HawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
 
-HawkSearch.registerAnimation('typeflow', createHawkAnimationTypeflow(TypeFlow));
+HawkSearch.registerAnimation('typeflow', HawkAnimationTypeflow);
 new HawkSearch({ index: '/pagefind/', animation: 'typeflow' });
+```
+
+The adapter imports the released `@staticcanvas/typeflow` package directly. For advanced
+configuration, `createHawkAnimationTypeflow(TypeFlow, options)` remains available as a factory.
+
+### TypeFlow reveal styles
+
+The factory accepts complete TypeFlow configuration objects for `title`, `anchorTitle`,
+`content`, and the rotating placeholder's nested `typeConfig` and `eraseConfig`.
+
+| Style                                       | Supported surfaces | Behaviour                                        |
+| ------------------------------------------- | ------------------ | ------------------------------------------------ |
+| `char`                                      | Type               | Character-by-character reveal.                   |
+| `word`                                      | Type               | Word-by-word reveal.                             |
+| `scramble`                                  | Type and erase     | Resolves text through a configurable glyph set.  |
+| `fade-trail`                                | Type and erase     | Adds a trailing opacity ramp.                    |
+| `word-fade`                                 | Type and erase     | Fades words without changing their final layout. |
+| `float-in-top`, `float-in-bottom`           | Type and erase     | Moves words vertically while changing opacity.   |
+| `float-in-left`, `float-in-right`           | Type and erase     | Moves words horizontally while changing opacity. |
+| `zoom-in-space`                             | Type and erase     | Uses perspective depth and scale.                |
+| `end`, `start`, `center`, `fade`, `instant` | Erase              | Additional erase-only strategies.                |
+
+Every built-in surface uses the same explicit baseline: `typeStyle: 'zoom-in-space'`,
+`direction: 'left'`, `speed: 2`, and `cursor: ''`. This prevents the wrapper, documentation search,
+gallery, and playground themes from falling through to TypeFlow's own library default (`char`).
+`char` and `scramble` are the most computationally expensive typeStyle values — `char` updates the
+DOM per character and `scramble` re-renders the full string on every tick — so both have a
+practical minimum speed below which frames start dropping, and neither is used by any of Hawk's
+own defaults, the docs search, or the playground's curated `typeStyle` pickers. Both remain fully
+available by passing `typeStyle: 'char'` / `'scramble'` explicitly to `createHawkAnimationTypeflow`
+for anyone who wants that effect and is prepared to raise `speed` accordingly.
+
+```js
+import TypeFlow from '@staticcanvas/typeflow';
+import { createHawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
+
+const animation = createHawkAnimationTypeflow(TypeFlow, {
+  title: { typeStyle: 'word-fade', direction: 'center' },
+  anchorTitle: { typeStyle: 'zoom-in-space', wordOrder: 'random' },
+  content: { typeStyle: 'float-in-bottom', wordMotionDistance: 18 },
+  rotate: {
+    typeConfig: { typeStyle: 'fade-trail' },
+    eraseConfig: { eraseStyle: 'float-in-top' },
+  },
+});
+
+HawkSearch.registerAnimation('typeflow-spatial', animation);
+new HawkSearch({ index: '/pagefind/', animation: 'typeflow-spatial' });
 ```
 
 Omit `animation` to prefer `'typeflow'` when it's registered, falling back to `'instant'`

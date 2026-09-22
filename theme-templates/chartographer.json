@@ -1,0 +1,42 @@
+{
+  "name": "Chartographer",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#1c1712",
+      "bgAlt": "#241d16",
+      "bgElev": "#2e251b",
+      "border": "#3d3122",
+      "text": "#e8dcc4",
+      "textMuted": "#a99873",
+      "textFaint": "#776851",
+      "selection": "#4a3c26",
+      "accent": "#c9a24b"
+    },
+    "syntax": {
+      "comment": "#776851",
+      "keyword": "#c9a24b",
+      "string": "#7a9471",
+      "function": "#d3b673",
+      "variable": "#e8dcc4",
+      "constant": "#c17b4d",
+      "number": "#c17b4d",
+      "type": "#8fae8a",
+      "operator": "#a99873",
+      "tag": "#be6960",
+      "attribute": "#d3b673",
+      "punctuation": "#a99873",
+      "error": "#be6960",
+      "warning": "#c9a24b",
+      "info": "#7fa9b8",
+      "success": "#7a9471",
+      "deleted": "#c16a61"
+    }
+  }
+}

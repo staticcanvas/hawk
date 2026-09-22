@@ -3,6 +3,14 @@ title: Debug
 description: Console diagnostics for a HawkSearch instance's open/close/query/select lifecycle, optionally routed through StaticCanvas Logcad.
 eyebrow: Guide
 category: Guides
+tags:
+  - debug
+  - console diagnostics
+  - logging
+  - troubleshooting
+related:
+  - /guides/metrics
+  - /api
 ---
 
 ## What it does

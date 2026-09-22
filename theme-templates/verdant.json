@@ -1,0 +1,42 @@
+{
+  "name": "Verdant",
+  "variant": "original",
+  "mode": "light",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#f7faf5",
+      "bgAlt": "#eef4e8",
+      "bgElev": "#e1ecd7",
+      "border": "#cadfbc",
+      "text": "#16261a",
+      "textMuted": "#45614c",
+      "textFaint": "#6f8f76",
+      "selection": "#c3dfb0",
+      "accent": "#1c7c3f"
+    },
+    "syntax": {
+      "comment": "#6f8f76",
+      "keyword": "#1c7c3f",
+      "string": "#57762f",
+      "function": "#0f7a83",
+      "variable": "#16261a",
+      "constant": "#8a6d1e",
+      "number": "#8a6d1e",
+      "type": "#2c6e87",
+      "operator": "#45614c",
+      "tag": "#8a6d1e",
+      "attribute": "#0f7a83",
+      "punctuation": "#45614c",
+      "error": "#c1442c",
+      "warning": "#a06a12",
+      "info": "#0f7a83",
+      "success": "#1c7c3f",
+      "deleted": "#a33a26"
+    }
+  }
+}

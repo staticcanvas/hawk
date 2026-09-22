@@ -50,8 +50,22 @@ for (const marker of ['source_url', 'data-download-tabs', 'role="tablist"', 'dow
 }
 
 const docsLayout = readFileSync(join(projectRoot, 'docs/layouts/_default/baseof.html'), 'utf8');
-for (const source of ['webutil/libs/hawk.mjs', 'webutil/libs/hawk-theme-typeflow']) {
-  if (!docsLayout.includes(source)) throw new Error(`Documentation layout is missing ${source}.`);
+const docsSearchModulePath = 'assets/js/site-search.js';
+if (!docsLayout.includes(docsSearchModulePath)) {
+  throw new Error(`Documentation layout is missing ${docsSearchModulePath}.`);
+}
+const docsSearchModule = readFileSync(
+  join(projectRoot, 'docs/static', docsSearchModulePath),
+  'utf8'
+);
+for (const source of [
+  'webutil/libs/hawk.mjs',
+  'webutil/libs/hawk-theme-typeflow.mjs',
+  'webutil/libs/hawk-animation-typeflow.mjs',
+]) {
+  if (!docsSearchModule.includes(source)) {
+    throw new Error(`Documentation search module is missing ${source}.`);
+  }
 }
 if (!docsLayout.includes('data-pagefind-body')) {
   throw new Error('Documentation layout must scope Pagefind indexing with data-pagefind-body.');

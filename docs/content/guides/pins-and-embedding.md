@@ -3,6 +3,15 @@ title: Pins, the built-in trigger, and attribution
 description: Letting visitors pin results, embedding hawk without hand-built trigger markup, and the powered-by-Pagefind attribution.
 eyebrow: Guide
 category: Guides
+tags:
+  - pins
+  - built-in trigger
+  - embedding
+  - attribution
+  - powered by pagefind
+related:
+  - /api
+  - /getting-started
 ---
 
 ## Pins

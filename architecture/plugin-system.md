@@ -15,13 +15,12 @@ HawkSearch.registerAnimation(name, driverObject);
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
 import { HawkThemeTypeflow } from '@staticcanvas/hawk/theme-typeflow';
-import TypeFlow from '@staticcanvas/typeflow';
-import { createHawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
+import { HawkAnimationTypeflow } from '@staticcanvas/hawk/animation-typeflow';
 
 new HawkSearch({
   index: '/pagefind/',
   theme: HawkThemeTypeflow,
-  animation: createHawkAnimationTypeflow(TypeFlow),
+  animation: HawkAnimationTypeflow,
 });
 ```
 
@@ -44,10 +43,8 @@ this pairing:
 </script>
 ```
 
-Self-registration is a script-tag-only convenience (each of those four files checks a `window`
-global that only exists once its predecessor has run) — it doesn't fire for ESM/bundler imports,
-where module evaluation order isn't guaranteed the way `<script>` tag order is. There, register
-explicitly — the "Direct pass-in" example above.
+Self-registration is a script-tag convenience. For ESM/bundler imports, pass the ready driver
+directly as in the example above, or register it explicitly when several instances share it.
 
 ## Why this shape, not an event bus
 

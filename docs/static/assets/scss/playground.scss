@@ -1,0 +1,17 @@
+/*!
+ * hawk playground page chrome — the configurator's controls, workbench layout, and generated-
+ * code panels. Loaded alongside docs.css (docs/layouts/_default/baseof.html only links this file
+ * on the playground page itself).
+ *
+ * Entry point only — compiled by scripts/compile-docs-scss.mjs into
+ * docs/static/assets/playground.css, the file the template actually <link>s. Edit the partials in
+ * playground/ next to this file, never playground.css directly — it's generated.
+ *
+ * Partials are `@use`d in the exact order this file used to read top-to-bottom before the split —
+ * source order matters for the two @media blocks in _responsive.scss, which must stay last.
+ */
+
+@use 'playground/syntax-tokens';
+@use 'playground/sections';
+@use 'playground/workbench';
+@use 'playground/responsive';

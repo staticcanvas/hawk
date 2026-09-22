@@ -7,7 +7,7 @@ enableGitInfo = true
 disableKinds = ['taxonomy', 'term']
 
 [params]
-  version = '0.5.2'
+  version = '0.11.0'
   description = 'Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations, swappable visual themes.'
   repository = 'https://gitlab.com/staticcanvas/hawk'
   github = 'https://github.com/staticcanvas/hawk'
@@ -27,6 +27,9 @@ disableKinds = ['taxonomy', 'term']
 [[module.mounts]]
   source = '../branding'
   target = 'static/assets/branding'
+[[module.mounts]]
+  source = '../theme-templates'
+  target = 'static/assets/theme-templates'
 
 [menu]
   [[menu.main]]
@@ -41,6 +44,10 @@ disableKinds = ['taxonomy', 'term']
     name = 'Playground'
     pageRef = '/playground/'
     weight = 25
+  [[menu.main]]
+    name = 'Theme gallery'
+    pageRef = '/themes/'
+    weight = 27
   [[menu.main]]
     name = 'Guides'
     identifier = 'guides'

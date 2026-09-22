@@ -3,45 +3,124 @@
   "provider": "gitlab",
   "scope": "project",
   "project": {
-    "description": "Hawk is a themeable, pluggable command-palette search UI for static sites, powered by Pagefind indexing with swappable reveal animations and visual themes.",
+    "description": "Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.",
     "topics": [
       "search",
       "command-palette",
+      "modal",
+      "ESM",
+      "UMD",
       "pagefind",
       "static-site",
       "theming",
       "plugins",
       "accessibility",
       "typescript",
-      "tests",
-      "build",
-      "release",
-      "docs",
-      "ui",
-      "branding",
-      "security",
-      "tooling",
-      "ci",
-      "maintenance"
+      "ui"
     ]
   },
   "labels": [
-    { "name": "core", "description": "Search engine, DOM/keyboard/preview logic, and layout params.", "color": "#1f77b4", "textColor": "#FFFFFF" },
-    { "name": "theme", "description": "Theme plugin system and the default typeflow theme.", "color": "#d63384", "textColor": "#FFFFFF" },
-    { "name": "animation", "description": "Animation driver plugin system, typeflow and instant drivers.", "color": "#9467bd", "textColor": "#FFFFFF" },
-    { "name": "pagefind", "description": "Pagefind indexing integration, filters, and data pipeline.", "color": "#2ca02c", "textColor": "#FFFFFF" },
-    { "name": "accessibility", "description": "Keyboard navigation, ARIA behavior, and reduced-motion handling.", "color": "#17becf", "textColor": "#1c1c1c" },
-    { "name": "performance", "description": "Bundle size, index payload size, and rendering efficiency.", "color": "#bcbd22", "textColor": "#1c1c1c" },
-    { "name": "typescript", "description": "Type declarations, public types, or TypeScript documentation.", "color": "#3178c6", "textColor": "#FFFFFF" },
-    { "name": "tests", "description": "Unit, integration, and coverage tests.", "color": "#198754", "textColor": "#FFFFFF" },
-    { "name": "build", "description": "Vite, Rollup, package exports, generated bundles, and build configuration.", "color": "#fd7e14", "textColor": "#1c1c1c" },
-    { "name": "release", "description": "Versions, publishing, release metadata, distribution assets, and validation.", "color": "#6f42c1", "textColor": "#FFFFFF" },
-    { "name": "docs", "description": "README files, API references, guides, architecture notes, and changelogs.", "color": "#0d6efd", "textColor": "#FFFFFF" },
-    { "name": "ui", "description": "Documentation layout, styling, navigation, and visual behavior.", "color": "#e377c2", "textColor": "#FFFFFF" },
-    { "name": "branding", "description": "Logos, badges, favicons, author metadata, and project identity assets.", "color": "#6c757d", "textColor": "#FFFFFF" },
-    { "name": "security", "description": "Dependency security and vulnerability remediation.", "color": "#dc3545", "textColor": "#FFFFFF" },
-    { "name": "tooling", "description": "Developer utilities, scripts, automation, and workflow improvements.", "color": "#495057", "textColor": "#FFFFFF" },
-    { "name": "ci", "description": "Continuous integration, pipeline configuration, quality gates, and automated checks.", "color": "#6610f2", "textColor": "#FFFFFF" },
-    { "name": "maintenance", "description": "Repository cleanup, refactors, dependency housekeeping, and maintenance.", "color": "#adb5bd", "textColor": "#1c1c1c" }
+    {
+      "name": "core",
+      "description": "Search engine, DOM/keyboard/preview logic, and layout params.",
+      "color": "#1f77b4",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "theme",
+      "description": "Theme plugin system and the default typeflow theme.",
+      "color": "#d63384",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "animation",
+      "description": "Animation driver plugin system, typeflow and instant drivers.",
+      "color": "#9467bd",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "pagefind",
+      "description": "Pagefind indexing integration, filters, and data pipeline.",
+      "color": "#2ca02c",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "accessibility",
+      "description": "Keyboard navigation, ARIA behavior, and reduced-motion handling.",
+      "color": "#17becf",
+      "textColor": "#1c1c1c"
+    },
+    {
+      "name": "performance",
+      "description": "Bundle size, index payload size, and rendering efficiency.",
+      "color": "#bcbd22",
+      "textColor": "#1c1c1c"
+    },
+    {
+      "name": "typescript",
+      "description": "Type declarations, public types, or TypeScript documentation.",
+      "color": "#3178c6",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "tests",
+      "description": "Unit, integration, and coverage tests.",
+      "color": "#198754",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "build",
+      "description": "Vite, Rollup, package exports, generated bundles, and build configuration.",
+      "color": "#fd7e14",
+      "textColor": "#1c1c1c"
+    },
+    {
+      "name": "release",
+      "description": "Versions, publishing, release metadata, distribution assets, and validation.",
+      "color": "#6f42c1",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "docs",
+      "description": "README files, API references, guides, architecture notes, and changelogs.",
+      "color": "#0d6efd",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "ui",
+      "description": "Documentation layout, styling, navigation, and visual behavior.",
+      "color": "#e377c2",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "branding",
+      "description": "Logos, badges, favicons, author metadata, and project identity assets.",
+      "color": "#6c757d",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "security",
+      "description": "Dependency security and vulnerability remediation.",
+      "color": "#dc3545",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "tooling",
+      "description": "Developer utilities, scripts, automation, and workflow improvements.",
+      "color": "#495057",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "ci",
+      "description": "Continuous integration, pipeline configuration, quality gates, and automated checks.",
+      "color": "#6610f2",
+      "textColor": "#FFFFFF"
+    },
+    {
+      "name": "maintenance",
+      "description": "Repository cleanup, refactors, dependency housekeeping, and maintenance.",
+      "color": "#adb5bd",
+      "textColor": "#1c1c1c"
+    }
   ]
 }

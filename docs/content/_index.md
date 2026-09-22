@@ -2,30 +2,56 @@
 title: Hawk
 description: Themeable, pluggable command-palette search widget for static sites.
 category: Overview
+tags:
+  - search
+  - pagefind
+  - command palette
+  - theming
+  - typeflow
+related:
+  - /getting-started
+  - /guides/theming
+  - /themes
 hero:
-  eyebrow: Search widget for static sites
-  tagline: Pagefind-backed command-palette search you can actually make match your site — theme it, tab it, pin it, or leave every default exactly as it ships.
+  tagline: Pagefind-backed <strong>command-palette search</strong> you can <em>make match your site</em> — theme it, tab it, pin it, or use the defaults.
   install: npm install @staticcanvas/hawk
 features:
   - title: Pagefind-backed
-    body: Chunked, lazily-loaded index with typo tolerance, scaling past a hand-rolled in-browser scorer — hawk owns the UI, Pagefind owns ranking.
+    icon: search
+    href: pagefind-setup/
+    body: A <strong>chunked, lazily-loaded index</strong> with typo tolerance — Hawk owns the interface while <em>Pagefind preserves ranking</em>.
   - title: Tabs, curated or auto-derived
-    body: Auto-derived category pills by default, explicit tabs with full Pagefind filter power, a sort-based listing tab (e.g. "Recently updated"), or a tab list loaded from a JSON file.
+    icon: tabs
+    href: api/#tabs
+    body: Use <strong>auto-derived category pills</strong>, explicit Pagefind filters, a sorted listing such as <em>Recently updated</em>, or tabs loaded from JSON.
   - title: Themeable to the token
-    body: Every color, font, and scrollbar is a --hawk-* custom property. Ship a CSS file, or a few tokens inline with theme.tokens — no fork required.
+    icon: palette
+    href: guides/theming/
+    body: Colors, fonts, and scrollbars use <strong>--hawk-* custom properties</strong>. Supply CSS or <em>theme.tokens</em> without modifying Hawk source.
   - title: Real page previews
-    body: The preview pane fetches and renders the actual matched page — headings, code blocks, tables — not a short excerpt. A page-level match can break into a scannable section outline instead of a full dump.
+    icon: eye
+    href: api/#rich-preview-content
+    body: The preview pane fetches the <strong>matched page content</strong>, including headings, code, and tables. Page matches can render as a <em>section outline</em>.
   - title: Modal reveal animations
-    body: 5 built-in open/close animations (fade, scale-fade, slide-down, blur-zoom, spring), a custom one of your own, or none — always instant under prefers-reduced-motion.
+    icon: sparkles
+    href: guides/animation-plugins/
+    body: Open/close animations include <strong>fade, scale-fade, slide-down, blur-zoom, and spring</strong>, plus a custom animation or none. Motion is <em>instant under reduced motion</em>.
   - title: Fit, medium, or compact
-    body: An in-modal density switcher, persisted per visitor, on top of scale/position/columns layout params.
+    icon: layout
+    href: guides/density-and-navigation/
+    body: An in-modal <strong>density switcher</strong> persists the visitor's choice alongside <em>auto viewport-scaled modals</em>, position offsets, and column layouts.
   - title: Keyboard-first
-    body: A real focus trap, two-pane Tab navigation, arrow-key scrolling, Ctrl/Cmd+K — accessible by default, not bolted on after the fact.
+    icon: keyboard
+    href: api/#instance-methods
+    body: A <strong>modal focus trap</strong>, two-pane <kbd>Tab</kbd> navigation, <kbd>↑</kbd>/<kbd>↓</kbd> movement, <kbd>Esc</kbd>, and <kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>K</kbd> are included.
   - title: Pins and inline filters
-    body: Visitors pin results for later, or type category:Guides directly into the search box — Pagefind's own filtering, exposed as a typed shortcut.
+    icon: pin
+    href: guides/pins-and-embedding/
+    body: Visitors can <strong>pin results</strong> or type <em>category:Guides</em> to apply Pagefind filtering from the query field.
   - title: Zero-config to start
-    body: One constructor call, a Pagefind index, and a trigger element get you a working search. Typeflow's typewriter and a built-in trigger button are opt-in.
+    icon: rocket
+    href: getting-started/
+    body: Start with <strong>one constructor call</strong>, a Pagefind index, and a trigger. The TypeFlow driver and <em>built-in trigger</em> remain optional.
 ---
 
-This site's own search box (top of every page, or Ctrl+K) is hawk searching itself — there's no
-separate demo page, because dogfooding it here is the demo.
+This site's own search box (top of every page, or <kbd>Ctrl</kbd>+<kbd>K</kbd>) is hawk searching itself -- Use Playground and Themes to further explore.

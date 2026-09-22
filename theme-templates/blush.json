@@ -1,0 +1,42 @@
+{
+  "name": "Blush",
+  "variant": "original",
+  "mode": "light",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#fdf6f7",
+      "bgAlt": "#fbeaec",
+      "bgElev": "#f6dadd",
+      "border": "#eec3c9",
+      "text": "#2c1418",
+      "textMuted": "#6b3941",
+      "textFaint": "#96636b",
+      "selection": "#f2cdd2",
+      "accent": "#c9436b"
+    },
+    "syntax": {
+      "comment": "#96636b",
+      "keyword": "#c9436b",
+      "string": "#b8564f",
+      "function": "#a5487f",
+      "variable": "#2c1418",
+      "constant": "#9e6a1a",
+      "number": "#9e6a1a",
+      "type": "#8a5aa8",
+      "operator": "#6b3941",
+      "tag": "#9e6a1a",
+      "attribute": "#a5487f",
+      "punctuation": "#6b3941",
+      "error": "#b8342f",
+      "warning": "#9e6a1a",
+      "info": "#a5487f",
+      "success": "#4a7a3f",
+      "deleted": "#a3324a"
+    }
+  }
+}

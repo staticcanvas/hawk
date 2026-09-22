@@ -1,0 +1,57 @@
+/* Hawk search-chrome parity tweaks and the scroll-aware table of contents. */
+
+/* The docs consume Hawk as a first-party component, so its search chrome follows the same
+   surface, radius, typography, and theme tokens as the surrounding site. */
+body[data-hawk-theme='typeflow'] .hawk-modal-dialog {
+  border-color: var(--hawk-border-subtle);
+  border-radius: var(--site-radius-lg);
+  background: var(--hawk-bg-surface);
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+}
+
+body[data-hawk-theme='typeflow'] .hawk-modal-header,
+body[data-hawk-theme='typeflow'] .hawk-modal-filters,
+body[data-hawk-theme='typeflow'] .hawk-modal-footer {
+  background: var(--hawk-bg-surface);
+}
+
+body[data-hawk-theme='typeflow'] .hawk-preview-pane {
+  border-inline-start: 1px solid var(--hawk-border-subtle);
+  background: var(--hawk-preview-bg);
+}
+
+/* hawk.css's --hawk-result-date-font-family/-opacity tokens are both no-ops until a theme sets
+   them (see that file's own comment on .hawk-result-date) — quieted here so a result's date reads
+   as secondary metadata, not competing with the title/excerpt for attention. */
+body[data-hawk-theme='typeflow'] .hawk-result-date {
+  --hawk-result-date-font-family: 'Space Grotesk', 'Hanken Grotesk', system-ui, sans-serif;
+  --hawk-result-date-opacity: 0.62;
+}
+
+:root[data-theme='light'] body[data-hawk-theme='typeflow'],
+:root[data-theme='light'] body[data-hawk-theme='typeflow'] .hawk-modal[data-hawk-theme='typeflow'] {
+  --hawk-backdrop: rgb(16 33 28 / 0.28);
+  --hawk-preview-bg: #f5faf8;
+  --hawk-shadow: 0 24px 64px rgb(16 33 28 / 0.16), 0 0 0 1px var(--hawk-accent-dim);
+}
+
+/* Keep the TOC vertically scrollable without creating a bottom scrollbar. */
+.doc-toc {
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.doc-toc nav,
+.doc-toc ul,
+.doc-toc li,
+.doc-toc a {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.doc-toc a {
+  overflow-wrap: anywhere;
+}
+

@@ -1,156 +1,159 @@
-# Hawk
+<div align="left">
 
-Themeable, pluggable command-palette search widget for static sites.
+![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/hawk-banner.svg)
+
+[![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk)
+[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.11.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
+[![documentation](https://img.shields.io/badge/docs-online-2c3e50?style=flat-square&logo=gitbook&logoColor=4ca1af)](https://staticcanvas.gitlab.io/hawk)
+[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
+
+[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/releases/permalink/latest)
+[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/tags)
+
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://www.npmjs.com/package/@staticcanvas/hawk)
+[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://www.npmjs.com/package/@staticcanvas/hawk)
+
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://jsr.io/%40staticcanvas/hawk)
+[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
+
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.10.0/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+
+> **Hawk** is a themeable, pluggable command-palette search UI for static sites, powered by Pagefind indexing with swappable reveal animations and visual themes.
+
+</div>
 
 ## Overview
 
-Hawk is a JS-embeddable search widget: `npm install` + a constructor call (or a `<script>` tag +
-a constructor call), no host markup beyond a trigger element required. It owns the DOM, keyboard
-navigation, and result rendering; [Pagefind](https://pagefind.app/) owns indexing, ranking, and
-typo-tolerant matching — hawk is Pagefind's own front end, exposing Pagefind's filtering and
-search-tuning options directly rather than hiding them behind a narrower API. Visual theme and
-reveal animation are swappable plugins rather than hardcoded choices. A TypeFlow-typewriter
-animation driver ships alongside a zero-dependency instant driver, so TypeFlow is never a hard
-dependency of the core bundle. (Hawk started as an extraction of typeflow's own docs site search
-— typeflow is one theme/animation pairing it ships with today, not what it's limited to.)
+Hawk is a themeable, pluggable command-palette search widget for static sites: `npm install` + a
+constructor call, no host markup beyond a trigger element required. [Pagefind](https://pagefind.app/)
+owns indexing, ranking, and typo-tolerant matching; hawk owns the modal, keyboard navigation, and
+result rendering, with visual theme and reveal animation as swappable plugins rather than
+hardcoded choices.
 
-See `architecture/README.md` for the design rationale, and `architecture/plugin-system.md` /
-`architecture/theme-contract.md` / `architecture/animation-driver-contract.md` for the plugin
-interfaces.
+Full usage, configuration, and theming detail lives in the docs site linked below — this README
+stays a short pitch plus what you need to build the project from source.
+
+---
+
+> 🔹 Read the full documentation [here](https://staticcanvas.gitlab.io/hawk/)
+
+> 🔹 Use the playground [here](https://staticcanvas.gitlab.io/hawk/playground/)
+
+<details>
+<summary><strong>📚Table of Contents</strong></summary>
+
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick start](#quick-start)
+- [Build from source](#build-from-source)
+- [Resources](#resources)
+- [Development & NPM Scripts](#development-npm-scripts)
+- [License](#license)
+
+</details>
 
 ## Features
 
-- Pagefind-backed search — chunked, lazily-loaded index; scales past a hand-rolled
-  substring-scored in-browser index.
-- Dev-controlled tabs: auto-derived category filter pills by default (from Pagefind's
-  `filters()`), or an explicit `tabs` config where each tab's `filter` is a raw Pagefind filters
-  object (multi-dimension AND, multi-value OR — full Pagefind filtering power, no translation
-  layer) with its own optional `pagefindOptions` override. A top-level `pagefindOptions` escape
-  hatch merges into every search call for `sort`/`ranking`/`language` tuning hawk doesn't
-  otherwise wrap.
-- Fit / medium / compact density modes (`params.density`), switchable via config or an in-modal
-  toggle whose choice persists to `localStorage`.
-- Two-pane keyboard navigation: Tab moves between the search input, filter tabs, results pane,
-  and preview pane; arrow keys change selection in the results pane and scroll the preview pane,
-  depending on which has focus (plus the underlying arrow-key wraparound selection, Enter to
-  navigate, Escape to close, Ctrl/Cmd+K and `/` to open).
-- Configurable initial state: `defaultTab`, `defaultPreviewUrl` (shows a specific page's content
-  on mount, before any selection), and `eagerResults` (an empty-query listing on open instead of
-  an empty "Type to search" state, on by default).
-- Configurable layout: `scale`, `position`, `offset`, `alignment`, `columns`, and a JS-driven
-  `breakpoint` (not a fixed CSS media query) that collapses to a single column and hides the
-  preview pane below the configured width.
-- Theme plugin system: every color in `hawk.css` is a `--hawk-*` custom property with a neutral
-  fallback — a theme only needs to redefine tokens (font, match-highlight, and scrollbar tokens
-  included). Ships with `hawk-theme-typeflow`, the visual identity ported from typeflow's docs
-  search. `theme.tokens` offers a JS-only alternative to a CSS file for a few color/font tweaks;
-  `disableDefaultMarkdownStyles` opts out of the built-in preview-content prose rules entirely.
-- Animation driver plugin system: `typeTitle` / `typeContent` / `rotatePlaceholder` / `stop`.
-  Ships with `hawk-animation-instant` (default, zero dependencies) and `hawk-animation-typeflow`
-  (wraps `TypeFlow.type()`/`TypeFlow.rotate()`, including anchor-title scramble-decode and a
-  rotating example-query placeholder in the search input).
-- Structured inline filter syntax (`inlineFilters: true`): typing `category:Guides responsive`
-  parses out a Pagefind filter and searches only the remaining text.
-- Result/page metadata: every match carries Pagefind's full `meta` object; `meta.section` renders
-  as a badge; `state.pageCount` tracks distinct pages separately from the flattened row count.
-- Pin system: a pin toggle on every result, persisted to `localStorage`, surfaced as a synthetic
-  "Pinned" tab once at least one exists.
-- A built-in trigger element (`config.trigger`, `kind: 'minimal' | 'compact' | 'default'`) for
-  sites that don't want to hand-build trigger markup, plus a text-only "Search powered by
-  Pagefind" attribution (`showPoweredBy`).
-- Accessibility/reliability: a real modal focus trap (Tab/Shift+Tab never escape to the page
-  behind the backdrop), a "search unavailable" state instead of an unhandled rejection if
-  Pagefind fails to load or a search call rejects, and full i18n via `config.strings`.
+- **Pagefind-backed** — chunked, lazily-loaded, typo-tolerant search index.
+- **Dev-controlled tabs** — auto-derived category pills, or explicit Pagefind-filter tabs.
+- **Fit / medium / compact** density modes with a persisted in-modal toggle.
+- **Two-pane keyboard navigation** — Tab between input, filters, results, and preview.
+- **Configurable layout** — scale, position, offset, columns, and a JS-driven breakpoint.
+- **Theme and animation plugin systems** — a TypeFlow typewriter driver ships built-in, alongside
+  a zero-dependency instant driver.
+- **Structured inline filters** — `category:Guides responsive` parses out a filter as you type.
+- **Result metadata** — dates, tags, related pages, and a pin system, each independently themeable
+  and configurable.
+- **Built-in trigger element** and Pagefind attribution, so no hand-built markup is required.
+- **Accessible by default** — a real modal focus trap, graceful fallback if Pagefind fails to
+  load, and full i18n via `config.strings`.
+
+See [Resources](#resources) below for the full feature reference.
 
 ## Installation
 
 ```bash
 npm install @staticcanvas/hawk
 npm install --save-dev pagefind
+# Optional: the official TypeFlow animation driver
+npm install @staticcanvas/typeflow
 ```
 
 `pagefind` is a real dependency (hawk has nothing to search without an index).
-`@staticcanvas/typeflow` is an optional peer dependency — only needed for the typeflow
-theme/animation driver instead of the built-in unstyled/instant ones.
+`@staticcanvas/typeflow` is an optional peer dependency — only needed when importing Hawk's
+official TypeFlow animation adapter. Hawk core and the TypeFlow visual theme remain independent.
 
-## Usage
-
-Build a Pagefind index against your built site (see `scripts/pagefind-index.mjs` — content region
-must carry `data-pagefind-body`, chrome should carry `data-pagefind-ignore`):
-
-```bash
-node scripts/pagefind-index.mjs --site dist
-```
-
-Mount hawk against it:
+## Quick start
 
 ```js
 import { HawkSearch } from '@staticcanvas/hawk';
-import '@staticcanvas/hawk/theme-typeflow/css';
-import { HawkThemeTypeflow } from '@staticcanvas/hawk/theme-typeflow';
+import '@staticcanvas/hawk/css';
 
-HawkSearch.registerTheme('typeflow', HawkThemeTypeflow);
-
-const search = new HawkSearch({
+new HawkSearch({
   index: '/pagefind/',
-  triggerSelector: '[data-search-trigger]',
-  theme: 'typeflow',
-  params: { scale: 1, position: 'top-center', columns: 2, breakpoint: 768, density: 'medium' },
-  tabs: [
-    { label: 'Guides', filter: { category: 'Guides' } },
-    { id: 'ref', label: 'Reference', filter: { category: ['Reference', 'API'] } },
-  ],
-  defaultTab: 'guides',
-  defaultPreviewUrl: '/getting-started/',
-  inlineFilters: true,
-  rotatingPlaceholders: ['Try "tabs"...', 'Try "theming"...'],
-  enablePins: true,
+  trigger: { container: 'body' },
 });
 ```
 
-Any element matching `triggerSelector` opens the modal — hawk builds its own DOM, no other markup
-required (or skip building a trigger at all with `trigger: { container: '#search-slot' }`). Call
-`search.setParams({...})` to change layout at runtime, `search.state` to read
-`{ open, query, selectedIndex, matches, pageCount, pins, activeTab, error }`, and
-`search.destroy()` to tear it down. See [docs/content/api.md](docs/content/api.md) for the full
-config reference, and the guides for [tabs and inline filter
-syntax](docs/content/guides/pagefind-setup.md),
-[density, keyboard navigation, and scrollbars](docs/content/guides/density-and-navigation.md),
-[theming](docs/content/guides/theming.md),
-[animation plugins and the rotating placeholder](docs/content/guides/animation-plugins.md), and
-[pins, the built-in trigger, and attribution](docs/content/guides/pins-and-embedding.md).
+That is the complete zero-config path — `trigger` renders hawk's own trigger button, so no
+host markup is required. See [Getting started](https://staticcanvas.gitlab.io/hawk/getting-started/)
+in the docs for the full TypeFlow-themed setup, frontmatter/metadata mapping, and every config
+option.
 
-## Theming
+## Build from source
 
-See `architecture/theme-contract.md` for the full token list and the contract a theme
-implements. Load a theme's CSS separately from its JS (`@staticcanvas/hawk/theme-typeflow/css`),
-matching this org's existing `"./css"` subpath-export convention.
+```bash
+git clone https://gitlab.com/staticcanvas/hawk.git
+cd hawk
+npm install
+npm run build   # core + optional (theme-typeflow, animation-typeflow, debug, metrics) bundles
+npm test        # vitest, jsdom
+```
 
-## Animation Drivers
+To build and preview the docs site itself (Hugo + Pagefind, requires
+[Hugo](https://gohugo.io/) on `PATH`):
 
-See `architecture/animation-driver-contract.md`. Pass `animation: false` to force the instant
-driver even when a typeflow driver is registered; omit `animation` entirely to prefer typeflow
-when registered, falling back to instant otherwise.
+```bash
+npm run docs:serve
+```
 
-## API Reference
+See [Development & NPM Scripts](#development-npm-scripts) for the full script reference.
 
-Full type declarations in `src/hawk.d.ts` (core), `src/hawk-theme-typeflow.d.ts`, and
-`src/hawk-animation-typeflow.d.ts`. Published docs: https://staticcanvas.gitlab.io/hawk/api
+## Resources
+
+- **Documentation**: https://staticcanvas.gitlab.io/hawk/
+- **Playground**: https://staticcanvas.gitlab.io/hawk/playground/
+- **API reference**: [`docs/content/api.md`](docs/content/api.md)
+- **Guides**: [Pagefind setup, tabs, and inline filters](docs/content/guides/pagefind-setup.md) ·
+  [Density and keyboard navigation](docs/content/guides/density-and-navigation.md) ·
+  [Theming](docs/content/guides/theming.md) ·
+  [Animation plugins](docs/content/guides/animation-plugins.md) ·
+  [Pins, the built-in trigger, and attribution](docs/content/guides/pins-and-embedding.md)
+- **Architecture**: [`architecture/README.md`](architecture/README.md) (design rationale) ·
+  [`plugin-system.md`](architecture/plugin-system.md) ·
+  [`theme-contract.md`](architecture/theme-contract.md) ·
+  [`animation-driver-contract.md`](architecture/animation-driver-contract.md)
+- **Changelog**: [`CHANGELOG.md`](CHANGELOG.md)
+- **Issues**: https://gitlab.com/staticcanvas/hawk/-/issues
 
 ## Development & NPM Scripts
 
-| Script | Purpose |
-| --- | --- |
-| `npm run dev` | Vite dev server |
-| `npm run build` | Builds core + optional (`theme-typeflow`, `animation-typeflow`) bundles |
-| `npm run dev:typeflow` | Builds hawk and copies the bundle + a preview Pagefind index into the sibling typeflow checkout's docs site, for live prototyping |
-| `npm run pagefind:index` | Wraps `pagefind --site <dir>` — see `scripts/pagefind-index.mjs` |
-| `npm test` / `npm run test:coverage` | Vitest (jsdom) — unit coverage |
-| `npm run test:e2e` | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Runs in CI as `test:e2e` (`allow_failure: true` until it's proven stable there — see `.gitlab-ci.yml`). |
-| `npm run lint` / `npm run lint:fix` | ESLint |
-| `npm run docs:build` / `npm run docs:serve` | Builds and serves hawk's own Hugo docs site |
-| `npm run check:size` | Enforces the gzip bundle size budget |
-| `npm run validate:release` | CI release-artifact validation |
+| Script                                      | Purpose                                                                                                                                                                                                                                                               |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                               | Vite dev server                                                                                                                                                                                                                                                       |
+| `npm run build`                             | Builds core + optional (`theme-typeflow`, `animation-typeflow`) bundles                                                                                                                                                                                               |
+| `npm run dev:typeflow`                      | Builds hawk and copies the bundle + a preview Pagefind index into the sibling typeflow checkout's docs site, for live prototyping                                                                                                                                     |
+| `npm run pagefind:index`                    | Wraps `pagefind --site <dir>` — see `scripts/pagefind-index.mjs`                                                                                                                                                                                                      |
+| `npm test` / `npm run test:coverage`        | Vitest (jsdom) — unit coverage                                                                                                                                                                                                                                        |
+| `npm run test:e2e`                          | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Runs in CI as `test:e2e` (`allow_failure: true` until it's proven stable there — see `.gitlab-ci.yml`). |
+| `npm run lint` / `npm run lint:fix`         | ESLint                                                                                                                                                                                                                                                                |
+| `npm run docs:build` / `npm run docs:serve` | Builds and serves hawk's own Hugo docs site                                                                                                                                                                                                                           |
+| `npm run themes:css`                        | Generates one small standalone CSS file per gallery/template theme into `docs/static/assets/themes/` — see `scripts/generate-theme-css.mjs`                                                                                                                           |
+| `npm run docs:scss`                         | Compiles `docs/static/assets/scss/*.scss` into `docs/static/assets/docs.css`/`playground.css` — see `scripts/compile-docs-scss.mjs`. Also runs automatically as part of `docs:build`/`docs:serve`                                                                     |
+| `npm run check:size`                        | Enforces the gzip bundle size budget                                                                                                                                                                                                                                  |
+| `npm run validate:release`                  | CI release-artifact validation                                                                                                                                                                                                                                        |
 
 ## License
 

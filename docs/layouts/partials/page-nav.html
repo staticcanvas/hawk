@@ -1,0 +1,45 @@
+{{ $currentPage := . }}
+{{ $navigationPages := slice }}
+{{ range site.Menus.main }}
+  {{ with .Page }}{{ $navigationPages = $navigationPages | append . }}{{ end }}
+  {{ range .Children }}
+    {{ with .Page }}{{ $navigationPages = $navigationPages | append . }}{{ end }}
+  {{ end }}
+{{ end }}
+
+{{ $currentIndex := -1 }}
+{{ range $index, $page := $navigationPages }}
+  {{ if eq $page.RelPermalink $currentPage.RelPermalink }}{{ $currentIndex = $index }}{{ end }}
+{{ end }}
+
+<footer class="doc-footer" data-pagefind-ignore>
+  {{ with $currentPage.File }}
+  <a class="edit-link" href="{{ printf "%s/-/edit/develop/docs/content/%s" site.Params.repository .Path }}" target="_blank" rel="noreferrer">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"/></svg>
+    Edit this page on GitLab
+  </a>
+  {{ end }}
+
+  {{ if ge $currentIndex 0 }}
+  {{ $previous := false }}
+  {{ $next := false }}
+  {{ if gt $currentIndex 0 }}{{ $previous = index $navigationPages (sub $currentIndex 1) }}{{ end }}
+  {{ if lt (add $currentIndex 1) (len $navigationPages) }}{{ $next = index $navigationPages (add $currentIndex 1) }}{{ end }}
+  {{ if or $previous $next }}
+  <nav class="doc-pagination" aria-label="Documentation pagination">
+    {{ with $previous }}
+    <a class="doc-pagination__link doc-pagination__link--previous" href="{{ .RelPermalink }}">
+      <span>Previous</span>
+      <strong><span aria-hidden="true">&larr;</span> {{ .LinkTitle }}</strong>
+    </a>
+    {{ end }}
+    {{ with $next }}
+    <a class="doc-pagination__link doc-pagination__link--next" href="{{ .RelPermalink }}">
+      <span>Next</span>
+      <strong>{{ .LinkTitle }} <span aria-hidden="true">&rarr;</span></strong>
+    </a>
+    {{ end }}
+  </nav>
+  {{ end }}
+  {{ end }}
+</footer>

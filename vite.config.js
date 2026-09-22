@@ -35,6 +35,25 @@ function stageWebUtilityAssets() {
       if (existsSync(resolve('src/hawk.css'))) {
         cpSync(resolve('src/hawk.css'), resolve(destination, 'hawk.css'));
       }
+      const pickrAssets = [
+        ['node_modules/@simonwep/pickr/dist/pickr.min.mjs', 'pickr.min.mjs'],
+        ['node_modules/@simonwep/pickr/dist/themes/nano.min.css', 'pickr-nano.min.css'],
+        // hawk-debug.js's UMD build externalizes @staticcanvas/logcad as a global (see this
+        // config's own 'debug' mode in vite.optional.config.js: external + globals), so the
+        // playground needs logcad's own UMD build staged and loaded before hawk-debug.js for its
+        // Debug toggle to actually exercise logcad's real output instead of always falling back
+        // to the plain console.* path (see hawk-debug.js's own dual-path write()).
+        ['node_modules/@staticcanvas/logcad/dist/logcad.min.js', 'logcad.min.js'],
+        // Contextual tooltips for the playground's own controls (data-lume attributes) — a
+        // sibling staticcanvas package, same ESM-direct-import pattern as pickr above.
+        ['node_modules/@staticcanvas/lume/dist/lume.esm.min.js', 'lume.esm.min.js'],
+        ['node_modules/@staticcanvas/lume/src/lume.css', 'lume.css'],
+      ];
+      for (const [source, filename] of pickrAssets) {
+        if (existsSync(resolve(source))) {
+          cpSync(resolve(source), resolve(destination, filename));
+        }
+      }
       const brandingDestination = resolve('docs/static/webutil/assets/branding');
       mkdirSync(brandingDestination, { recursive: true });
       if (existsSync(resolve('branding/hawk-logo.svg'))) {
@@ -113,7 +132,12 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.js'],
-      exclude: ['**/node_modules/**', 'tests/**', 'src/hawk-theme-typeflow.js', 'src/hawk-animation-typeflow.js'],
+      exclude: [
+        '**/node_modules/**',
+        'tests/**',
+        'src/hawk-theme-typeflow.js',
+        'src/hawk-animation-typeflow.js',
+      ],
     },
   },
   plugins: [

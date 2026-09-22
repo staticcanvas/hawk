@@ -1,0 +1,343 @@
+/* Inner-page article layout: shell grid, sidebar/TOC columns, and the shared search-chrome backdrop. */
+
+/* ── 2026 docs layout and logo-green visual system ───────────────────────── */
+:root {
+  --site-content-width: 70rem;
+  --site-docs-width: 82rem;
+  --site-frame-width: 90%;
+  --site-header-height: 3.5rem;
+  --site-radius-sm: 0.5rem;
+  --site-radius-md: 0.875rem;
+  --site-radius-lg: 1.25rem;
+  --site-space-xs: clamp(0.35rem, 0.3rem + 0.2vw, 0.55rem);
+  --site-space-sm: clamp(0.65rem, 0.55rem + 0.35vw, 0.9rem);
+  --site-space-md: clamp(1rem, 0.85rem + 0.7vw, 1.5rem);
+  --site-space-lg: clamp(1.75rem, 1.35rem + 1.6vw, 3rem);
+  --site-space-xl: clamp(3rem, 2.25rem + 3vw, 5.5rem);
+  --site-green: #20e3b2;
+  --site-green-bright: #29ffc6;
+  --site-green-cyan: #0cebeb;
+  --site-page-background-color: #070908;
+  --site-page-background-image:
+    radial-gradient(circle at 18% 15%, rgb(32 227 178 / 0.045) 0 1px, transparent 2px),
+    radial-gradient(circle at 81% 28%, rgb(244 247 246 / 0.09) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 70% 78%, rgb(32 227 178 / 0.035), transparent 28%),
+    linear-gradient(180deg, #070908 0%, #080b0a 62%, #060706 100%);
+  --site-z-sticky: 200;
+}
+
+:root[data-theme='light'] {
+  --site-page-background-color: #f5faf8;
+  --site-page-background-image: none;
+}
+
+body[data-hawk-theme='typeflow'],
+body[data-hawk-theme='typeflow'] .hawk-modal[data-hawk-theme='typeflow'] {
+  --hawk-bg-canvas: #070908;
+  --hawk-bg-surface: #0d1210;
+  --hawk-bg-surface-elevated: #151d1a;
+  --hawk-border-subtle: #1c2622;
+  --hawk-border-default: #2b3833;
+  --hawk-border-strong: #405149;
+  --hawk-text-primary: #f4f7f6;
+  --hawk-text-secondary: #aebbb7;
+  --hawk-text-muted: #73817c;
+  --hawk-accent: var(--site-green);
+  --hawk-accent-dim: rgb(32 227 178 / 0.1);
+  --hawk-accent-glow: rgb(32 227 178 / 0.2);
+  --hawk-accent-alt: var(--site-green-bright);
+  --hawk-accent-alt-dim: rgb(41 255 198 / 0.1);
+  --hawk-accent-alt-glow: rgb(41 255 198 / 0.18);
+  --hawk-scrollbar-thumb: rgb(166 183 180 / 0.16);
+  --hawk-scrollbar-thumb-active: rgb(32 227 178 / 0.68);
+  --hawk-backdrop: rgb(26 34 39 / 0.82);
+  --hawk-preview-bg: rgb(13 18 16 / 0.9);
+}
+
+:root[data-theme='light'] body[data-hawk-theme='typeflow'],
+:root[data-theme='light'] body[data-hawk-theme='typeflow'] .hawk-modal[data-hawk-theme='typeflow'] {
+  --hawk-bg-canvas: #f5faf8;
+  --hawk-bg-surface: #ffffff;
+  --hawk-bg-surface-elevated: #e9f4f0;
+  --hawk-border-subtle: #dbe9e4;
+  --hawk-border-default: #c5dad3;
+  --hawk-border-strong: #8fb3a8;
+  --hawk-text-primary: #10211c;
+  --hawk-text-secondary: #45645b;
+  --hawk-text-muted: #6d8b82;
+  --hawk-accent: #008f6c;
+  --hawk-accent-dim: rgb(0 143 108 / 0.09);
+  --hawk-accent-glow: rgb(0 143 108 / 0.16);
+  --hawk-accent-alt: #00a77b;
+  --hawk-accent-alt-dim: rgb(0 167 123 / 0.09);
+  --hawk-accent-alt-glow: rgb(0 167 123 / 0.16);
+  --hawk-scrollbar-thumb: rgb(69 100 91 / 0.16);
+  --hawk-scrollbar-thumb-active: rgb(0 143 108 / 0.62);
+}
+
+html {
+  scroll-padding-top: calc(var(--site-header-height) + var(--site-space-md));
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--site-page-background-color);
+  background-image: var(--site-page-background-image);
+  background-attachment: fixed;
+  background-position: 0 0;
+  background-size: 100vw 100vh;
+}
+
+.shell {
+  width: min(100%, var(--site-content-width));
+  margin-inline: auto;
+  padding-inline: var(--site-space-md);
+}
+
+.site-header {
+  z-index: var(--site-z-sticky);
+  height: var(--site-header-height);
+  overflow: clip;
+  border: 0;
+  background-color: var(--site-page-background-color);
+  background-image: var(--site-page-background-image);
+  background-attachment: fixed;
+  background-position: 0 0;
+  background-size: 100vw 100vh;
+  box-shadow: 0 1px 0 var(--hawk-border-subtle, #4a5c67);
+}
+
+.header-inner {
+  width: 100%;
+  max-width: none;
+  height: var(--site-header-height);
+  padding-inline: var(--site-space-md);
+}
+
+.brand-text {
+  letter-spacing: -0.025em;
+}
+
+.search-trigger-btn {
+  position: relative;
+  isolation: isolate;
+  min-width: min(11rem, 17vw);
+  justify-content: space-between;
+  background: var(--hawk-bg-surface, #2f3c45);
+  border-color: var(--hawk-border-subtle, #172723);
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.search-trigger-btn:hover {
+  border-color: var(--hawk-border-strong, #2b5147);
+  transform: translateY(-1px);
+}
+
+.page-shell {
+  padding-block: var(--site-space-xl);
+  min-height: calc(100dvh - var(--site-header-height) - 5rem);
+}
+
+.page-shell--home {
+  padding-block: 0;
+}
+
+/* All structural regions expose one page-level backdrop. The sticky header repeats that same
+   fixed backdrop above, including its solid base color, so scrolled text never shows through. */
+.page-shell,
+.docs-layout,
+.docs-main,
+.doc-page,
+.doc-article,
+.doc-header,
+.doc-sidebar,
+.doc-toc,
+.site-footer {
+  background: transparent;
+}
+
+.page-shell:not(.page-shell--home) {
+  width: min(100%, var(--site-docs-width));
+}
+
+.hero {
+  border: 0;
+  /* Top bound stays in px, not rem: it's a fixed "flush with the header" gap (an earlier, already
+   * locked-in polish pass), not type scale, so it shouldn't drift when the splash page's global
+   * font-size bump (html:has(body.site-home) above) changes what 1rem resolves to. */
+  padding-block: clamp(16px, 2vw, 24px) clamp(3rem, 6vw, 5.5rem);
+  background: transparent;
+}
+
+.hero-inner {
+  align-items: center;
+  text-align: center;
+}
+
+.hero-logo {
+  width: clamp(3.5rem, 5vw, 4.5rem);
+  height: auto;
+  margin: 0;
+  filter: drop-shadow(0 0 1.4rem rgb(32 227 178 / 0.16));
+}
+
+.hero-release {
+  display: flex;
+  align-items: center;
+  gap: var(--site-space-xs);
+  margin: var(--site-space-sm) 0 var(--site-space-sm);
+  color: var(--hawk-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero-release::before {
+  width: clamp(2rem, 5vw, 4rem);
+  height: 1px;
+  background: var(--hawk-border-strong);
+  content: '';
+}
+
+.hero-eyebrow,
+.section-heading > span,
+.section-heading > div > span {
+  color: var(--hawk-accent, var(--site-green));
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  max-width: 11ch;
+  margin-block: 0 var(--site-space-md);
+  font-size: clamp(3rem, 6.5vw, 6.1rem);
+  line-height: 0.94;
+  letter-spacing: -0.065em;
+  background: none;
+  color: var(--hawk-text-primary, #edf9f5);
+}
+
+.hero-tagline {
+  max-width: 54ch;
+  margin-block: 0 var(--site-space-lg);
+  font-size: clamp(1.05rem, 1rem + 0.45vw, 1.3rem);
+  line-height: 1.65;
+}
+
+.hero-actions {
+  justify-content: center;
+  margin-block-end: var(--site-space-md);
+}
+
+.btn {
+  min-height: 2.75rem;
+  border-radius: var(--site-radius-sm);
+  transition:
+    transform 150ms ease,
+    filter 150ms ease,
+    border-color 150ms ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:focus-visible,
+.install-tabs button:focus-visible,
+.doc-toc a:focus-visible {
+  outline: 2px solid var(--hawk-accent, var(--site-green));
+  outline-offset: 3px;
+}
+
+.btn-primary {
+  background: var(--hawk-accent, var(--site-green));
+  color: #04110e;
+}
+
+.install-tabs {
+  width: min(100%, 60rem);
+  margin-block-start: var(--site-space-sm);
+  border: 1px solid var(--hawk-border-subtle, #172723);
+  border-radius: var(--site-radius-md);
+  background: color-mix(in srgb, var(--hawk-bg-surface, #0c1412) 76%, transparent);
+  overflow: clip;
+}
+
+.install-tabs__list {
+  display: flex;
+  gap: var(--site-space-xs);
+  padding: var(--site-space-xs);
+  border-block-end: 1px solid var(--hawk-border-subtle, #172723);
+  overflow-x: auto;
+}
+
+.install-tabs__list button {
+  min-height: 2.15rem;
+  padding-inline: var(--site-space-sm);
+  border: 0;
+  border-radius: calc(var(--site-radius-sm) - 0.15rem);
+  background: transparent;
+  color: var(--hawk-text-muted, #66847c);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.install-tabs__list button[aria-selected='true'] {
+  background: var(--hawk-accent-dim, rgb(32 227 178 / 0.1));
+  color: var(--hawk-accent, var(--site-green));
+}
+
+.install-tabs__panel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--site-space-sm);
+  min-height: 3.5rem;
+  padding: var(--site-space-md);
+  overflow-x: auto;
+}
+
+.install-tabs__panel[hidden] {
+  display: none;
+}
+
+.install-tabs__panel code {
+  color: var(--hawk-text-primary, #edf9f5);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.install-tabs__copy {
+  flex-shrink: 0;
+  margin-inline-start: auto;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--hawk-border-subtle, #172723);
+  border-radius: calc(var(--site-radius-sm) - 0.15rem);
+  background: transparent;
+  color: var(--hawk-text-muted, #66847c);
+  font: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease;
+}
+
+.install-tabs__copy:hover,
+.install-tabs__copy:focus-visible {
+  border-color: var(--hawk-accent, var(--site-green));
+  color: var(--hawk-accent, var(--site-green));
+}
+
+.install-tabs__copy.is-copied {
+  border-color: var(--hawk-accent, var(--site-green));
+  color: var(--hawk-accent, var(--site-green));
+}
+

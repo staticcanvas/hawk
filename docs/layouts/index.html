@@ -4,12 +4,15 @@
   for the home page specifically). Full-bleed hero, unlike every other page's .shell-constrained
   single column — see baseof.html's .IsHome check on the wrapping div.
 */}}
+{{ partial "pagefind-frontmatter.html" . }}
 <section class="hero">
   <div class="shell hero-inner">
-    <img class="hero-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="56" height="56">
-    {{ with .Params.hero.eyebrow }}<span class="hero-eyebrow">{{ . }}</span>{{ end }}
-    <h1 class="hero-title">{{ .Title }}</h1>
-    <p class="hero-tagline">{{ .Params.hero.tagline | default .Description }}</p>
+    <p class="hero-release">Version v{{ site.Params.version }} released <span aria-hidden="true">·</span> MIT License</p>
+    <div class="hero-title-row">
+      <img class="hero-logo" src="{{ "assets/branding/hawk-logo.svg" | relURL }}" alt="" width="56" height="56">
+      <h1 class="hero-title">hawk.js</h1>
+    </div>
+    <p class="hero-tagline">{{ .Params.hero.tagline | default .Description | safeHTML }}</p>
 
     <div class="hero-actions">
       <a class="btn btn-primary" href="{{ "getting-started/" | relURL }}">Get started</a>
@@ -17,26 +20,94 @@
         <span>Try the search</span>
         <kbd>Ctrl+K</kbd>
       </button>
-      <a class="btn btn-ghost" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">View source</a>
+      <a class="btn btn-secondary" href="{{ "playground/" | relURL }}">Playground</a>
+      <a class="btn btn-source" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z" transform="translate(0 2)"/></svg>
+        View source
+      </a>
     </div>
 
-    {{ with .Params.hero.install }}
-    <div class="hero-install">
-      <span class="hero-install-prompt" aria-hidden="true">$</span>
-      <code>{{ . }}</code>
+    {{/* Every .install-tabs__panel carries exactly one data-copy-text (the literal string a
+         click copies) — see baseof.html's "Install tabs" JS, which wires role="tab"/"tabpanel"
+         switching generically for any tab count, plus a copy-button handler keyed off
+         data-copy-text so panels don't need distinct per-panel copy logic. */}}
+    <div class="install-tabs" data-install-tabs>
+      <div class="install-tabs__list" role="tablist" aria-label="Install Hawk">
+        <button type="button" role="tab" id="install-tab-npm" aria-controls="install-panel-npm" aria-selected="true">npm</button>
+        <button type="button" role="tab" id="install-tab-pnpm" aria-controls="install-panel-pnpm" aria-selected="false" tabindex="-1">pnpm</button>
+        <button type="button" role="tab" id="install-tab-bun" aria-controls="install-panel-bun" aria-selected="false" tabindex="-1">bun</button>
+        <button type="button" role="tab" id="install-tab-esm" aria-controls="install-panel-esm" aria-selected="false" tabindex="-1">ESM</button>
+        <button type="button" role="tab" id="install-tab-umd" aria-controls="install-panel-umd" aria-selected="false" tabindex="-1">UMD</button>
+        <button type="button" role="tab" id="install-tab-jsdelivr" aria-controls="install-panel-jsdelivr" aria-selected="false" tabindex="-1">jsDelivr</button>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-npm" aria-labelledby="install-tab-npm">
+        <span class="hero-install-prompt" aria-hidden="true">$</span><code>npm install @staticcanvas/hawk</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="npm install @staticcanvas/hawk" aria-label="Copy install command">Copy</button>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-pnpm" aria-labelledby="install-tab-pnpm" hidden>
+        <span class="hero-install-prompt" aria-hidden="true">$</span><code>pnpm add @staticcanvas/hawk</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="pnpm add @staticcanvas/hawk" aria-label="Copy install command">Copy</button>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-bun" aria-labelledby="install-tab-bun" hidden>
+        <span class="hero-install-prompt" aria-hidden="true">$</span><code>bun add @staticcanvas/hawk</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="bun add @staticcanvas/hawk" aria-label="Copy install command">Copy</button>
+      </div>
+      {{/* Hugo's own highlight func reuses the exact .chroma token classes already themed (both
+           color modes) in docs.css for markdown code fences — no separate client-side highlighter
+           needed for the splash page's hand-built panels. */}}
+      {{ $esmCode := "import { HawkSearch } from '@staticcanvas/hawk';\n\nnew HawkSearch({ index: '/pagefind/' });" }}
+      <div class="install-tabs__panel install-tabs__panel--code" role="tabpanel" id="install-panel-esm" aria-labelledby="install-tab-esm" hidden>
+        {{ highlight $esmCode "js" "" }}
+        <button type="button" class="install-tabs__copy" data-copy-text="import { HawkSearch } from '@staticcanvas/hawk';&#10;&#10;new HawkSearch({ index: '/pagefind/' });" aria-label="Copy ESM usage example">Copy</button>
+      </div>
+      {{ $umdCode := "<script src=\"dist/hawk.min.js\"></script>\n<script>\n  new Hawk({ index: '/pagefind/' });\n</script>" }}
+      <div class="install-tabs__panel install-tabs__panel--code" role="tabpanel" id="install-panel-umd" aria-labelledby="install-tab-umd" hidden>
+        {{ highlight $umdCode "html" "" }}
+        <button type="button" class="install-tabs__copy" data-copy-text="&lt;script src=&quot;dist/hawk.min.js&quot;&gt;&lt;/script&gt;&#10;&lt;script&gt;&#10;  new Hawk({ index: '/pagefind/' });&#10;&lt;/script&gt;" aria-label="Copy UMD usage example">Copy</button>
+      </div>
+      <div class="install-tabs__panel" role="tabpanel" id="install-panel-jsdelivr" aria-labelledby="install-tab-jsdelivr" hidden>
+        <code>https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.mjs</code>
+        <button type="button" class="install-tabs__copy" data-copy-text="https://cdn.jsdelivr.net/npm/@staticcanvas/hawk@latest/dist/hawk.mjs" aria-label="Copy jsDelivr URL">Copy</button>
+      </div>
     </div>
-    {{ end }}
+
+    {{/* The most minimal complete, self-contained mount — trigger: {container} renders hawk's
+         own button, so this needs no hand-built markup at all beyond the two lines shown. See
+         "Zero-config to start" below and docs/content/api.md#built-in-trigger. */}}
+    {{ $minimalCode := "import { HawkSearch } from '@staticcanvas/hawk';\nimport '@staticcanvas/hawk/css';\n\nnew HawkSearch({\n  index: '/pagefind/',\n  trigger: { container: 'body' },\n});" }}
+    <div class="hero-minimal-usage">
+      <p class="hero-minimal-usage__label">Minimal usage</p>
+      {{ highlight $minimalCode "js" "" }}
+      <button type="button" class="install-tabs__copy" data-copy-text="import { HawkSearch } from '@staticcanvas/hawk';&#10;import '@staticcanvas/hawk/css';&#10;&#10;new HawkSearch({&#10;  index: '/pagefind/',&#10;  trigger: { container: 'body' },&#10;});" aria-label="Copy minimal usage example">Copy</button>
+    </div>
   </div>
 </section>
 
+<!-- SECTION: FEATURES LAYOUT TYPES -->
 {{ if .Params.features }}
 <section class="shell feature-section">
-  <h2>Features</h2>
+  <header class="section-subheading feature-heading">
+    <h3>Hawk's features</h3>
+  </header>
   <div class="feature-grid" data-reveal-group>
-    {{ range .Params.features }}
+    {{ range $index, $feature := .Params.features }}
     <article class="feature-card" data-reveal>
-      <h3>{{ .title }}</h3>
-      <p>{{ .body }}</p>
+      <div class="feature-card__heading">
+        <span class="feature-index" aria-hidden="true">
+          {{ if eq $feature.icon "search" }}<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+          {{ else if eq $feature.icon "tabs" }}<svg viewBox="0 0 24 24"><rect x="3" y="5" width="7" height="14" rx="1"/><rect x="14" y="5" width="7" height="14" rx="1"/></svg>
+          {{ else if eq $feature.icon "palette" }}<svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18h1.5a1.5 1.5 0 0 0 0-3H12a2 2 0 0 1 0-4h2a7 7 0 0 0 0-14Z"/><circle cx="7.5" cy="10" r=".8"/><circle cx="10" cy="7" r=".8"/><circle cx="15" cy="7" r=".8"/></svg>
+          {{ else if eq $feature.icon "eye" }}<svg viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+          {{ else if eq $feature.icon "sparkles" }}<svg viewBox="0 0 24 24"><path d="m12 3 1.4 5.6L19 10l-5.6 1.4L12 17l-1.4-5.6L5 10l5.6-1.4L12 3Z"/><path d="m19 16 .6 2.4L22 19l-2.4.6L19 22l-.6-2.4L16 19l2.4-.6L19 16Z"/></svg>
+          {{ else if eq $feature.icon "layout" }}<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></svg>
+          {{ else if eq $feature.icon "keyboard" }}<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M6 10h.01M9 10h.01M12 10h.01M15 10h.01M18 10h.01M7 14h10"/></svg>
+          {{ else if eq $feature.icon "pin" }}<svg viewBox="0 0 24 24"><path d="M15 4.5 19.5 9 15 13.5V20l-3-2-3 2v-6.5L4.5 9 9 4.5 12 7l3-2.5Z"/></svg>
+          {{ else }}<svg viewBox="0 0 24 24"><path d="m12 3 8 8-2 2-4-4v12h-4V9l-4 4-2-2 8-8Z"/></svg>{{ end }}
+        </span>
+        <h3>{{ $feature.title }}</h3>
+      </div>
+      <p>{{ $feature.body | safeHTML }}</p>
+      <a class="feature-card__link" href="{{ $feature.href | relURL }}">Read more <span aria-hidden="true">→</span></a>
     </article>
     {{ end }}
   </div>
@@ -44,12 +115,19 @@
 {{ end }}
 
 <section class="shell guides-section">
-  <h2>Guides</h2>
+  <header class="section-heading guides-heading">
+    <h2>Guides</h2>
+    <a class="guides-all-link" href="{{ "guides/" | relURL }}">View all guides <span aria-hidden="true">&rarr;</span></a>
+  </header>
   <div class="card-grid" data-reveal-group>
-    {{ range where site.RegularPages "Section" "guides" }}
+    {{ range $index, $guide := where site.RegularPages "Section" "guides" }}
     <a class="guide-card" data-reveal href="{{ .Permalink }}">
-      <h3>{{ .Title }}</h3>
-      {{ with .Description }}<p>{{ . }}</p>{{ end }}
+      <span class="guide-card__index" aria-hidden="true">{{ upper (substr $guide.Title 0 1) }}</span>
+      <div>
+        <h3>{{ $guide.Title }}</h3>
+        {{ with $guide.Description }}<p>{{ . }}</p>{{ end }}
+      </div>
+      <span class="guide-card__arrow" aria-hidden="true">&rarr;</span>
     </a>
     {{ end }}
   </div>
@@ -57,7 +135,11 @@
 
 {{ if .Content }}
 <section class="shell home-note">
-  {{ .Content }}
+  <aside class="home-note__comment" aria-label="About this demonstration">
+    <span aria-hidden="true">/*</span>
+    <div>{{ .Content }}</div>
+    <span aria-hidden="true">*/</span>
+  </aside>
 </section>
 {{ end }}
 {{ end }}

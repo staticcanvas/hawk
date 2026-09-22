@@ -1,0 +1,42 @@
+{
+  "name": "Midnight Wave",
+  "variant": "original",
+  "mode": "dark",
+  "license": {
+    "type": "original",
+    "note": "Original palette",
+    "url": null
+  },
+  "colors": {
+    "ui": {
+      "bg": "#0a1128",
+      "bgAlt": "#0d1636",
+      "bgElev": "#131f47",
+      "border": "#1c2c5c",
+      "text": "#dce6f7",
+      "textMuted": "#8fa3c9",
+      "textFaint": "#57658e",
+      "selection": "#1e3a6e",
+      "accent": "#3ddbd9"
+    },
+    "syntax": {
+      "comment": "#576591",
+      "keyword": "#7c9eff",
+      "string": "#3ddbd9",
+      "function": "#64c9ff",
+      "variable": "#dce6f7",
+      "constant": "#ffd479",
+      "number": "#ffd479",
+      "type": "#a78bfa",
+      "operator": "#7fe0de",
+      "tag": "#ff8fb1",
+      "attribute": "#a78bfa",
+      "punctuation": "#8fa3c9",
+      "error": "#ff6b6b",
+      "warning": "#ffd479",
+      "info": "#64c9ff",
+      "success": "#4ade80",
+      "deleted": "#e05a6e"
+    }
+  }
+}

@@ -40,8 +40,9 @@
 .hawk-modal-backdrop {
   position: absolute;
   inset: 0;
-  background: var(--hawk-backdrop, rgba(9, 13, 22, 0.8));
-  backdrop-filter: blur(14px);
+  background: var(--hawk-backdrop-gradient, var(--hawk-backdrop, rgba(9, 13, 22, 0.8)));
+  opacity: var(--hawk-backdrop-opacity, 1);
+  backdrop-filter: blur(var(--hawk-backdrop-blur, 14px));
 }
 
 .hawk-modal-dialog {
@@ -51,7 +52,7 @@
   flex-direction: column;
   width: 100%;
   max-width: calc(860px * var(--hawk-scale, 1));
-  max-height: min(calc(680px * var(--hawk-scale, 1)), 86vh);
+  max-height: min(calc(720px * var(--hawk-scale, 1)), 86vh);
   border-radius: var(--hawk-radius, 14px);
   border: 1px solid var(--hawk-border-default, #253347);
   background: var(--hawk-bg-surface, #0f172a);
@@ -60,6 +61,23 @@
   overflow: hidden;
   font-family: var(--hawk-font-family, inherit);
   font-size: var(--hawk-font-size-base, 1rem);
+  container-type: inline-size;
+  /* Unset ("none") by default — no theme needs it, so it costs nothing until one sets
+     --hawk-dialog-blur (e.g. a glass-style theme with a translucent --hawk-bg-surface that wants
+     the dialog itself to keep reading page content behind it, distinct from the backdrop). */
+  backdrop-filter: var(--hawk-dialog-blur, none);
+  -webkit-backdrop-filter: var(--hawk-dialog-blur, none);
+}
+
+/* Chromium-only "squircle" corner interpolation (CSS Shapes Level 4's corner-shape property —
+   experimental, Chromium-exclusive as of 2026). @supports scopes this to browsers that actually
+   implement it instead of UA-sniffing: it costs nothing elsewhere, and picks up any other engine
+   that ships support later for free. --hawk-corner-shape stays themeable/overridable like every
+   other visual token, same pattern as --hawk-dialog-blur above. */
+@supports (corner-shape: squircle) {
+  .hawk-modal-dialog {
+    corner-shape: var(--hawk-corner-shape, squircle);
+  }
 }
 
 /* ── Modal reveal animations ──────────────────────────────────────────────────────────────
@@ -76,10 +94,14 @@
 }
 
 @keyframes hawk-reveal-fade-in {
-  from { opacity: 0; }
+  from {
+    opacity: 0;
+  }
 }
 @keyframes hawk-reveal-fade-out {
-  to { opacity: 0; }
+  to {
+    opacity: 0;
+  }
 }
 @keyframes hawk-reveal-scale-in {
   from {
@@ -140,7 +162,8 @@
   animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 200ms) ease both;
 }
 [data-hawk-reveal='scale-fade'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
-  animation: hawk-reveal-scale-in var(--hawk-reveal-duration, 200ms) cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: hawk-reveal-scale-in var(--hawk-reveal-duration, 200ms) cubic-bezier(0.16, 1, 0.3, 1)
+    both;
 }
 [data-hawk-reveal='scale-fade'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
   animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 200ms) ease both;
@@ -155,7 +178,8 @@
   animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 220ms) ease both;
 }
 [data-hawk-reveal='slide-down'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
-  animation: hawk-reveal-slide-in var(--hawk-reveal-duration, 220ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hawk-reveal-slide-in var(--hawk-reveal-duration, 220ms) cubic-bezier(0.22, 1, 0.36, 1)
+    both;
 }
 [data-hawk-reveal='slide-down'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
   animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 220ms) ease both;
@@ -188,7 +212,8 @@
   animation: hawk-reveal-fade-in var(--hawk-reveal-duration, 340ms) ease both;
 }
 [data-hawk-reveal='spring'][data-hawk-anim-state='opening'] .hawk-modal-dialog {
-  animation: hawk-reveal-spring-in var(--hawk-reveal-duration, 340ms) cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: hawk-reveal-spring-in var(--hawk-reveal-duration, 340ms)
+    cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 [data-hawk-reveal='spring'][data-hawk-anim-state='closing'] .hawk-modal-backdrop {
   animation: hawk-reveal-fade-out var(--hawk-reveal-duration, 340ms) ease both;
@@ -223,8 +248,33 @@
   max-width: calc(560px * var(--hawk-scale, 1));
   max-height: min(calc(520px * var(--hawk-scale, 1)), 70vh);
 }
+/* .hawk-modal-body's shared 380px min-height floor (above) assumes the ~134px of fixed chrome
+   above/below it (header + filters + footer) plus itself fits inside the dialog's own max-height.
+   That budget already has only ~6px of slack at compact density's default scale (520px - 134px =
+   386px), so any --hawk-scale below 1 — e.g. the 'simple-dark' gallery theme's 0.9 — pushes total
+   content past max-height, and since the dialog clips with overflow:hidden, the footer row
+   (hint/counter/attribution) silently disappears with no visible sign anything is missing. A
+   lower floor here keeps compact density's own already-reduced row height (below) in budget
+   across its realistic scale range instead of relying on there happening to be enough slack. */
+[data-hawk-density='compact'] .hawk-modal-body {
+  min-height: 220px;
+}
 [data-hawk-density='compact'] .hawk-results-pane {
   padding: 0.35rem;
+}
+[data-hawk-density='compact'] .hawk-result-item {
+  padding: 0.35rem 0.45rem;
+}
+[data-hawk-density='compact'] .hawk-result-meta {
+  gap: 0.2rem 0.4rem;
+  margin-top: 0.2rem;
+}
+[data-hawk-density='compact'] .hawk-result-desc {
+  -webkit-line-clamp: 1;
+}
+[data-hawk-vertical-fit='true'][data-hawk-density='fit'] .hawk-modal-dialog,
+[data-hawk-vertical-fit='true'][data-hawk-density='compact'] .hawk-modal-dialog {
+  height: fit-content;
 }
 
 .hawk-modal-header {
@@ -321,6 +371,22 @@
   background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
 }
 
+@container (max-width: 30rem) {
+  .hawk-modal-header {
+    flex-wrap: wrap;
+  }
+  .hawk-input-wrap {
+    flex-basis: 100%;
+  }
+  .hawk-density-btn,
+  .hawk-modal-esc {
+    min-height: 2.75rem;
+  }
+  .hawk-modal-esc {
+    margin-inline-start: auto;
+  }
+}
+
 .hawk-modal-filters {
   /* See .hawk-modal-header's comment — same column-flex shrink-redistribution risk. */
   flex-shrink: 0;
@@ -412,7 +478,11 @@
   .hawk-filter-pill.active {
     /* Refines the flat --hawk-accent-dim fallback above into a tint of this tab's own accent,
        in engines that support color-mix (2023+) — progressive enhancement, not a requirement. */
-    background: color-mix(in srgb, var(--hawk-tab-accent, var(--hawk-accent, #38bdf8)) 14%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--hawk-tab-accent, var(--hawk-accent, #38bdf8)) 14%,
+      transparent
+    );
   }
 }
 /* The color dot renders even when a tab isn't the active one, so an accent reads as "this tab's
@@ -442,14 +512,43 @@
   flex: 1;
   overflow: hidden;
 }
+.hawk-modal-body[data-hawk-discovery='true'] {
+  grid-template-rows: minmax(0, 1fr) auto;
+}
 .hawk-modal-body[data-hawk-columns='1'] {
   grid-template-columns: 1fr;
 }
-.hawk-modal-body[data-hawk-alignment='start'] {
-  align-items: start;
+/* #applyParams's own comment documents columns:1 as forcing "1 column like below breakpoint (or
+   compact density)" — but only the breakpoint/compact-density paths (below) actually hid the
+   preview pane to match; a theme or config setting columns:1 directly (density left at 'fit' or
+   'medium', e.g. by an in-modal density-toggle click that changes data-hawk-density without
+   recomputing data-hawk-columns — surfaced by the 'simple-dark' gallery theme, whose columns:1
+   pairs with density:'compact' by default but not once someone switches density in the open
+   modal) got a 1-column grid with BOTH panes still visible. Two items in one grid column/row
+   don't share space — the auto-placed second item (preview) gets its own implicit row sized to
+   its full content, and results (the sole item in the explicit minmax(0,1fr) row) gets squeezed
+   toward nothing competing against it, rather than either pane being hidden. */
+.hawk-modal-body[data-hawk-columns='1'] .hawk-preview-pane {
+  display: none;
 }
-.hawk-modal-body[data-hawk-alignment='center'] {
-  align-items: center;
+[data-hawk-second-column='false'] .hawk-preview-pane {
+  display: none !important;
+}
+/* config.params.alignment only ever governs the preview pane's cross-axis fit (e.g. a theme that
+   doesn't want short preview content stretched to match a taller results list). It must not touch
+   .hawk-results-pane: that pane's own min-height:0 + overflow-y:auto (above) depends on the grid
+   row's default align-items:stretch to size it to the row and make its overflow reachable by
+   scrolling — align-items:start on the whole body sized it to its content instead, silently
+   clipping everything past .hawk-modal-body's max-height with no way to scroll to it (surfaced by
+   the 'simple-dark' gallery theme, which pairs alignment:'start' with a single-column layout). */
+.hawk-results-pane {
+  align-self: stretch;
+}
+.hawk-modal-body[data-hawk-alignment='start'] .hawk-preview-pane {
+  align-self: start;
+}
+.hawk-modal-body[data-hawk-alignment='center'] .hawk-preview-pane {
+  align-self: center;
 }
 
 [data-hawk-compact='true'] .hawk-modal-body,
@@ -465,11 +564,16 @@
    it's otherwise hidden — the only way to reach it is via this focus-zone navigation. Scoped to
    single-column contexts only: in 2-column layouts both panes are already visible. */
 [data-hawk-compact='true'][data-hawk-show-preview='true'] .hawk-results-pane,
-[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-results-pane {
+[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-results-pane,
+/* data-hawk-show-preview lives on .hawk-modal (root); data-hawk-columns lives on the nested
+   .hawk-modal-body — an ancestor-then-descendant selector, unlike the two rules above where both
+   attributes sit on the same (root) element. */
+.hawk-modal[data-hawk-show-preview='true'] .hawk-modal-body[data-hawk-columns='1'] .hawk-results-pane {
   display: none;
 }
 [data-hawk-compact='true'][data-hawk-show-preview='true'] .hawk-preview-pane,
-[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-preview-pane {
+[data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-preview-pane,
+.hawk-modal[data-hawk-show-preview='true'] .hawk-modal-body[data-hawk-columns='1'] .hawk-preview-pane {
   display: block;
 }
 
@@ -482,6 +586,9 @@
      once the list is long enough to matter. */
   min-height: 0;
   overflow-y: auto;
+  /* Reserve scrollbar gutter so its appearance/disappearance on hover doesn't cause a layout
+     shift that makes the modal jitter. */
+  scrollbar-gutter: stable;
   border-right: 1px solid var(--hawk-border-subtle, #1e293b);
   padding: 0.5rem;
 }
@@ -497,6 +604,22 @@
   border-radius: 8px;
   text-decoration: none;
   color: inherit;
+}
+
+.hawk-result-item--subpage {
+  position: relative;
+  margin-inline-start: 1rem;
+  padding-inline-start: 1.15rem;
+}
+
+.hawk-result-item--subpage::before {
+  content: '';
+  position: absolute;
+  inset-block: 0.35rem;
+  inset-inline-start: 0.3rem;
+  width: 1px;
+  border-radius: 999px;
+  background: var(--hawk-border-default, #253347);
 }
 
 /* ── Staggered result-row reveal ──────────────────────────────────────────────────────────
@@ -575,8 +698,9 @@
   font-size: 0.68rem;
   padding: 0.05rem 0.45rem;
   border-radius: 999px;
-  border: 1px solid var(--hawk-border-default, #253347);
-  color: var(--hawk-text-muted, #64748b);
+  border: 1px solid color-mix(in srgb, var(--hawk-result-accent, var(--hawk-border-default, #253347)) 60%, transparent);
+  background: color-mix(in srgb, var(--hawk-result-accent, transparent) 14%, transparent);
+  color: color-mix(in srgb, var(--hawk-result-accent, var(--hawk-text-muted, #64748b)) 80%, var(--hawk-text-primary, #f1f5f9));
   white-space: nowrap;
 }
 .hawk-pin-btn {
@@ -616,6 +740,63 @@
   border-radius: 3px;
 }
 
+.hawk-result-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.55rem;
+  margin-top: 0.4rem;
+}
+
+.hawk-result-date {
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  /* Both zero-cost until a theme sets them — same fallback-token pattern as --hawk-dialog-blur
+     above. No theme needs a distinct date font by default, so this inherits the modal's own
+     --hawk-font-family (itself falling further back to `inherit`) rather than forcing a choice;
+     --hawk-result-date-opacity stays fully opaque until a theme wants the date to read as
+     quieter/secondary than the rest of the metadata row without a second color token. */
+  font-family: var(--hawk-result-date-font-family, var(--hawk-font-family, inherit));
+  opacity: var(--hawk-result-date-opacity, 1);
+}
+
+.hawk-result-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+}
+
+.hawk-result-tags:empty {
+  display: none;
+}
+
+.hawk-result-tag {
+  padding: 0.05rem 0.28rem;
+  border: none;
+  border-radius: 999px;
+  /* --hawk-tag-accent (set inline per tag by config.tagAccentColors, see hawk.js's
+     #resultMetaMarkup) takes priority over the whole row's single --hawk-result-accent, so tags
+     within one result can each read as their own subtle color instead of a uniform block —
+     falls back the same as before when tagAccentColors is off.
+     No border, a paler background (12% -> 8%) and a text-color mix pulled toward
+     --hawk-text-secondary rather than --hawk-text-primary (55% vs. the old 75%, toward the
+     muted end rather than the bright one) — reads as a soft, blended hashtag label rather than a
+     bordered chip competing with the title/excerpt for attention. */
+  background: color-mix(in srgb, var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 8%, transparent);
+  color: color-mix(in srgb, var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 55%, var(--hawk-text-secondary, #94a3b8));
+  font-size: 0.64rem;
+  line-height: 1.35;
+}
+
+/* A CSS-only "#" prefix (not baked into hawk.js's rendered text) so a theme can hide it with one
+   rule (content: none) without touching the tag's actual text, and so the value hawk.js writes
+   here always matches what config.resultTagsMetaKey's Pagefind data — and the tag:value inline
+   filter syntax — actually contain, with no "#" to strip back out. */
+.hawk-result-tag::before {
+  content: '#';
+}
+
 .hawk-empty {
   padding: 2rem 1rem;
   text-align: center;
@@ -626,9 +807,23 @@
   /* See .hawk-results-pane's comment — same fix, same reason. */
   min-height: 0;
   overflow-y: auto;
+  /* Reserve scrollbar gutter so its appearance/disappearance on hover doesn't cause a layout
+     shift that makes the modal jitter. */
+  scrollbar-gutter: stable;
   padding: 1rem;
   background: var(--hawk-preview-bg, rgba(9, 13, 22, 0.65));
 }
+
+/* A reserved gutter is useful once the modal has enough room for the pane's scrollbar, but on
+ * phone layouts it needlessly removes several pixels from an already narrow result column and
+ * changes wrapping. Keep the maintained phone layout independent of scrollbar visibility. */
+@media (max-width: 30rem) {
+  .hawk-results-pane,
+  .hawk-preview-pane {
+    scrollbar-gutter: auto;
+  }
+}
+
 .hawk-preview-empty {
   color: var(--hawk-text-muted, #64748b);
   font-size: 0.85rem;
@@ -662,6 +857,91 @@
   font-size: 0.8rem;
 }
 
+.hawk-discovery-row {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  padding: 0.55rem 0.85rem;
+  border-top: 1px solid var(--hawk-border-subtle, #1e293b);
+  background: var(--hawk-bg-surface-elevated, #111c30);
+  overflow-y: auto;
+}
+.hawk-discovery-row[hidden] {
+  display: none;
+}
+.hawk-discovery-status {
+  grid-column: 1 / -1;
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.78rem;
+}
+.hawk-discovery-group {
+  min-width: 0;
+}
+.hawk-discovery-title {
+  margin: 0 0 0.28rem;
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.hawk-discovery-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.28rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.hawk-discovery-link {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 1.55rem;
+  align-items: center;
+  padding: 0.12rem 0.45rem;
+  border: 1px solid var(--hawk-border-default, #253347);
+  border-radius: 999px;
+  color: var(--hawk-text-secondary, #94a3b8);
+  font-size: 0.68rem;
+  line-height: 1.25;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.hawk-discovery-link:hover {
+  border-color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-accent, #38bdf8);
+}
+.hawk-discovery-link:focus-visible {
+  outline: 2px solid var(--hawk-accent, #38bdf8);
+  outline-offset: 2px;
+}
+.hawk-discovery-empty {
+  margin: 0;
+  color: var(--hawk-text-muted, #64748b);
+  font-size: 0.72rem;
+}
+
+[data-hawk-compact='true'] .hawk-discovery-row,
+[data-hawk-density='compact'] .hawk-discovery-row {
+  grid-template-columns: 1fr;
+  gap: 0.4rem;
+  padding: 0.45rem 0.65rem;
+  max-height: min(11rem, 30vh);
+}
+[data-hawk-compact='true'] .hawk-discovery-title,
+[data-hawk-density='compact'] .hawk-discovery-title {
+  margin-bottom: 0.2rem;
+}
+/* 2.75rem (44px) is a floor, not a target — the touch-target minimum from Epic 6, kept exactly
+   at that floor rather than padded further, so compact mode stays as minimal as the accessibility
+   requirement allows. */
+[data-hawk-compact='true'] .hawk-discovery-link,
+[data-hawk-density='compact'] .hawk-discovery-link {
+  min-height: 2.75rem;
+  padding-inline: 0.6rem;
+}
+
 /*
  * Markdown element styling for fetched page content (see #loadPreviewContent in hawk.js).
  * Code block *coloring* comes for free from the site's own build (e.g. Hugo's chroma
@@ -673,97 +953,97 @@
  * prose opinions entirely and target .hawk-preview-content with their own CSS (e.g. an existing
  * site-wide .prose class) instead of fighting these rules' specificity.
  */
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :first-child {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) :first-child {
   margin-top: 0;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :last-child {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) :last-child {
   margin-bottom: 0;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h1,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h2,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h3,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h4,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h5,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h6 {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h1,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h2,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h3,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h4,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h5,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h6 {
   color: var(--hawk-text-primary, #f1f5f9);
   line-height: 1.3;
   margin: 1.1em 0 0.4em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h1 {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h1 {
   font-size: 1.15em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h2 {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h2 {
   font-size: 1.08em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h3,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h4,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h5,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) h6 {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h3,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h4,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h5,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) h6 {
   font-size: 1em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) p,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ul,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ol,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) blockquote,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) table,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) p,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) ul,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) ol,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) blockquote,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) table,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) pre {
   margin: 0 0 0.85em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ul,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) ol {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) ul,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) ol {
   padding-left: 1.3em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) li {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) li {
   margin: 0.2em 0;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) a {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) a {
   color: var(--hawk-accent, #38bdf8);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) strong {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) strong {
   color: var(--hawk-text-primary, #f1f5f9);
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) hr {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) hr {
   border: none;
   border-top: 1px solid var(--hawk-border-subtle, #1e293b);
   margin: 1.2em 0;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) img {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) img {
   max-width: 100%;
   border-radius: 6px;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) blockquote {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) blockquote {
   border-left: 3px solid var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
   padding: 0.1em 0 0.1em 0.9em;
   color: var(--hawk-text-muted, #64748b);
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) table {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.9em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) th,
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) td {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) th,
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) td {
   border: 1px solid var(--hawk-border-subtle, #1e293b);
   padding: 0.35em 0.55em;
   text-align: left;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) th {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) th {
   color: var(--hawk-text-primary, #f1f5f9);
 }
 
 /* Code: inline vs. block. `pre > code` is a highlighted block; bare `code` is inline. */
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) code {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) code {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.88em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) :not(pre) > code {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) :not(pre) > code {
   background: var(--hawk-bg-surface-elevated, #1e293b);
   border-radius: 4px;
   padding: 0.1em 0.4em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) pre {
   background: var(--hawk-bg-canvas, #090d16);
   border: 1px solid var(--hawk-border-subtle, #1e293b);
   border-radius: 8px;
@@ -771,16 +1051,16 @@
   overflow-x: auto;
   line-height: 1.45;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) pre code {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) pre code {
   background: none;
   padding: 0;
   white-space: pre;
 }
 /* Hugo/chroma wraps highlighted blocks in .highlight > pre — flatten our chrome onto it too. */
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) .highlight {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) .highlight {
   margin: 0 0 0.85em;
 }
-.hawk-preview-content:not([data-hawk-markdown-styles="off"]) .highlight pre {
+.hawk-preview-content:not([data-hawk-markdown-styles='off']) .highlight pre {
   margin: 0;
 }
 
