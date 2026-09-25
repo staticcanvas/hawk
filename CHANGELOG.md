@@ -5,9 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.43.1]
+
+> 2026-09-25
 
 <!-- rivet:changelog:start -->
+
+- No release-note commits were found in the selected range.
+
+<!-- rivet:changelog:end -->
 
 ### Added
 
@@ -112,5 +118,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Trap modal focus, add i18n strings, and handle search failures gracefully. ([e90fca1](https://gitlab.com/staticcanvas/hawk/-/commit/e90fca1a16c48353f8c0b5d56c6341269a5d6ed5) — @sgkens)
 - Guard build-only vite plugins from firing under vitest. ([8f645f3](https://gitlab.com/staticcanvas/hawk/-/commit/8f645f37892648e2f40d2d75cc389cdb8f3f9a82) — @sgkens)
 - Copy CSS into webutil/libs during build, not just JS bundles. ([99890dd](https://gitlab.com/staticcanvas/hawk/-/commit/99890dd0410cfbbf5d02b78e439592509912d4e6) — @sgkens)
-
-<!-- rivet:changelog:end -->
