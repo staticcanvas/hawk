@@ -545,12 +545,16 @@ a {
   margin-bottom: 0.35rem;
 }
 
-.sidebar-item > a {
+.sidebar-item > a,
+.sidebar-group-label {
   display: block;
   padding: 0.3rem 0;
   color: var(--hawk-text-secondary, #94a3b8);
-  text-decoration: none;
   font-weight: 600;
+}
+
+.sidebar-item > a {
+  text-decoration: none;
 }
 
 .sidebar-item.is-active > a {
@@ -1861,6 +1865,7 @@ body {
 }
 
 .sidebar-item > a,
+.sidebar-group-label,
 .sidebar-subitem > a {
   position: relative;
   border-radius: var(--site-radius-sm);

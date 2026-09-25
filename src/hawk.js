@@ -1,3 +1,5 @@
+/* @ts-self-types="./hawk.d.ts" */
+
 /**
  * @fileoverview Hawk core engine: a themeable, pluggable command-palette search UI backed by
  * Pagefind. Ported from typeflow's docs site search (docs/static/assets/docs.js /

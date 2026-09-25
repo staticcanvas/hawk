@@ -1,3 +1,5 @@
+/* @ts-self-types="./hawk-debug.d.ts" */
+
 /**
  * Optional Hawk console diagnostics using StaticCanvas Logcad.
  * @module @staticcanvas/hawk/debug

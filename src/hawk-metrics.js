@@ -1,3 +1,5 @@
+/* @ts-self-types="./hawk-metrics.d.ts" */
+
 /**
  * Optional Hawk instrumentation for development and performance checks.
  * @module @staticcanvas/hawk/metrics

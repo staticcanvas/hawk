@@ -1,10 +1,14 @@
+/* @ts-self-types="./hawk-icons.d.ts" */
+
 /**
  * Icon adapter for Hawk.
  *
  * Provides ready-to-use SVG templates and resolvers for Lucide, Tabler, and Heroicons
  * so triggers, search results, and custom UI elements can reference standard icons without external dependencies.
+ * @module @staticcanvas/hawk/icons
  */
 
+/** Built-in Lucide SVG markup keyed by Hawk icon name. */
 export const LUCIDE_ICONS = Object.freeze({
   search: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
   command: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3z"/></svg>',
@@ -13,6 +17,7 @@ export const LUCIDE_ICONS = Object.freeze({
   file: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>',
 });
 
+/** Built-in Tabler SVG markup keyed by Hawk icon name. */
 export const TABLER_ICONS = Object.freeze({
   search: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m21 21-6-6"/></svg>',
   command: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 0h10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 0v8a3 3 0 1 0-3 3 3 3 0 0 0 3-3zm10 0v8a3 3 0 1 0 3 3 3 3 0 0 0-3-3zm0 0H7"/></svg>',
@@ -21,6 +26,7 @@ export const TABLER_ICONS = Object.freeze({
   file: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg>',
 });
 
+/** Built-in Heroicons SVG markup keyed by Hawk icon name. */
 export const HEROICONS = Object.freeze({
   search: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/></svg>',
   command: '<svg class="hawk-trigger-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.75 7.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 0h10.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0 0v9a3 3 0 1 0-3 3 3 3 0 0 0 3-3zm10.5 0v9a3 3 0 1 0 3 3 3 3 0 0 0-3-3zm0 0H6.75"/></svg>',

@@ -227,6 +227,7 @@
 }
 
 .sidebar-item > a,
+.sidebar-group-label,
 .sidebar-subitem > a {
   position: relative;
   border-radius: var(--site-radius-sm);
@@ -548,4 +549,3 @@
     scroll-behavior: auto;
   }
 }
-

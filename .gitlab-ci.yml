@@ -101,7 +101,7 @@ coverage:
     - npm ci
     - npm run test:coverage
     - command -v codecov
-    - codecov --verbose upload-process --disable-search --fail-on-error -t "$CODECOV_API_KEY" -n "hawk-${CI_COMMIT_SHORT_SHA}" -F unit -f coverage/lcov.info
+    - codecov --verbose upload-process --disable-search --fail-on-error -t "$CODECOV_TOKEN" -n "hawk-${CI_COMMIT_SHORT_SHA}" -F unit -f coverage/lcov.info
   allow_failure: false
 
 # ------------------------------------------------------
@@ -157,6 +157,7 @@ validate:release:
   script:
     - npm ci
     - npm run validate:release -- "dist/${CI_PROJECT_NAME}"
+    - (cd "dist/${CI_PROJECT_NAME}" && "${CI_PROJECT_DIR}/node_modules/.bin/jsr" publish --dry-run --allow-dirty)
     - |
       pwsh -NoProfile -Command '
         $files = @("tools/Get-ReleaseDownloads.ps1", "tools/Request-GenericPackage.ps1")
@@ -167,7 +168,7 @@ validate:release:
           if ($errors.Count -gt 0) { throw "PowerShell syntax validation failed for $file" }
         }
       '
-    - hugo --source docs --gc --minify
+    - hugo --source docs --gc --minify --cleanDestinationDir
   allow_failure: false
 
 # ------------------------------------------------------
@@ -248,7 +249,7 @@ deploy:npm:auto:
 
 # ------------------------------------------------------
 # Publish to JSR (JavaScript Registry) for supply chain security
-# As Per: https://jsr.dev/docs/publishing/
+# As Per: https://jsr.io/docs/publishing-packages
 # ------------------------------------------------------
 publish:jsr:auto:
   extends: .release_on_semver_tag

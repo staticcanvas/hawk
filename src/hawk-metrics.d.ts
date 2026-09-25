@@ -1,5 +1,12 @@
+/**
+ * Headless counters and timing measurements for HawkSearch.
+ *
+ * @module @staticcanvas/hawk/metrics
+ */
+
 import type { HawkSearch } from './hawk.js';
 
+/** Options controlling the metrics clock and public-state polling interval. */
 export interface HawkMetricsOptions {
   /** Optional clock, useful for tests. */
   now?: () => number;
@@ -7,6 +14,7 @@ export interface HawkMetricsOptions {
   pollIntervalMs?: number;
 }
 
+/** Immutable snapshot of counters and derived measurements for the current interval. */
 export interface HawkMetricsSnapshot {
   startedAt: number;
   opens: number;
@@ -32,6 +40,7 @@ export interface HawkMetricsSnapshot {
   open: boolean;
 }
 
+/** Controls an attached Hawk metrics session. */
 export interface HawkMetricsController {
   /** Returns a copy of the current counters and derived rates/timings. */
   snapshot(): HawkMetricsSnapshot;
@@ -44,6 +53,10 @@ export interface HawkMetricsController {
 /**
  * Attaches lightweight counters and timing measurements to a HawkSearch instance.
  * The returned controller is opt-in, headless, and has no effect until the instance opens.
+ *
+ * @param hawk HawkSearch instance to measure.
+ * @param options Clock and polling options.
+ * @returns A controller for reading, resetting, or disposing the metrics integration.
  */
 export function createHawkMetrics(hawk: HawkSearch, options?: HawkMetricsOptions): HawkMetricsController;
 

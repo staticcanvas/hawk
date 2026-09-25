@@ -2,7 +2,13 @@
 <ul class="sidebar-list">
   {{ range .menu }}
   <li class="sidebar-item">
+    {{ if .Page }}
     <a href="{{ .URL | relURL }}"{{ if $page.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
+    {{ else if .Children }}
+    <span class="sidebar-group-label">{{ .Name }}</span>
+    {{ else }}
+    <a href="{{ .URL | relURL }}">{{ .Name }}</a>
+    {{ end }}
     {{ if .Children }}
     <ul class="sidebar-sublist">
       {{ range .Children }}
