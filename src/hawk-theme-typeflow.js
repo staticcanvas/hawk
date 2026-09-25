@@ -1,3 +1,5 @@
+/* @ts-self-types="./hawk-theme-typeflow.d.ts" */
+
 /**
  * @fileoverview Default theme plugin: the visual identity ported from typeflow's docs search
  * (docs/static/assets/docs.css). Theme "application" is intentionally lightweight — it stamps
@@ -17,7 +19,7 @@
  *   CSS-file path (a full redistributable theme like this one).
  */
 
-/** @type {HawkTheme} */
+/** Theme plugin that applies Hawk's `typeflow` data attribute and CSS token contract. @type {HawkTheme} */
 export const HawkThemeTypeflow = {
   name: 'typeflow',
   apply(rootEl) {

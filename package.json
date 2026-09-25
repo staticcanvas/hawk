@@ -1,6 +1,6 @@
 {
   "name": "@staticcanvas/hawk",
-  "version": "0.43.0",
+  "version": "0.43.1",
   "description": "Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations (a TypeFlow typewriter driver ships built-in), swappable visual themes.",
   "type": "module",
   "main": "./dist/hawk.cjs",
@@ -58,8 +58,8 @@
   "scripts": {
     "dev": "vite",
     "serve:demo": "vite --open docs/static/webutil/index.html",
-    "docs:build": "npm run build && node scripts/compile-docs-scss.mjs && node scripts/generate-theme-css.mjs && hugo --source docs && node scripts/pagefind-index.mjs --site public",
-    "docs:serve": "npm run build && node scripts/compile-docs-scss.mjs && node scripts/generate-theme-css.mjs && hugo --source docs && node scripts/pagefind-index.mjs --site public && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
+    "docs:build": "npm run build && node scripts/compile-docs-scss.mjs && node scripts/generate-theme-css.mjs && hugo --source docs --cleanDestinationDir && node scripts/pagefind-index.mjs --site public",
+    "docs:serve": "npm run build && node scripts/compile-docs-scss.mjs && node scripts/generate-theme-css.mjs && hugo --source docs --cleanDestinationDir && node scripts/pagefind-index.mjs --site public && hugo server --source docs --buildDrafts --disableFastRender --ignoreCache --noHTTPCache --gc",
     "build": "vite build && npm_config_mode=theme-typeflow vite build --config vite.optional.config.js && npm_config_mode=animation-typeflow vite build --config vite.optional.config.js && npm_config_mode=debug vite build --config vite.optional.config.js && npm_config_mode=metrics vite build --config vite.optional.config.js",
     "dev:typeflow": "npm run build && node scripts/copy-to-typeflow.mjs",
     "pagefind:index": "node scripts/pagefind-index.mjs",
@@ -72,8 +72,9 @@
     "test:coverage": "vitest run --coverage",
     "test:bun": "bun test tests/*.test.js",
     "test:coverage:bun": "bun test --coverage tests/*.test.js",
-    "test:e2e": "npm run build && hugo --source docs --destination ../public-e2e --baseURL http://localhost:4174/public-e2e/ && node scripts/pagefind-index.mjs --site public-e2e && playwright test",
+    "test:e2e": "npm run build && hugo --source docs --destination ../public-e2e --baseURL http://localhost:4174/public-e2e/ --cleanDestinationDir && node scripts/pagefind-index.mjs --site public-e2e && playwright test",
     "check:size": "node scripts/check-bundle-size.mjs",
+    "check:jsr": "jsr publish --dry-run",
     "validate:release": "node scripts/validate-release.mjs",
     "check:quality": "npm run build && npm run check:size && npm test",
     "bench:size": "node scripts/compare-bundle-size.mjs"
@@ -127,6 +128,7 @@
     "eslint-config-prettier": "^10.0.1",
     "globals": "^15.14.0",
     "jsdom": "^26.0.0",
+    "jsr": "0.14.3",
     "prettier": "^3.5.0",
     "rollup-plugin-copy": "^3.5.0",
     "sass": "^1.104.1",

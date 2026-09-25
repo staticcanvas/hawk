@@ -48,6 +48,26 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect.poll(() => page.evaluate(() => window.__copiedCode)).toContain('npm install');
   });
 
+  test('interior navigation keeps group labels inert and serves tracked branding', async ({
+    page,
+  }) => {
+    await page.goto('getting-started/index.html');
+
+    const logo = page.locator('.brand-logo');
+    await expect(logo).toBeVisible();
+    await expect.poll(() => logo.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(
+      true
+    );
+
+    const sidebar = page.locator('.doc-sidebar');
+    await expect(sidebar.locator('.sidebar-group-label')).toHaveText('Resources');
+    await expect(sidebar.getByRole('link', { name: 'Resources', exact: true })).toHaveCount(0);
+
+    await sidebar.getByRole('link', { name: 'Downloads', exact: true }).click();
+    await expect(page).toHaveURL(/\/downloads\/$/);
+    await expect(page.locator('h1')).toContainText('Downloads');
+  });
+
   test('the homepage release line and logo-title lockup use the compact centered hero', async ({
     page,
   }) => {

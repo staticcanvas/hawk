@@ -6,9 +6,18 @@
  * @module hawk-animation-instant
  */
 
-/** @typedef {{typeTitle: Function, typeContent: Function, rotatePlaceholder: Function, stop: Function}} HawkAnimationDriver */
+/**
+ * @typedef {object} HawkAnimationDriver
+ * @property {(el: HTMLElement, text: string, options?: {isAnchor?: boolean}) => unknown} typeTitle
+ *   Renders a result title.
+ * @property {(el: HTMLElement, html: string, options?: Record<string, unknown>) => unknown} typeContent
+ *   Renders result-preview HTML.
+ * @property {(el: HTMLElement, strings: string[], options?: Record<string, unknown>) => unknown} rotatePlaceholder
+ *   Shows the first configured placeholder.
+ * @property {(controller: unknown) => void} stop Stops an active controller when applicable.
+ */
 
-/** @type {HawkAnimationDriver} */
+/** Instant, synchronous fallback implementation of the Hawk animation contract. @type {HawkAnimationDriver} */
 export const HawkAnimationInstant = {
   typeTitle(el, text) {
     el.textContent = text;

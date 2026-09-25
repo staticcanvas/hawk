@@ -1,10 +1,10 @@
 <div align="left">
 
-![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/hawk-banner.svg)
+![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.11.0-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.1-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
 [![documentation](https://img.shields.io/badge/docs-online-2c3e50?style=flat-square&logo=gitbook&logoColor=4ca1af)](https://staticcanvas.gitlab.io/hawk)
 [![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
@@ -17,9 +17,9 @@
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://jsr.io/%40staticcanvas/hawk)
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
 
-[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.10.0/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.0-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
-> **Hawk** is a themeable, pluggable command-palette search UI for static sites, powered by Pagefind indexing with swappable reveal animations and visual themes.
+> Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 
 </div>
 

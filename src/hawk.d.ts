@@ -1,16 +1,32 @@
+/**
+ * Themeable, pluggable command-palette search for static sites.
+ *
+ * @module @staticcanvas/hawk
+ */
+
+/** Visual theme contract understood by {@link HawkSearch}. */
 export interface HawkTheme {
+  /** Stable theme registration name. */
   name: string;
+  /** Applies the theme to a Hawk root element. */
   apply(rootEl: HTMLElement): void;
+  /** Optional CSS custom-property overrides. */
   tokens?: Record<string, string>;
 }
 
+/** Animation-driver contract used for result and placeholder transitions. */
 export interface HawkAnimationDriver {
+  /** Renders or animates a result title. */
   typeTitle(el: HTMLElement, text: string, options?: { isAnchor?: boolean }): unknown;
+  /** Renders or animates result-preview HTML. */
   typeContent(el: HTMLElement, html: string, options?: Record<string, unknown>): unknown;
+  /** Rotates the search-input placeholder strings. */
   rotatePlaceholder(el: HTMLElement, strings: string[], options?: Record<string, unknown>): unknown;
+  /** Stops a controller previously returned by this driver. */
   stop(controller: unknown): void;
 }
 
+/** Runtime layout and density settings. */
 export interface HawkParams {
   scale?: number;
   position?: 'top-center' | 'center' | 'top-left' | 'top-right';
@@ -23,6 +39,7 @@ export interface HawkParams {
   verticalFit?: boolean;
 }
 
+/** Normalized Pagefind result exposed by Hawk state and callbacks. */
 export interface HawkMatch {
   title: string;
   url: string;
@@ -31,23 +48,27 @@ export interface HawkMatch {
   meta: Record<string, string>;
 }
 
+/** Size and label settings for one discovery-row group. */
 export interface HawkDiscoveryGroupConfig {
   label?: string;
   maxItems?: number;
 }
 
+/** Controls the groups displayed in the zero-query discovery row. */
 export interface HawkDiscoveryRowConfig {
   matches?: boolean | HawkDiscoveryGroupConfig;
   pages?: boolean | HawkDiscoveryGroupConfig;
   headings?: boolean | HawkDiscoveryGroupConfig;
 }
 
+/** Persisted pinned-result record. */
 export interface HawkPin {
   url: string;
   title: string;
   isAnchor: boolean;
 }
 
+/** Persisted recently-viewed result record. */
 export interface HawkRecentlyViewedItem {
   url: string;
   title: string;
@@ -55,6 +76,7 @@ export interface HawkRecentlyViewedItem {
   viewedAt: string;
 }
 
+/** Read-only snapshot of the current HawkSearch UI state. */
 export interface HawkState {
   open: boolean;
   query: string;
@@ -68,6 +90,7 @@ export interface HawkState {
   error: Error | null;
 }
 
+/** Configuration for one searchable tab. */
 export interface HawkTab {
   id?: string;
   label: string;
@@ -79,6 +102,7 @@ export interface HawkTab {
   defaultPreviewTitle?: string;
 }
 
+/** Localizable strings and formatters used by Hawk's interface. */
 export interface HawkStrings {
   dialogLabel?: string;
   inputPlaceholder?: string;
@@ -111,12 +135,14 @@ export interface HawkStrings {
   recentlyViewedTab?: string;
 }
 
+/** Configuration for a trigger button created by Hawk. */
 export interface HawkTriggerConfig {
   kind?: 'minimal' | 'compact' | 'default';
   container: string | HTMLElement;
   icon?: string;
 }
 
+/** Complete configuration accepted by {@link HawkSearch}. */
 export interface HawkSearchConfig {
   index?: string;
   pagefind?: Record<string, unknown>;
@@ -185,19 +211,32 @@ export interface HawkSearchConfig {
   onSelect?: (item: HawkMatch) => void;
 }
 
+/** Pagefind-backed command-palette search controller. */
 export declare class HawkSearch {
+  /** Registered visual themes, keyed by name. */
   static themes: Map<string, HawkTheme>;
+  /** Registered animation drivers, keyed by name. */
   static animations: Map<string, HawkAnimationDriver>;
+  /** Registers or replaces a named visual theme. */
   static registerTheme(name: string, theme: HawkTheme): void;
+  /** Registers or replaces a named animation driver. */
   static registerAnimation(name: string, driver: HawkAnimationDriver): void;
 
+  /** Creates and mounts a Hawk search instance. */
   constructor(config: HawkSearchConfig);
+  /** Unique identifier for this instance. */
   readonly id: string;
+  /** Current public UI and result state. */
   readonly state: HawkState;
+  /** Updates layout parameters without rebuilding the instance. */
   setParams(params: Partial<HawkParams>): void;
+  /** Opens the search interface. */
   open(): void;
+  /** Closes the search interface. */
   close(): void;
+  /** Removes listeners, generated UI, and other instance resources. */
   destroy(): void;
 }
 
+/** Default Hawk search controller export. */
 export default HawkSearch;

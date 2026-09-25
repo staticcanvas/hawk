@@ -1,3 +1,5 @@
+/* @ts-self-types="./hawk-animation-typeflow.d.ts" */
+
 import TypeFlow from '@staticcanvas/typeflow';
 
 /**

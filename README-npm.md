@@ -1,8 +1,13 @@
-![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/hawk-banner.svg)
+<img src="https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp" width="228" height="102" alt="Hawk logo" />
 
-Themeable, pluggable command-palette search for static sites. [Pagefind](https://pagefind.app/)
-does indexing and ranking; hawk owns the modal, keyboard navigation, and result rendering; themes
-and reveal animations are swappable plugins.
+# **@staticcanvas/hawk**
+
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&color=%232c3e50)](https://www.npmjs.com/package/@staticcanvas/hawk)
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&color=%232c3e50)](https://jsr.io/%40staticcanvas/hawk)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.1-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
+[![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=flat-square&color=%232c3e50)](https://gitlab.com/staticcanvas/hawk)
+
+> Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 
 ---
 
