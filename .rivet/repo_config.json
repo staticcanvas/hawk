@@ -13,9 +13,9 @@
   },
   "readmeHeader": {
     "alignment": "left",
-    "badgeStyle": "for-the-badge",
-    "badgeColor": "#070C08",
-    "labelColor": "#0BEA59",
+    "badgeStyle": "flat-square",
+    "badgeColor": "#7FFFD4",
+    "labelColor": "#5F8575",
     "logoColor": "#0BEA59",
     "codecovToken": ""
   },

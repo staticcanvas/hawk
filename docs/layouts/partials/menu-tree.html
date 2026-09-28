@@ -3,7 +3,7 @@
   {{ range .menu }}
   <li class="sidebar-item">
     {{ if .Page }}
-    <a href="{{ .URL | relURL }}"{{ if $page.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
+    <a href="{{ .Page.RelPermalink }}"{{ if $page.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
     {{ else if .Children }}
     <span class="sidebar-group-label">{{ .Name }}</span>
     {{ else }}
@@ -13,7 +13,11 @@
     <ul class="sidebar-sublist">
       {{ range .Children }}
       <li class="sidebar-subitem">
-        <a href="{{ .URL | relURL }}"{{ if $page.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
+        {{ if .Page }}
+        <a href="{{ .Page.RelPermalink }}"{{ if $page.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
+        {{ else }}
+        <a href="{{ .URL | relURL }}">{{ .Name }}</a>
+        {{ end }}
       </li>
       {{ end }}
     </ul>

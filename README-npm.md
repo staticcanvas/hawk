@@ -2,10 +2,10 @@
 
 # **@staticcanvas/hawk**
 
-[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=for-the-badge&color=%23070c08)](https://www.npmjs.com/package/@staticcanvas/hawk)
-[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=for-the-badge&logo=jsr&color=%23070c08)](https://jsr.io/%40staticcanvas/hawk)
-[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.2-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
-[![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=for-the-badge&color=%23070c08)](https://gitlab.com/staticcanvas/hawk)
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://www.npmjs.com/package/@staticcanvas/hawk)
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&color=%237fffd4)](https://jsr.io/%40staticcanvas/hawk)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.3-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
+[![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://gitlab.com/staticcanvas/hawk)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 

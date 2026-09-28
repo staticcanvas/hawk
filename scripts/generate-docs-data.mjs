@@ -9,7 +9,10 @@ import { join, resolve } from 'node:path';
 const projectRoot = resolve(import.meta.dirname, '..');
 const changelogPath = join(projectRoot, 'CHANGELOG.md');
 const changelogDataPath = join(projectRoot, 'docs/data/changelog.json');
+const packagePath = join(projectRoot, 'package.json');
+const packageDataPath = join(projectRoot, 'docs/data/package.json');
 const markdown = readFileSync(changelogPath, 'utf8').trimEnd();
+const packageDocument = JSON.parse(readFileSync(packagePath, 'utf8'));
 
 writeFileSync(
   changelogDataPath,
@@ -23,4 +26,7 @@ writeFileSync(
   )}\n`
 );
 
+writeFileSync(packageDataPath, `${JSON.stringify(packageDocument, null, 2)}\n`);
+
 console.log(`Generated ${changelogDataPath} from ${changelogPath}.`);
+console.log(`Generated ${packageDataPath} from ${packagePath}.`);
