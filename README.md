@@ -4,7 +4,7 @@
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%230bea59&color=%23070c08&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%230bea59&color=%23070c08&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.2-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.3-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
 [![documentation](https://img.shields.io/badge/docs-online-070c08?style=for-the-badge&logo=gitbook&logoColor=0bea59)](https://staticcanvas.gitlab.io/hawk)
 [![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%230bea59&color=%23070c08&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
