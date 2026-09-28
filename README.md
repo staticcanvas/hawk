@@ -1,6 +1,6 @@
 <div align="left">
 
-![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
+<img src="https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp" width="512">
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%232c3e50&color=%232c3e50&logoColor=%234ca1af)](https://gitlab.com/staticcanvas/hawk/-/pipelines)

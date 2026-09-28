@@ -76,7 +76,7 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     const logo = titleRow.locator('.hero-logo');
     const title = titleRow.locator('.hero-title');
 
-    await expect(release).toHaveText(`Version v0.11.0 released · MIT License`);
+    await expect(release).toHaveText(`Version v0.43.1 released · MIT License`);
     await expect(logo).toBeVisible();
     await expect(title).toHaveText('hawk.js');
 
@@ -87,6 +87,7 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
       const titleBox = document.querySelector('.hero-title').getBoundingClientRect();
       return {
         paddingTop: Number.parseFloat(getComputedStyle(hero).paddingTop),
+        paddingBottom: Number.parseFloat(getComputedStyle(hero).paddingBottom),
         releaseMarginTop: Number.parseFloat(
           getComputedStyle(document.querySelector('.hero-release')).marginTop
         ),
@@ -97,7 +98,8 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
         ),
       };
     });
-    expect(layout.paddingTop).toBeLessThanOrEqual(24);
+    expect(layout.paddingTop).toBeGreaterThanOrEqual(48);
+    expect(Math.abs(layout.paddingTop - layout.paddingBottom)).toBeLessThanOrEqual(1);
     expect(layout.releaseMarginTop).toBeGreaterThan(0);
     expect(Math.abs(layout.rowCenter - layout.viewportCenter)).toBeLessThanOrEqual(2);
     expect(layout.verticallyAligned).toBeLessThanOrEqual(2);
@@ -116,26 +118,15 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(cards.locator('.feature-index svg')).toHaveCount(9);
   });
 
-  test('homepage capability cards use title initials and semantic emphasis', async ({ page }) => {
+  test('homepage capability cards use scalable icons and semantic emphasis', async ({ page }) => {
     const cards = page.locator('.feature-card');
+    const icons = cards.locator('.feature-index svg');
     await expect(cards).toHaveCount(9);
-    await expect(cards.locator('.feature-index')).toHaveText([
-      'P',
-      'T',
-      'T',
-      'R',
-      'M',
-      'F',
-      'K',
-      'P',
-      'Z',
-    ]);
+    await expect(icons).toHaveCount(9);
+    await expect(icons.first()).toHaveAttribute('viewBox', '0 0 24 24');
     await expect(cards.locator('p strong')).toHaveCount(9);
-    await expect(cards.locator('p em')).toHaveCount(9);
-    await expect(cards.locator('.feature-index').first()).toHaveCSS(
-      'font-family',
-      /Rubik Spray Paint/
-    );
+    await expect(cards.locator('p em')).toHaveCount(8);
+    await expect(icons.first()).toHaveCSS('stroke-linecap', 'round');
     await expect(page.locator('.feature-heading h3')).toHaveText("Hawk's features");
   });
 
