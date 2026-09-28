@@ -4,7 +4,7 @@
  * @module @staticcanvas/hawk
  */
 
-/** Visual theme contract understood by {@link HawkSearch}. */
+/** Visual theme interface understood by {@link HawkSearch}. */
 export interface HawkTheme {
   /** Stable theme registration name. */
   name: string;
@@ -14,7 +14,7 @@ export interface HawkTheme {
   tokens?: Record<string, string>;
 }
 
-/** Animation-driver contract used for result and placeholder transitions. */
+/** Animation-driver interface used for result and placeholder transitions. */
 export interface HawkAnimationDriver {
   /** Renders or animates a result title. */
   typeTitle(el: HTMLElement, text: string, options?: { isAnchor?: boolean }): unknown;

@@ -8,8 +8,8 @@
  * owns indexing, ranking, typo tolerance, and match highlighting.
  *
  * Hawk never imports Pagefind, TypeFlow, or a theme's CSS directly — it only knows the
- * contracts documented in architecture/plugin-system.md, architecture/theme-contract.md, and
- * architecture/animation-driver-contract.md.
+ * interfaces documented in architecture/plugin-system.md, architecture/theme-interface.md, and
+ * architecture/animation-driver-interface.md.
  * @module hawk
  */
 

@@ -1,6 +1,6 @@
 ---
 title: Theming
-description: The token contract hawk themes implement, and how to write your own.
+description: The token interface hawk themes implement, and how to write your own.
 eyebrow: Guide
 category: Guides
 tags:
@@ -18,7 +18,7 @@ related:
   - /api
 ---
 
-## The contract
+## Theme interface
 
 A theme is two things: a CSS file that defines `--hawk-*` custom properties scoped under
 `[data-hawk-theme="<name>"]`, and a small plugin object:
@@ -50,7 +50,7 @@ Hawk and the surrounding interface a second time:
 ```
 
 Place both elements in `<head>` before stylesheets. Hawk's documentation uses this arrangement so
-the page, sticky header, search modal, and browser-native controls remain on the same palette.
+the page, sticky header, search modal, and browser-native form elements remain on the same palette.
 
 ## Token list
 
@@ -58,17 +58,17 @@ the page, sticky header, search modal, and browser-native controls remain on the
 with a neutral fallback, so hawk renders — unstyled but usable — with zero theme loaded. A theme
 only needs to redefine tokens:
 
-| Group | Token | Controls |
+| Group | Token | Applies to |
 |---|---|---|
 | Canvas | `--hawk-bg-canvas` | Base canvas behind Hawk surfaces. |
 | Canvas | `--hawk-bg-surface` | Dialog, header, filters, footer, and result surfaces. |
-| Canvas | `--hawk-bg-surface-elevated` | Elevated controls and selected states. |
+| Canvas | `--hawk-bg-surface-elevated` | Elevated elements and selected states. |
 | Border | `--hawk-border-subtle` | Internal separators and quiet outlines. |
-| Border | `--hawk-border-default` | Dialog and interactive-control borders. |
+| Border | `--hawk-border-default` | Dialog and interactive-element borders. |
 | Border | `--hawk-border-strong` | Hover, focus, and stronger separators. |
 | Text | `--hawk-text-primary` | Titles and primary content. |
 | Text | `--hawk-text-secondary` | Descriptions and supporting content. |
-| Text | `--hawk-text-muted` | Hints, dates, and inactive controls. |
+| Text | `--hawk-text-muted` | Hints, dates, and inactive elements. |
 | Accent | `--hawk-accent` | Primary interactive and selected-state color. |
 | Accent | `--hawk-accent-dim` | Low-emphasis accent surface. |
 | Accent | `--hawk-accent-glow` | Accent glow and default match background. |
@@ -144,7 +144,7 @@ costs nothing for the other thirteen:
 theme: {
   name: 'simple-dark',
   apply(el) {
-    el.dataset.hawkTheme = 'typeflow'; // structural base — see "The contract" above
+    el.dataset.hawkTheme = 'typeflow'; // structural base — see "Theme interface" above
     el.dataset.hawkThemePreset = 'simple-dark'; // matches the linked file's selector
   },
 }

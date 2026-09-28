@@ -20,7 +20,7 @@ The audit covered every JavaScript module under `src/`, the matching declaration
 
 ### F-001 — Release blocker: none found
 
-No failing logic, race, unsafe default, or TypeFlow contract mismatch was reproduced. The core uses the instant driver when no optional animation is registered, and registry selection, reduced-motion handling, preview loading, pin/recent storage, filtering, and responsive layout are covered by tests.
+No failing logic, race, unsafe default, or TypeFlow interface mismatch was reproduced. The core uses the instant driver when no optional animation is registered, and registry selection, reduced-motion handling, preview loading, pin/recent storage, filtering, and responsive layout are covered by tests.
 
 ### F-002 — JSDoc completeness follow-up (low)
 
@@ -48,7 +48,7 @@ These are non-blocking maintenance tasks for a standard implementation model. Co
 
 ### E1. Strengthen animation-driver JSDoc
 
-Add explicit method-level JSDoc to `HawkAnimationInstant`, introduce named DOM/string types for the driver contract, and mirror the descriptions in `src/hawk-animation-typeflow.d.ts`. Acceptance: `npm run lint`, `npm test`, and declaration review show no `Function`-typed public method.
+Add explicit method-level JSDoc to `HawkAnimationInstant`, introduce named DOM/string types for the driver interface, and mirror the descriptions in `src/hawk-animation-typeflow.d.ts`. Acceptance: `npm run lint`, `npm test`, and declaration review show no `Function`-typed public method.
 
 ### E2. Add declaration drift CI coverage
 
@@ -60,10 +60,10 @@ Run the complete command set in the evidence table for each release candidate an
 
 ## API/configuration reference
 
-| Area | Authoritative source | Current default/contract |
+| Area | Authoritative source | Current default/interface |
 | --- | --- | --- |
 | Core layout | `src/hawk.js` `DEFAULT_PARAMS` | `scale: 1`, `position: top-center`, `columns: 2`, `breakpoint: 768`, `density: medium` |
 | TypeFlow title/content | `src/hawk-animation-typeflow.js` | `zoom-in-space`, `speed: 2`, `direction: left`, reduced-motion respected |
 | TypeFlow rotation | `src/hawk-animation-typeflow.js` | hold 3000 ms, pause 200 ms, end erase style |
-| Public API | `src/hawk.d.ts`, `docs/content/api.md` | Constructor and plugin contracts documented |
+| Public API | `src/hawk.d.ts`, `docs/content/api.md` | Constructor and plugin interfaces documented |
 | Verification | `package.json` scripts | lint, unit, build, size, and browser gates above |

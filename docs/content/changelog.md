@@ -24,7 +24,7 @@ not published tags.
   `related` key resolved to page titles), configurable date and tag rows beneath result
   descriptions with per-tag pastel accent colors and a relative-time format ("7 days ago"),
   indented anchor results (now optional via `showSubpageConnector`), independently configurable
-  density/Escape header controls, a Chromium-only squircle corner treatment, a fix for metadata
+  density/Escape header actions, a Chromium-only squircle corner treatment, a fix for metadata
   text leaking into result excerpts, and a fix for `@staticcanvas/hawk/debug`'s UMD build silently
   never reaching `@staticcanvas/logcad` even when staged.
 - **0.5.2** — fixed a real, confirmed reflected-XSS vulnerability (the typed search query reached
@@ -41,6 +41,6 @@ not published tags.
   tokens), a rotating placeholder, result/page metadata, powered-by attribution, the pin system,
   structured inline filter syntax, a built-in trigger element, the modal focus trap, and
   search/load error handling.
-- **0.2.0** — dev-controlled tabs, `pagefindOptions`, density modes, two-pane keyboard
+- **0.2.0** — developer-configured tabs, `pagefindOptions`, density modes, two-pane keyboard
   navigation, and configurable initial popup state.
 - **0.1.0** — initial extraction from typeflow's docs site search.

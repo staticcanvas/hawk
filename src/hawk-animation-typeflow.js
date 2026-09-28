@@ -5,7 +5,7 @@ import { createHawkAnimationTypeflow } from './hawk-animation-typeflow-core.js';
 
 /**
  * @fileoverview Optional animation driver backed by @staticcanvas/typeflow's typewriter
- * engine. Implements the same driver contract as hawk-animation-instant.js. TypeFlow is never
+ * engine. Implements the same driver interface as hawk-animation-instant.js. TypeFlow is never
  * imported only by this optional adapter entry, so hawk's core bundle remains independent while
  * consumers of `@staticcanvas/hawk/animation-typeflow` get a ready-to-use official integration.
  * The factory still accepts an explicit TypeFlow-compatible instance for custom wiring and tests.

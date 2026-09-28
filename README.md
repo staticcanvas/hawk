@@ -57,7 +57,7 @@ stays a short pitch plus what you need to build the project from source.
 ## Features
 
 - **Pagefind-backed** — chunked, lazily-loaded, typo-tolerant search index.
-- **Dev-controlled tabs** — auto-derived category pills, or explicit Pagefind-filter tabs.
+- **Developer-configured tabs** — auto-derived category pills, or explicit Pagefind-filter tabs.
 - **Fit / medium / compact** density modes with a persisted in-modal toggle.
 - **Two-pane keyboard navigation** — Tab between input, filters, results, and preview.
 - **Configurable layout** — scale, position, offset, columns, and a JS-driven breakpoint.
@@ -133,8 +133,8 @@ See [Development & NPM Scripts](#development-npm-scripts) for the full script re
   [Pins, the built-in trigger, and attribution](docs/content/guides/pins-and-embedding.md)
 - **Architecture**: [`architecture/README.md`](architecture/README.md) (design rationale) ·
   [`plugin-system.md`](architecture/plugin-system.md) ·
-  [`theme-contract.md`](architecture/theme-contract.md) ·
-  [`animation-driver-contract.md`](architecture/animation-driver-contract.md)
+  [`theme-interface.md`](architecture/theme-interface.md) ·
+  [`animation-driver-interface.md`](architecture/animation-driver-interface.md)
 - **Changelog**: [`CHANGELOG.md`](CHANGELOG.md)
 - **Issues**: https://gitlab.com/staticcanvas/hawk/-/issues
 

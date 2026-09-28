@@ -1,4 +1,4 @@
-# Theme contract
+# Theme interface
 
 A theme is two things:
 
@@ -56,7 +56,7 @@ only needs to redefine tokens — never hawk.css's structural rules.
 | `--hawk-scrollbar-thumb`, `--hawk-scrollbar-thumb-active` | Results/preview/filter-strip scrollbars (idle / hover-or-scrolling — the active state is Blink/WebKit-only) |
 | `--hawk-powered-by-color`, `--hawk-powered-by-opacity` | The "Search powered by Pagefind" attribution link |
 
-## A known bug this contract exists to prevent
+## A known bug this interface exists to prevent
 
 The original typeflow docs search (which this package was ported from) hardcoded several brand
 hex values directly in CSS rules (`#ff6b2b`, `#38bdf8`, and their light-theme equivalents) instead

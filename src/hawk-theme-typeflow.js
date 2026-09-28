@@ -19,7 +19,7 @@
  *   CSS-file path (a full redistributable theme like this one).
  */
 
-/** Theme plugin that applies Hawk's `typeflow` data attribute and CSS token contract. @type {HawkTheme} */
+/** Theme plugin that applies Hawk's `typeflow` data attribute and CSS token interface. @type {HawkTheme} */
 export const HawkThemeTypeflow = {
   name: 'typeflow',
   apply(rootEl) {

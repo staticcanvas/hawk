@@ -221,8 +221,8 @@ const TEMPLATE_VARIANTS = Object.freeze([
 ]);
 
 /**
- * Maps the shared `/theme-templates/*.json` palette contract (`{colors: {ui, syntax}, mode,
- * name, license}`) to Hawk's complete `--hawk-*` theme-token contract, plus a deterministic
+ * Maps the shared `/theme-templates/*.json` palette schema (`{colors: {ui, syntax}, mode,
+ * name, license}`) to Hawk's complete `--hawk-*` theme-token interface, plus a deterministic
  * position/density/revealAnimation variant so otherwise-identical template themes don't all
  * behave the same way (see `TEMPLATE_VARIANTS`'s own comment above).
  * @param {string} id One of `HAWK_GALLERY_TEMPLATE_IDS`.
