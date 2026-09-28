@@ -16,9 +16,8 @@ related:
 
 ## Choose a release
 
-This page lists versions with a published GitLab Release. Choose unminified development assets or
-minified production assets for each release. Source archives remain separate from generated
-bundles.
+This page is generated from published GitLab Releases. Each release includes its release notes and
+every linked asset, generic-package file, and GitLab source archive.
 
 <div class="callout" role="note">
   <p><strong>Asset provenance.</strong> Every download uses a public GitLab release endpoint. The source link beside each asset opens the tagged repository tree used for that release.</p>

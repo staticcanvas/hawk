@@ -1,0 +1,4 @@
+{{- with site.Data.changelog.markdown -}}
+<div class="canonical-changelog">{{ . | replaceRE `^# Changelog\s+` "" | markdownify }}</div>
+{{- else -}} {{ errorf "docs/data/changelog.json has no markdown generated from CHANGELOG.md" }} {{-
+end -}}

@@ -16,6 +16,7 @@
       "plugins",
       "accessibility",
       "typescript",
+      "bun",
       "ui"
     ]
   },
