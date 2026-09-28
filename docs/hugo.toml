@@ -7,7 +7,6 @@ enableGitInfo = true
 disableKinds = ['taxonomy', 'term']
 
 [params]
-  version = '0.43.1'
   description = 'Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations, swappable visual themes.'
   repository = 'https://gitlab.com/staticcanvas/hawk'
   github = 'https://github.com/staticcanvas/hawk'

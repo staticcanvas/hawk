@@ -1,4 +1,9 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+const packageDocument = JSON.parse(
+  readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
+);
 
 /**
  * Real-browser coverage against hawk's own docs site — its actual production mount
@@ -63,6 +68,13 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(sidebar.locator('.sidebar-group-label')).toHaveText('Resources');
     await expect(sidebar.getByRole('link', { name: 'Resources', exact: true })).toHaveCount(0);
 
+    const sidebarTargets = await sidebar.locator('a').evaluateAll((links) =>
+      links.map((link) => new URL(link.href).pathname)
+    );
+    expect(sidebarTargets).toContain('/public-e2e/getting-started/');
+    expect(sidebarTargets).toContain('/public-e2e/downloads/');
+    expect(new Set(sidebarTargets).size).toBeGreaterThan(10);
+
     await sidebar.getByRole('link', { name: 'Downloads', exact: true }).click();
     await expect(page).toHaveURL(/\/downloads\/$/);
     await expect(page.locator('h1')).toContainText('Downloads');
@@ -76,7 +88,9 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     const logo = titleRow.locator('.hero-logo');
     const title = titleRow.locator('.hero-title');
 
-    await expect(release).toHaveText(`Version v0.43.1 released · MIT License`);
+    await expect(release).toHaveText(
+      `Version v${packageDocument.version} released · MIT License`
+    );
     await expect(logo).toBeVisible();
     await expect(title).toHaveText('hawk.js');
 
