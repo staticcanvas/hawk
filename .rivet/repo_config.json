@@ -8,15 +8,15 @@
     "defaultBranch": "main",
     "npmPackage": "@staticcanvas/hawk",
     "jsrPackage": "@staticcanvas/hawk",
-    "bannerUrl": "https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-128x51.webp",
+    "bannerUrl": "https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp",
     "documentationUrl": "https://staticcanvas.gitlab.io/hawk"
   },
   "readmeHeader": {
     "alignment": "left",
-    "badgeStyle": "flat-square",
-    "badgeColor": "#2C3E50",
-    "labelColor": "#2C3E50",
-    "logoColor": "#4CA1AF",
+    "badgeStyle": "for-the-badge",
+    "badgeColor": "#070C08",
+    "labelColor": "#0BEA59",
+    "logoColor": "#0BEA59",
     "codecovToken": ""
   },
   "readme": {
@@ -24,11 +24,11 @@
       { "level": 2, "name": "Overview" },
       { "level": 2, "name": "Features" },
       { "level": 2, "name": "Installation" },
-      { "level": 2, "name": "Usage" },
-      { "level": 2, "name": "Theming" },
-      { "level": 2, "name": "Animation Drivers" },
-      { "level": 2, "name": "API Reference" },
-      { "level": 2, "name": "Development & NPM Scripts" }
+      { "level": 2, "name": "Quick start" },
+      { "level": 2, "name": "Build from source" },
+      { "level": 2, "name": "Resources" },
+      { "level": 2, "name": "Development & NPM Scripts" },
+      { "level": 2, "name": "License" }
     ]
   },
   "commit": {

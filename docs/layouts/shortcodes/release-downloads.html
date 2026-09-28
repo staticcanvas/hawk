@@ -1,71 +1,77 @@
-{{ with site.Data.releases }}
-  {{ if .versions }}
-    <div class="download-list">
-      {{ range .versions }}
-        {{ $version := .version }}
-        {{ $assets := .assets }}
-        {{ $releaseID := replace .version "." "-" }}
-        <section class="download-version" aria-labelledby="release-{{ $releaseID }}">
-          <div class="download-version-header">
-            <div>
-              <p class="eyebrow">Release</p>
-              <h2 id="release-{{ $releaseID }}">Hawk {{ .version }}</h2>
-            </div>
-            <div class="download-release-links">
-              <a class="text-link" href="{{ .source_url }}" target="_blank" rel="noopener noreferrer">Tagged source ↗</a>
-              <a class="text-link" href="{{ .release_url }}" target="_blank" rel="noopener noreferrer">Release notes ↗</a>
-            </div>
-          </div>
-
-          <div class="download-tabs" data-download-tabs>
-            <div class="download-tab-list" role="tablist" aria-label="Bundle type for Hawk {{ .version }}">
-              <button class="download-tab" id="tab-unminified-{{ $releaseID }}" type="button" role="tab" aria-selected="true" aria-controls="panel-unminified-{{ $releaseID }}">Unminified</button>
-              <button class="download-tab" id="tab-minified-{{ $releaseID }}" type="button" role="tab" aria-selected="false" aria-controls="panel-minified-{{ $releaseID }}" tabindex="-1">Minified</button>
-            </div>
-            {{ range $mode := slice "unminified" "minified" }}
-              <div class="download-tab-panel" id="panel-{{ $mode }}-{{ $releaseID }}" role="tabpanel" aria-labelledby="tab-{{ $mode }}-{{ $releaseID }}"{{ if eq $mode "minified" }} hidden{{ end }}>
-                <div class="download-table-wrap">
-                  <table class="download-table">
-                    <thead><tr><th scope="col">Asset</th><th scope="col">Type</th><th scope="col">Size</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
-                    <tbody>
-                      {{ range $assets }}
-                        {{ $archive := or (strings.HasSuffix .name ".zip") (strings.HasSuffix .name ".tar.gz") }}
-                        {{ $isMinified := strings.Contains .name ".min." }}
-                        {{ if and (not $archive) (eq $isMinified (eq $mode "minified")) }}
-                          <tr>
-                            <th scope="row"><code>{{ .name }}</code></th>
-                            <td>{{ .kind }}</td>
-                            <td>{{ with .size }}{{ lang.FormatNumber 0 . }} bytes{{ else }}—{{ end }}</td>
-                            <td class="download-table-actions">
-                              <a class="download-action" href="{{ .url }}" aria-label="Download {{ .name }} for Hawk {{ $version }}">Download</a>
-                              <a class="download-source" href="{{ .source_url }}" target="_blank" rel="noopener noreferrer">Source ↗</a>
-                            </td>
-                          </tr>
-                        {{ end }}
-                      {{ end }}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            {{ end }}
-          </div>
-
-          <div class="download-archives" aria-labelledby="archives-{{ $releaseID }}">
-            <h3 id="archives-{{ $releaseID }}">Source archives</h3>
-            <div class="download-archive-list">
-              {{ range .assets }}
-                {{ if or (strings.HasSuffix .name ".zip") (strings.HasSuffix .name ".tar.gz") }}
-                  <a href="{{ .url }}">{{ .name }}</a>
-                {{ end }}
-              {{ end }}
-            </div>
-          </div>
-        </section>
-      {{ end }}
+{{ with site.Data.releases }} {{ if .versions }}
+<div class="download-list">
+  {{ range .versions }} {{ $version := .version }} {{ $assets := .assets }} {{ $releaseID := replace
+  .version "." "-" }}
+  <section class="download-version" aria-labelledby="release-{{ $releaseID }}">
+    <div class="download-version-header">
+      <div>
+        <p class="eyebrow">Release</p>
+        <h2 id="release-{{ $releaseID }}">Hawk {{ .version }}</h2>
+      </div>
+      <div class="download-release-links">
+        <a class="text-link" href="{{ .source_url }}" target="_blank" rel="noopener noreferrer"
+          >Tagged source ↗</a
+        >
+        <a class="text-link" href="{{ .release_url }}" target="_blank" rel="noopener noreferrer"
+          >Release notes ↗</a
+        >
+      </div>
     </div>
-  {{ else }}
-    <p class="callout" role="status">Release metadata is not available in this preview build. Visit the <a href="https://gitlab.com/staticcanvas/hawk/-/releases">GitLab releases page</a> for downloads.</p>
+
+    {{ with .release_notes }}
+    <div class="download-release-notes" aria-labelledby="release-notes-{{ $releaseID }}">
+      <h3 id="release-notes-{{ $releaseID }}">Release notes</h3>
+      {{ . | markdownify }}
+    </div>
+    {{ end }}
+
+    <div class="download-table-wrap">
+      <table class="download-table">
+        <thead>
+          <tr>
+            <th scope="col">Asset</th>
+            <th scope="col">Type</th>
+            <th scope="col">Size</th>
+            <th scope="col"><span class="visually-hidden">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          {{ range $assets }}
+          <tr>
+            <th scope="row"><code>{{ .name }}</code></th>
+            <td>{{ .kind }}</td>
+            <td>{{ with .size }}{{ lang.FormatNumber 0 . }} bytes{{ else }}—{{ end }}</td>
+            <td class="download-table-actions">
+              <a
+                class="download-action"
+                href="{{ .url }}"
+                aria-label="Download {{ .name }} for Hawk {{ $version }}"
+                >Download</a
+              >
+              <a
+                class="download-source"
+                href="{{ .source_url }}"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Source ↗</a
+              >
+            </td>
+          </tr>
+          {{ end }}
+        </tbody>
+      </table>
+    </div>
+  </section>
   {{ end }}
+</div>
 {{ else }}
-  <p class="callout" role="status">Release metadata is not available in this preview build. Visit the <a href="https://gitlab.com/staticcanvas/hawk/-/releases">GitLab releases page</a> for downloads.</p>
+<p class="callout" role="status">
+  Release metadata is not available in this preview build. Visit the
+  <a href="https://gitlab.com/staticcanvas/hawk/-/releases">GitLab releases page</a> for downloads.
+</p>
+{{ end }} {{ else }}
+<p class="callout" role="status">
+  Release metadata is not available in this preview build. Visit the
+  <a href="https://gitlab.com/staticcanvas/hawk/-/releases">GitLab releases page</a> for downloads.
+</p>
 {{ end }}

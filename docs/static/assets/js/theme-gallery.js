@@ -3,7 +3,7 @@
  * palette templates, both from the shared docs adapter) and mounts an isolated `HawkSearch`
  * preview for whichever card is clicked, destroying the previous preview first — only the active
  * preview ever holds a live Pagefind worker or global hotkeys, per the docs adapter's own
- * "independently editable profile per preview" contract.
+ * "independently editable profile per preview" behavior.
  *
  * `playgroundUrl`/`templateUrl` are baseURL-correct absolute paths only Hugo can compute —
  * `docs/layouts/themes/single.html` injects them as `window.__HAWK_THEME_GALLERY_DATA__` in a

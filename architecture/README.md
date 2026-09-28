@@ -5,8 +5,8 @@ keyboard navigation, and result rendering; it delegates indexing/ranking to
 [Pagefind](https://pagefind.app/) and delegates visual identity and reveal animation to plugins.
 
 - [`plugin-system.md`](./plugin-system.md) — how theme and animation plugins register and resolve.
-- [`theme-contract.md`](./theme-contract.md) — what a theme is allowed to assume/do.
-- [`animation-driver-contract.md`](./animation-driver-contract.md) — the interface an animation driver implements.
+- [`theme-interface.md`](./theme-interface.md) — what a theme is allowed to assume/do.
+- [`animation-driver-interface.md`](./animation-driver-interface.md) — the interface an animation driver implements.
 
 ## Why Pagefind instead of a hand-rolled index
 

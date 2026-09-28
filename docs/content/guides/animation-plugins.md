@@ -1,6 +1,6 @@
 ---
 title: Animation Plugins
-description: The reveal-animation driver contract, the built-in drivers, and how to write your own.
+description: The reveal-animation driver interface, the built-in drivers, and how to write your own.
 eyebrow: Guide
 category: Guides
 tags:
@@ -14,9 +14,9 @@ related:
   - /playground
 ---
 
-## The contract
+## Driver interface
 
-An animation driver controls how the preview pane's title/content reveal, and how an optional
+An animation driver defines how the preview pane's title/content reveal, and how an optional
 header placeholder rotates:
 
 ```ts
@@ -100,7 +100,7 @@ otherwise. Pass `animation: false` to force instant regardless.
 
 ## Rotating placeholder text
 
-`rotatePlaceholder` sat in the contract unused by core until `config.rotatingPlaceholders` wired
+`rotatePlaceholder` sat in the interface unused by core until `config.rotatingPlaceholders` wired
 it up:
 
 ```js

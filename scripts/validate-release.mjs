@@ -43,10 +43,28 @@ for (const marker of ['site.Data.releases', 'release_url', '.assets', '.url']) {
   if (!downloadsShortcode.includes(marker))
     throw new Error(`Downloads shortcode is missing metadata marker: ${marker}`);
 }
-for (const marker of ['source_url', 'data-download-tabs', 'role="tablist"', 'download-action']) {
+for (const marker of ['source_url', 'release_notes', 'Release notes', 'download-action']) {
   if (!downloadsShortcode.includes(marker)) {
     throw new Error(`Downloads shortcode is missing release UI marker: ${marker}`);
   }
+}
+
+const releaseDataGenerator = readFileSync(
+  join(projectRoot, 'tools/Get-ReleaseDownloads.ps1'),
+  'utf8'
+);
+for (const marker of ["-Name 'description'", "-Name 'sources'", 'Request-GenericPackage']) {
+  if (!releaseDataGenerator.includes(marker)) {
+    throw new Error(`Release data generator is missing API source: ${marker}`);
+  }
+}
+
+const changelog = readFileSync(join(projectRoot, 'CHANGELOG.md'), 'utf8').trimEnd();
+const changelogData = JSON.parse(
+  readFileSync(join(projectRoot, 'docs/data/changelog.json'), 'utf8')
+);
+if (changelogData.source !== 'CHANGELOG.md' || changelogData.markdown !== changelog) {
+  throw new Error('Documentation changelog data must be generated from CHANGELOG.md.');
 }
 
 const docsLayout = readFileSync(join(projectRoot, 'docs/layouts/_default/baseof.html'), 'utf8');
@@ -99,6 +117,7 @@ if (existsSync(releaseDataPath)) {
       !version.version ||
       !version.release_url ||
       !version.source_url ||
+      !Object.hasOwn(version, 'release_notes') ||
       !Array.isArray(version.assets)
     ) {
       throw new Error(

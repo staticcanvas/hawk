@@ -42,9 +42,9 @@ persists to `localStorage` (`hawk:density`) and is read back on the next constru
 `config.params.density` is set explicitly, which always wins over a stored preference. Set
 `allowDensityToggle: false` to fix density via config only and hide the switcher.
 
-### Minimal and configurable header controls
+### Minimal and configurable header actions
 
-`headerControls` controls the two groups to the right of the search input. Pass `false` for
+`headerControls` configures the two groups to the right of the search input. Pass `false` for
 a minimal header containing only the search bar:
 
 ```js
@@ -54,7 +54,7 @@ new HawkSearch({
 });
 ```
 
-Or control the groups independently:
+Or configure the groups independently:
 
 ```js
 new HawkSearch({

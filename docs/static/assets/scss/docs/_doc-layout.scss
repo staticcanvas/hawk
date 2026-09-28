@@ -164,10 +164,9 @@ body {
 
 .hero {
   border: 0;
-  /* Top bound stays in px, not rem: it's a fixed "flush with the header" gap (an earlier, already
-   * locked-in polish pass), not type scale, so it shouldn't drift when the splash page's global
-   * font-size bump (html:has(body.site-home) above) changes what 1rem resolves to. */
-  padding-block: clamp(16px, 2vw, 24px) clamp(3rem, 6vw, 5.5rem);
+  /* Balance the hero's vertical space so its primary content sits naturally in the splash area
+   * instead of appearing pinned beneath the header. */
+  padding-block: clamp(3rem, 6vw, 5.5rem);
   background: transparent;
 }
 
@@ -340,4 +339,3 @@ body {
   border-color: var(--hawk-accent, var(--site-green));
   color: var(--hawk-accent, var(--site-green));
 }
-

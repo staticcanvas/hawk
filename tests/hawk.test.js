@@ -1270,8 +1270,8 @@ describe('discovery row', () => {
             excerpt: 'Learn <mark>Pagefind</mark> search with <mark>metadata</mark>.',
             sub_results: [
               {
-                title: 'Metadata contract',
-                url: '/one/#metadata-contract',
+                title: 'Metadata interface',
+                url: '/one/#metadata-interface',
                 excerpt: '<mark>Metadata</mark> fields.',
               },
             ],
@@ -1333,7 +1333,7 @@ describe('discovery row', () => {
       Array.from(row.querySelectorAll('[data-hawk-discovery-group="headings"] a'), (el) =>
         el.getAttribute('href')
       )
-    ).toEqual(['/one/#metadata-contract', '/two/?view=full#api-details']);
+    ).toEqual(['/one/#metadata-interface', '/two/?view=full#api-details']);
     hawk.destroy();
   });
 
@@ -1933,7 +1933,7 @@ describe('focus trap', () => {
     hawk.destroy();
   });
 
-  it('marks compact result rows with the compact density contract', async () => {
+  it('marks compact result rows with the compact density behavior', async () => {
     const hawk = await hawkWithResults({ params: { density: 'compact' } });
     const row = document.querySelector('.hawk-result-item');
     expect(row.closest('.hawk-modal').getAttribute('data-hawk-density')).toBe('compact');
@@ -2433,7 +2433,7 @@ describe('previewSections', () => {
       text: () =>
         Promise.resolve(
           htmlPage(
-            '<main data-pagefind-body><h2 id="contract">The contract</h2><p>A theme is two things.</p></main>'
+            '<main data-pagefind-body><h2 id="theme-interface">Theme interface</h2><p>A theme is two things.</p></main>'
           )
         ),
     });
@@ -2450,7 +2450,7 @@ describe('previewSections', () => {
         Promise.resolve(
           htmlPage(`
             <main data-pagefind-body>
-              <h2 id="contract">The contract</h2>
+              <h2 id="theme-interface">Theme interface</h2>
               <p>A theme is <strong>two</strong> things: a CSS file and a plugin object.</p>
               <h2 id="tokens">Token list</h2>
               <p>hawk.css reads every color through a token.</p>
@@ -2465,11 +2465,11 @@ describe('previewSections', () => {
     );
 
     const rows = content.querySelectorAll('.hawk-preview-section-row');
-    expect(rows[0].querySelector('.hawk-preview-section-title').textContent).toBe('The contract');
+    expect(rows[0].querySelector('.hawk-preview-section-title').textContent).toBe('Theme interface');
     expect(rows[0].querySelector('.hawk-preview-section-excerpt').textContent).toBe(
       'A theme is two things: a CSS file and a plugin object.'
     );
-    expect(rows[0].getAttribute('href')).toBe('/guides/theming/#contract');
+    expect(rows[0].getAttribute('href')).toBe('/guides/theming/#theme-interface');
     expect(rows[1].querySelector('.hawk-preview-section-title').textContent).toBe('Token list');
     hawk.destroy();
   });
@@ -2479,7 +2479,7 @@ describe('previewSections', () => {
       text: () =>
         Promise.resolve(
           htmlPage(
-            '<main data-pagefind-body><h2 id="contract">The contract</h2><p>Body text.</p></main>'
+            '<main data-pagefind-body><h2 id="theme-interface">Theme interface</h2><p>Body text.</p></main>'
           )
         ),
     });
@@ -2563,7 +2563,7 @@ describe('previewSections', () => {
       text: () =>
         Promise.resolve(
           htmlPage(
-            '<main data-pagefind-body><h2 id="contract">The contract</h2><p>Body text.</p></main>'
+            '<main data-pagefind-body><h2 id="theme-interface">Theme interface</h2><p>Body text.</p></main>'
           )
         ),
     });
@@ -2575,8 +2575,8 @@ describe('previewSections', () => {
     content.querySelector('.hawk-preview-section-row').click();
     expect(onSelect).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'The contract',
-        url: '/guides/theming/#contract',
+        title: 'Theme interface',
+        url: '/guides/theming/#theme-interface',
         isAnchor: true,
       })
     );
@@ -2603,7 +2603,7 @@ describe('previewSections', () => {
         Promise.resolve(
           htmlPage(`
             <main data-pagefind-body>
-              <h2 id="contract">The contract</h2><p>x</p>
+              <h2 id="theme-interface">Theme interface</h2><p>x</p>
               <h2 id="tokens">Token list</h2><p>hawk.css reads every color through a token.</p>
             </main>
           `)

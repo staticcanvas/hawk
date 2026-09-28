@@ -270,7 +270,7 @@ new HawkSearch({
 
 Set `showResultDate: false` or `showResultTags: false` independently when that metadata
 should remain available through `HawkMatch.meta` but not appear in the results column.
-When `discoveryRow` is enabled, it consumes this same result contract: marked indexed excerpts
+When `discoveryRow` is enabled, it consumes this same result shape: marked indexed excerpts
 provide query terms, `meta.title` and result URLs provide page links, and Pagefind `sub_results`
 provide heading fragments. It does not read source frontmatter or fetch pages to build the row.
 See Pagefind's [metadata](https://pagefind.app/docs/metadata/),
@@ -308,7 +308,7 @@ generated from frontmatter — `category: Guides` for one tab, or
 Hawk reads the `category` filter dimension by default (`categoryFilterName` in the config to use
 a different one), and falls back to a single "All" pill with no filtering if nothing is marked.
 
-### Taking manual control with `tabs`
+### Configuring tabs manually
 
 Auto-derivation covers the common case — one `category` frontmatter field, one filter dimension.
 For anything more (multiple filter dimensions per tab, a fixed tab order independent of what's

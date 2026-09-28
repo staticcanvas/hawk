@@ -85,9 +85,11 @@ foreach ($release in $releases) {
     $versions[$version] = [pscustomobject][ordered]@{
         version = $version
         tag = $tagName
+        name = Get-OptionalPropertyValue -InputObject $release -Name 'name'
         released_at = $releaseDate
         release_url = "$publicProjectUrl/-/releases/$tagName"
         source_url = "$publicProjectUrl/-/tree/$tagName"
+        release_notes = Get-OptionalPropertyValue -InputObject $release -Name 'description'
         assets = @()
     }
     $versionRecord = $versions[$version]
@@ -98,6 +100,18 @@ foreach ($release in $releases) {
             name = $link.name
             kind = 'release asset'
             url = $link.url
+            source_url = $versionRecord.source_url
+            size = $null
+            checksum = $null
+        }
+    }
+    $releaseSources = Get-OptionalPropertyValue -InputObject $releaseAssets -Name 'sources'
+    foreach ($source in @($releaseSources)) {
+        $format = [string](Get-OptionalPropertyValue -InputObject $source -Name 'format')
+        $versionRecord.assets += [ordered]@{
+            name = "Source code ($format)"
+            kind = "source $format"
+            url = Get-OptionalPropertyValue -InputObject $source -Name 'url'
             source_url = $versionRecord.source_url
             size = $null
             checksum = $null
@@ -127,7 +141,7 @@ $output = [ordered]@{
     generated_at = (Get-Date).ToUniversalTime().ToString('o')
     project = $projectPath
     versions = @($versions.Values | Sort-Object released_at -Descending | ForEach-Object {
-        $_.assets = @($_.assets | Sort-Object { [string]$_['name'] } -Unique)
+        $_.assets = @($_.assets | Sort-Object -Property @{ Expression = { "$($_.name)|$($_.url)" } } -Unique)
         $_
     })
 }

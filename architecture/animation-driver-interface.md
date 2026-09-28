@@ -1,6 +1,6 @@
-# Animation driver contract
+# Animation driver interface
 
-An animation driver controls how the preview pane's title/content get revealed and how the
+An animation driver defines how the preview pane's title/content get revealed and how the
 (optional) header placeholder rotates. Hawk calls exactly four methods and never assumes
 anything about how they're implemented — `hawk-animation-instant.js` writes text/HTML directly;
 `hawk-animation-typeflow.js` wraps `TypeFlow.type()`/`TypeFlow.rotate()`.
@@ -35,7 +35,7 @@ Ported directly from what typeflow's docs search already did in practice (see
 `docs/static/assets/docs.js:1733-1809` in the typeflow repo) — it called `TypeFlow.type()` with
 different configs for anchor vs. non-anchor titles, for HTML-aware content, and for the header
 placeholder rotation, always stopping the previous controller before starting a new one. The
-contract just generalizes those four call sites into an interface so the typewriter engine isn't
+interface generalizes those four call sites so the typewriter engine isn't
 hardwired in.
 
 ## Writing your own driver

@@ -7,7 +7,7 @@
   // The name must be scoped with an '@' (e.g. @username/pkgname)
   "name": "@staticcanvas/hawk",
   // Must be a valid SemVer version (e.g. 0.1.0, 1.0.0-rc.1)
-  "version": "0.43.1",
+  "version": "0.43.2",
   // ---------------------------------------------------------
   // EXPORTS
   // ---------------------------------------------------------
@@ -15,7 +15,7 @@
   // "." is the default import (e.g. import { HawkSearch } from "@staticcanvas/hawk")
   "exports": {
     ".": "./src/hawk.js",
-    "./animation-typeflow": "./src/hawk-animation-typeflow.js",
+    "./animation-typeflow": "./src/hawk-animation-typeflow-jsr.js",
     "./debug": "./src/hawk-debug.js",
     "./icons": "./src/hawk-icons.js",
     "./metrics": "./src/hawk-metrics.js",
@@ -27,6 +27,6 @@
   // Controls which files are uploaded to JSR.
   "publish": {
     "include": ["src/**", "package.json", "README.md", "LICENSE"],
-    "exclude": ["src/**/*.test.js"],
+    "exclude": ["src/**/*.test.js", "src/hawk-animation-typeflow.js"],
   },
 }

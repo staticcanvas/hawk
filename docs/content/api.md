@@ -43,12 +43,12 @@ related:
 | `showResultDate`               | `boolean`                                                                              | `true`                                                    | Shows `meta[resultDateMetaKey]` beneath each result excerpt when present.                                                                                                                                                    |
 | `resultDateMetaKey`            | `string`                                                                               | `'date'`                                                  | Pagefind metadata key used for result dates.                                                                                                                                                                                 |
 | `resultDateFormat`             | `'timestamp' \| 'relative'`                                                            | `'timestamp'`                                              | `'relative'` renders the raw value as relative time ("7 days ago", "last month") via `Intl.RelativeTimeFormat`. The `<time datetime>` attribute always keeps the raw value.                                                 |
-| `showResultTags`               | `boolean`                                                                              | `true`                                                    | Shows comma-separated `meta[resultTagsMetaKey]` values as tags beneath each result excerpt. Also controls the `meta.section` tag. Page-level matches only — an anchor/heading sub-result reuses its parent page's meta wholesale, so it never repeats the same tags.               |
+| `showResultTags`               | `boolean`                                                                              | `true`                                                    | Shows comma-separated `meta[resultTagsMetaKey]` values as tags beneath each result excerpt. Also sets whether the `meta.section` tag appears. Page-level matches only — an anchor/heading sub-result reuses its parent page's meta wholesale, so it never repeats the same tags.       |
 | `resultTagsMetaKey`            | `string`                                                                               | `'tags'`                                                  | Pagefind metadata key used for result tags.                                                                                                                                                                                  |
 | `resultAccentColors`           | `string[] \| false`                                                                    | `false`                                                   | Pastel colors rotated across whole result rows (title, tags, badges uniformly). `false` disables the accent treatment.                                                                                                       |
 | `tagAccentColors`               | `string[] \| false`                                                                    | a built-in pastel range                                   | Pastel colors rotated across the tags *within* a single result — independent of `resultAccentColors`, resets per row. `false` disables it and falls back to `resultAccentColors`/`--hawk-accent`.                           |
 | `showSubpageConnector`         | `boolean`                                                                              | `true`                                                    | Indents an anchor/heading match and draws a connector line against its parent page's row above it. `false` renders every row — page or heading match alike — flat.                                                          |
-| `headerControls`               | `false \| { density?, escape? }`                                                       | both enabled                                              | Controls the density group and Escape button. `false` leaves a minimal header containing only the search input.                                                                                                              |
+| `headerControls`               | `false \| { density?, escape? }`                                                       | both enabled                                              | Configures the density group and Escape button. `false` leaves a minimal header containing only the search input.                                                                                                            |
 | `backdrop`                     | `{ color?, gradient?, opacity?, blur? }`                                               | `{}`                                                       | Customizes the modal scrim independently of the theme's own `--hawk-backdrop*` tokens. `gradient` replaces `color` when set. Unset keys fall back to the theme.                                                              |
 | `excludePages`                 | `string \| string[]`                                                                   | `[]`                                                      | Page URLs or paths omitted from results. Query strings, hashes, and trailing slashes are ignored; excluding a page excludes its section results too.                                                                         |
 | `contentSelector`              | `string`                                                                               | `'[data-pagefind-body]'`                                  | Selects the preview pane's content from a fetched result page. See [Rich preview content](#rich-preview-content).                                                                                                            |
@@ -340,7 +340,7 @@ behaves (e.g. `"ratio: 16:9"` would get `ratio:` parsed as a filter attempt). Se
 
 ## Theming
 
-Beyond the `--hawk-*` custom properties documented in `architecture/theme-contract.md`:
+Beyond the `--hawk-*` custom properties documented in `architecture/theme-interface.md`:
 
 - `--hawk-font-family` / `--hawk-font-size-base` — set on `.hawk-modal-dialog`, inherited by
   everything inside it.
@@ -533,15 +533,15 @@ new HawkSearch({
 });
 ```
 
-`params.columns` still controls the normal one/two-column layout. `enableSecondColumn: false` is
+`params.columns` still sets the normal one/two-column layout. `enableSecondColumn: false` is
 the stronger setting: it hides the preview pane and forces the results layout to one column even
 when `params.columns` is `2`.
 
 ## Rotating placeholder
 
 `rotatingPlaceholders: string[]` cycles example queries through the search input via the
-animation driver's `rotatePlaceholder` method (defined in the driver contract, previously never
-called by core — see `architecture/animation-driver-contract.md`). Implemented as an absolutely
+animation driver's `rotatePlaceholder` method (defined in the driver interface, previously never
+called by core — see `architecture/animation-driver-interface.md`). Implemented as an absolutely
 positioned overlay (`.hawk-input-ghost`) rather than the native `placeholder` attribute, which
 can't be typed character-by-character. Only runs while the modal is open and the input is empty;
 never in the background while closed.
@@ -681,7 +681,7 @@ with `revealDuration` to match your own timing; an unrecognized name otherwise d
 - `@staticcanvas/hawk/metrics` — `createHawkMetrics(hawk, options?)`
 
 See [Theming]({{< relref "/guides/theming" >}}) and
-[Animation Plugins]({{< relref "/guides/animation-plugins" >}}) for the full contracts.
+[Animation Plugins]({{< relref "/guides/animation-plugins" >}}) for the full interfaces.
 
 ## `createHawkDebug(hawk, options?)`
 

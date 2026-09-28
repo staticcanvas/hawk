@@ -1,7 +1,7 @@
 /**
  * @fileoverview Zero-dependency animation driver: the default when no animation plugin is
  * configured, and the fallback hawk uses automatically when TypeFlow isn't available at
- * runtime. Implements the same driver contract as hawk-animation-typeflow.js with direct,
+ * runtime. Implements the same driver interface as hawk-animation-typeflow.js with direct,
  * instant DOM writes instead of typewriter effects.
  * @module hawk-animation-instant
  */
@@ -17,7 +17,7 @@
  * @property {(controller: unknown) => void} stop Stops an active controller when applicable.
  */
 
-/** Instant, synchronous fallback implementation of the Hawk animation contract. @type {HawkAnimationDriver} */
+/** Instant, synchronous fallback implementation of the Hawk animation interface. @type {HawkAnimationDriver} */
 export const HawkAnimationInstant = {
   typeTitle(el, text) {
     el.textContent = text;
