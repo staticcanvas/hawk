@@ -37,59 +37,59 @@ disableKinds = ['taxonomy', 'term']
     weight = 10
   [[menu.main]]
     name = 'Get started'
-    pageRef = '/getting-started/'
+    pageRef = '/getting-started'
     weight = 20
   [[menu.main]]
     name = 'Playground'
-    pageRef = '/playground/'
+    pageRef = '/playground'
     weight = 25
   [[menu.main]]
     name = 'Theme gallery'
-    pageRef = '/themes/'
+    pageRef = '/themes'
     weight = 27
   [[menu.main]]
     name = 'Guides'
     identifier = 'guides'
-    pageRef = '/guides/'
+    pageRef = '/guides'
     weight = 30
   [[menu.main]]
     name = 'Theming'
     parent = 'guides'
-    pageRef = '/guides/theming/'
+    pageRef = '/guides/theming'
     weight = 31
   [[menu.main]]
     name = 'Animation Plugins'
     parent = 'guides'
-    pageRef = '/guides/animation-plugins/'
+    pageRef = '/guides/animation-plugins'
     weight = 32
   [[menu.main]]
     name = 'Pagefind Setup'
     parent = 'guides'
-    pageRef = '/guides/pagefind-setup/'
+    pageRef = '/guides/pagefind-setup'
     weight = 33
   [[menu.main]]
     name = 'Density and keyboard navigation'
     parent = 'guides'
-    pageRef = '/guides/density-and-navigation/'
+    pageRef = '/guides/density-and-navigation'
     weight = 34
   [[menu.main]]
     name = 'Pins, the built-in trigger, and attribution'
     parent = 'guides'
-    pageRef = '/guides/pins-and-embedding/'
+    pageRef = '/guides/pins-and-embedding'
     weight = 35
   [[menu.main]]
     name = 'Debug'
     parent = 'guides'
-    pageRef = '/guides/debug/'
+    pageRef = '/guides/debug'
     weight = 36
   [[menu.main]]
     name = 'Metrics'
     parent = 'guides'
-    pageRef = '/guides/metrics/'
+    pageRef = '/guides/metrics'
     weight = 37
   [[menu.main]]
     name = 'API reference'
-    pageRef = '/api/'
+    pageRef = '/api'
     weight = 40
   [[menu.main]]
     name = 'Resources'
@@ -98,10 +98,10 @@ disableKinds = ['taxonomy', 'term']
   [[menu.main]]
     name = 'Downloads'
     parent = 'resources'
-    pageRef = '/downloads/'
+    pageRef = '/downloads'
     weight = 51
   [[menu.main]]
     name = 'Changelog'
     parent = 'resources'
-    pageRef = '/changelog/'
+    pageRef = '/changelog'
     weight = 52

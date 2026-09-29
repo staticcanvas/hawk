@@ -87,7 +87,7 @@ test:e2e:
       - test-results/
       - playwright-report/
     expire_in: 3 days
-  allow_failure: true
+  allow_failure: false
 
 # ------------------------------------------------------
 # Coverage stage
