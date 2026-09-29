@@ -1,4 +1,4 @@
-<img src="https://gitlab.com/staticcanvas/hawk/-/raw/main/branding/hawk-logo.svg" width="64" height="64" alt="Hawk logo" />
+<img src="https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp" width="512" height="205" alt="Hawk logo" />
 
 # **@staticcanvas/hawk**
 
