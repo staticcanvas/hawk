@@ -1,23 +1,23 @@
-<div align="center">
+<div align="left">
 
 ![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
 
-[![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk)
-[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
+[![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk)
+[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
 [![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.4-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
-[![documentation](https://img.shields.io/badge/docs-online-7fffd4?style=for-the-badge&logo=gitbook&logoColor=0bea59)](https://staticcanvas.gitlab.io/hawk)
-[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
+[![documentation](https://img.shields.io/badge/docs-online-7fffd4?style=flat-square&logo=gitbook&logoColor=0bea59)](https://staticcanvas.gitlab.io/hawk)
+[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
-[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/releases/permalink/latest)
-[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/hawk?style=for-the-badge&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/tags)
+[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/releases/permalink/latest)
+[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/tags)
 
-[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=for-the-badge&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
-[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/hawk?style=for-the-badge&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
+[![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
+[![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
 
-[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=for-the-badge&logo=jsr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://jsr.io/%40staticcanvas/hawk)
-[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=for-the-badge&logo=jsdelivr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
+[![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://jsr.io/%40staticcanvas/hawk)
+[![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
 
-[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.4-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.1-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 
