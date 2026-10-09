@@ -75,7 +75,7 @@
     "test:coverage:bun": "bun test --coverage tests/*.test.js",
     "test:e2e": "npm run docs:data && npm run build && hugo --source docs --destination ../public-e2e --baseURL http://localhost:4174/public-e2e/ --cleanDestinationDir && node scripts/pagefind-index.mjs --site public-e2e && playwright test",
     "check:size": "node scripts/check-bundle-size.mjs",
-    "check:jsr": "jsr publish --dry-run",
+    "check:jsr": "node scripts/check-jsr-package.mjs",
     "validate:release": "node scripts/validate-release.mjs",
     "check:quality": "npm run build && npm run check:size && npm test",
     "bench:size": "node scripts/compare-bundle-size.mjs"
