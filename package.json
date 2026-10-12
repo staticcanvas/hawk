@@ -1,6 +1,6 @@
 {
   "name": "@staticcanvas/hawk",
-  "version": "0.43.4",
+  "version": "0.43.5",
   "description": "Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations (a TypeFlow typewriter driver ships built-in), swappable visual themes.",
   "type": "module",
   "main": "./dist/hawk.cjs",
@@ -75,7 +75,7 @@
     "test:coverage:bun": "bun test --coverage tests/*.test.js",
     "test:e2e": "npm run docs:data && npm run build && hugo --source docs --destination ../public-e2e --baseURL http://localhost:4174/public-e2e/ --cleanDestinationDir && node scripts/pagefind-index.mjs --site public-e2e && playwright test",
     "check:size": "node scripts/check-bundle-size.mjs",
-    "check:jsr": "jsr publish --dry-run",
+    "check:jsr": "node scripts/check-jsr-package.mjs",
     "validate:release": "node scripts/validate-release.mjs",
     "check:quality": "npm run build && npm run check:size && npm test",
     "bench:size": "node scripts/compare-bundle-size.mjs"
