@@ -1,4 +1,4 @@
-<div align="left">
+<div align="center">
 
 ![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
 
@@ -17,11 +17,9 @@
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://jsr.io/%40staticcanvas/hawk)
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
 
-[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.1-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.7-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
-
-</div>
 
 ## Overview
 
@@ -33,6 +31,8 @@ hardcoded choices.
 
 Full usage, configuration, and theming detail lives in the docs site linked below — this README
 stays a short pitch plus what you need to build the project from source.
+
+</div>
 
 ---
 
