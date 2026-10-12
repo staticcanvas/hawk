@@ -19,8 +19,6 @@
 
 [![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.7-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
-<img src="https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.7-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge">
-
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 
 ## Overview
