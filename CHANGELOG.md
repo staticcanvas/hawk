@@ -5,37 +5,81 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.43.1]
-
-> 2026-09-25
+## [Unreleased]
 
 <!-- rivet:changelog:start -->
 
-- No release-note commits were found in the selected range.
+### Changed
+
+- Update repo meta data via rivet for release. ([6d6b130](https://gitlab.com/staticcanvas/hawk/-/commit/6d6b130989c77c7770305932831acee3e1a72e59) — @sgkens)
+- Update revit label config for repo. ([a3bc101](https://gitlab.com/staticcanvas/hawk/-/commit/a3bc101a6513ca7dea58f02c06404dd58a3691f4) — @sgkens)
+- Update jsr script checker. ([faad850](https://gitlab.com/staticcanvas/hawk/-/commit/faad850cacd12fff0efdf9061ada2dd7f1305a4e) — @sgkens)
+
+### Fixed
+
+- Jsr dynamic import relic from npm update pointers to relect. ([db7dad4](https://gitlab.com/staticcanvas/hawk/-/commit/db7dad4d06f6308f31a49412e9831e5a618c3d8f) — @sgkens)
 
 <!-- rivet:changelog:end -->
 
+## [0.43.5-release]
+
+> 2026-10-12
+
+### Changed
+
+- Update package package-lock and jsr with new semver. ([563d41b](https://gitlab.com/staticcanvas/hawk/-/commit/563d41b6ee371e5620f0ccbbae186a5926a6c629) — @sgkens)
+
+### Fixed
+
+- Resolve JSR debug dependency. ([2bedc0c](https://gitlab.com/staticcanvas/hawk/-/commit/2bedc0cec67f2494b0353fc3a2aafa5053c1d26d) — @sgkens)
+
+## [0.43.4-release]
+
+> 2026-10-09
+
+### Changed
+
+- Update readme release meta data. ([0b7eff4](https://gitlab.com/staticcanvas/hawk/-/commit/0b7eff4d257f2b6d1312f0a19fc10bb62f664c78) — @sgkens)
+- Update gitignore added gx. ([f850c4c](https://gitlab.com/staticcanvas/hawk/-/commit/f850c4c5258d3efe9e18a8b04fe8bc4ec47b2478) — @sgkens)
+- Update docs and ci for release. ([6e10387](https://gitlab.com/staticcanvas/hawk/-/commit/6e10387fd6024ceb80ded62b0ffd3379a67dde97) — @sgkens)
+- Update readme-npm with correct logo pointer. ([c77be0b](https://gitlab.com/staticcanvas/hawk/-/commit/c77be0b40fcb03993fd972aed6c6610f84192f9e) — @sgkens)
+- Update repository meta for release. ([b130695](https://gitlab.com/staticcanvas/hawk/-/commit/b13069508f25bb00c63706c79de8e6e054f4fe3f) — @sgkens)
+- Update rivet meta data config and updated readmes to reflect. ([7f055eb](https://gitlab.com/staticcanvas/hawk/-/commit/7f055eb3d1ed5eda102e5d0a08cd839902706a51) — @sgkens)
+- Update for release 0.43.3. ([f544710](https://gitlab.com/staticcanvas/hawk/-/commit/f544710e62d96f4b96c9d4eb607dd43936b3ec8a) — @sgkens)
+- Prepare v0.43.2. ([01c5b27](https://gitlab.com/staticcanvas/hawk/-/commit/01c5b270ba06d5ee749a24ca2e4bfa74ee21592d) — @sgkens)
+- Clarify architecture language. ([f2d55d6](https://gitlab.com/staticcanvas/hawk/-/commit/f2d55d628082f64972a04850183448ec72e62511) — @sgkens)
+
+### Fixed
+
+- Restore sidebar navigation on CI Hugo. ([e240e37](https://gitlab.com/staticcanvas/hawk/-/commit/e240e3702b6681b87b4179b5696fbbba84aaf6b9) — @sgkens)
+- Preserve sidebar routes and derive version. ([b64edd3](https://gitlab.com/staticcanvas/hawk/-/commit/b64edd331481fffdcb88934c724b97acbe53652c) — @sgkens)
+- Finalize v0.43.1 packaging and splash layout. ([3741401](https://gitlab.com/staticcanvas/hawk/-/commit/37414013bdb9fb5377f779596e712a295e55227a) — @sgkens)
+
+## [0.43.1-release]
+
+> 2026-09-25
+
 ### Added
 
-- Remove homepage search-model gallery. ([37b1c2e](https://gitlab.com/staticcanvas/hawk/-/commit/37b1c2e96cd8b80b5e2dae0a12805540fb00088c) — @sgkens)
-- Split site JS/CSS into scoped modules and SCSS partials. ([e312459](https://gitlab.com/staticcanvas/hawk/-/commit/e3124597f8785ccc79506f59995c6290b3c73253) — @sgkens)
-- Add 10 new theme-gallery palettes and per-theme CSS generation. ([d6fa347](https://gitlab.com/staticcanvas/hawk/-/commit/d6fa347d752fc3d6ce6156fa0d4cd34401844a09) — @sgkens)
-- Add relative dates, tag accent colors, and subpage connector toggle. ([796c9ef](https://gitlab.com/staticcanvas/hawk/-/commit/796c9efc89e4e213bb8acaf864b00c8a921aa104) — @sgkens)
-- Add vertical fit density mode. ([dd203b8](https://gitlab.com/staticcanvas/hawk/-/commit/dd203b8f4951645398c5bcbc23da67ce1d609824) — @sgkens)
-- Add configurable result accent colors. ([f48fe39](https://gitlab.com/staticcanvas/hawk/-/commit/f48fe39eef83d01eed7bbb890ea8e3238027887e) — @sgkens)
-- Configure modal backdrop scrim. ([6a985c2](https://gitlab.com/staticcanvas/hawk/-/commit/6a985c20e6bb7ab6b0a31fbe6809693c0498f981) — @sgkens)
-- Add feature capability icons. ([1349459](https://gitlab.com/staticcanvas/hawk/-/commit/13494596af771ba1558bfb18ac6f78e84e109d0b) — @sgkens)
-- Link homepage features to guides. ([84aad91](https://gitlab.com/staticcanvas/hawk/-/commit/84aad91f82f6892662aee65b2aef0fe6f6a2534c) — @sgkens)
-- Add seamless minimal theme. ([0f53d60](https://gitlab.com/staticcanvas/hawk/-/commit/0f53d60fb347c77905fff4668d528e5881ec5a21) — @sgkens)
-- Add icon adapters, frontmatter fixture coverage, and responsive audits. ([b8ae828](https://gitlab.com/staticcanvas/hawk/-/commit/b8ae8289a20dba095ffdffc2f149294720ed5a5e) — @sgkens)
-- Refine homepage capability cards. ([ae78730](https://gitlab.com/staticcanvas/hawk/-/commit/ae787309427821d796260701844510caa4734101) — @sgkens)
-- Add manifest-driven search gallery. ([695af58](https://gitlab.com/staticcanvas/hawk/-/commit/695af58d90fe9afce8a69f113afc261931f5768f) — @sgkens)
-- Refine homepage hero lockup. ([cfa284c](https://gitlab.com/staticcanvas/hawk/-/commit/cfa284cbfb19c336a5e118366ed7528a93444a5f) — @sgkens)
-- Add responsive navigation menu. ([204d5bc](https://gitlab.com/staticcanvas/hawk/-/commit/204d5bc5b013995cbfa02c6fe1db5b8e1d86a233) — @sgkens)
-- Add responsive table of contents. ([d96823d](https://gitlab.com/staticcanvas/hawk/-/commit/d96823d6bac923199bbdc1cd26fd8368ee48358e) — @sgkens)
-- Link gallery presets to playground. ([ada9066](https://gitlab.com/staticcanvas/hawk/-/commit/ada9066916f791be0a01215cbf268fdcb38ab60e) — @sgkens)
-- Integrate theme gallery, docs profile adapter, and playground workbench. ([555b3f9](https://gitlab.com/staticcanvas/hawk/-/commit/555b3f9c91ebf80d8a7736f0027d4821fbc208a5) — @sgkens)
-- Add customization, diagnostics, metrics and docs playground. ([b36d406](https://gitlab.com/staticcanvas/hawk/-/commit/b36d406bc3e8604a90ad4b34fa16d59630bf0889) — @sgkens)
+- Remove homepage search-model gallery. ([e3de2d3](https://gitlab.com/staticcanvas/hawk/-/commit/e3de2d3505eee8d27082261ec8abdcf3ea7a8e14) — @sgkens)
+- Split site JS/CSS into scoped modules and SCSS partials. ([b586346](https://gitlab.com/staticcanvas/hawk/-/commit/b58634637791491ce4756df00a4e34cbd920d610) — @sgkens)
+- Add 10 new theme-gallery palettes and per-theme CSS generation. ([5390cc2](https://gitlab.com/staticcanvas/hawk/-/commit/5390cc2be1b39b431c984579aceae4fa5d537c15) — @sgkens)
+- Add relative dates, tag accent colors, and subpage connector toggle. ([cd52458](https://gitlab.com/staticcanvas/hawk/-/commit/cd524582807c0e9c4183f7b679373488837cb6e1) — @sgkens)
+- Add vertical fit density mode. ([b50fd6c](https://gitlab.com/staticcanvas/hawk/-/commit/b50fd6ce9d97b53d3ef6378f93d5aff530fe0fc3) — @sgkens)
+- Add configurable result accent colors. ([c738f4e](https://gitlab.com/staticcanvas/hawk/-/commit/c738f4e37b6c1f981f8e8c67fbdaa60f1f448335) — @sgkens)
+- Configure modal backdrop scrim. ([ffb3586](https://gitlab.com/staticcanvas/hawk/-/commit/ffb3586d152753369f9293606c596ee4008769ee) — @sgkens)
+- Add feature capability icons. ([381e1b9](https://gitlab.com/staticcanvas/hawk/-/commit/381e1b9bf057cabe859c4cd25132749f228fe6a4) — @sgkens)
+- Link homepage features to guides. ([f88a759](https://gitlab.com/staticcanvas/hawk/-/commit/f88a759756c0a809949a9faabf7e978b0893472d) — @sgkens)
+- Add seamless minimal theme. ([d89d3e2](https://gitlab.com/staticcanvas/hawk/-/commit/d89d3e23563dd0a5647ac81f359667d6791a2995) — @sgkens)
+- Add icon adapters, frontmatter fixture coverage, and responsive audits. ([524e903](https://gitlab.com/staticcanvas/hawk/-/commit/524e9034fa98cf504301c6582e125a2bd15676a4) — @sgkens)
+- Refine homepage capability cards. ([ec0140a](https://gitlab.com/staticcanvas/hawk/-/commit/ec0140a578e4337524b918b8089641ba460b928b) — @sgkens)
+- Add manifest-driven search gallery. ([163fd3e](https://gitlab.com/staticcanvas/hawk/-/commit/163fd3ebfff69a52b195a9458b6aaafacd45dd56) — @sgkens)
+- Refine homepage hero lockup. ([3202e6f](https://gitlab.com/staticcanvas/hawk/-/commit/3202e6fc71dcf0d971a777e6f07bb7de8ba9d440) — @sgkens)
+- Add responsive navigation menu. ([510780c](https://gitlab.com/staticcanvas/hawk/-/commit/510780c5f8c94ce7cc950c390ea4999d0df4acd7) — @sgkens)
+- Add responsive table of contents. ([0ffdeb2](https://gitlab.com/staticcanvas/hawk/-/commit/0ffdeb23f1b4143ad32b052a23204e86cf6189bf) — @sgkens)
+- Link gallery presets to playground. ([0fc2ed0](https://gitlab.com/staticcanvas/hawk/-/commit/0fc2ed05954659f46e45316fcd25ca3e30a8984a) — @sgkens)
+- Integrate theme gallery, docs profile adapter, and playground workbench. ([d252fa8](https://gitlab.com/staticcanvas/hawk/-/commit/d252fa880105e90d44a7125ecca6f1ebd067bbc8) — @sgkens)
+- Add customization, diagnostics, metrics and docs playground. ([67c54ef](https://gitlab.com/staticcanvas/hawk/-/commit/67c54efcda86cb008f514ef10125fa955cff5b8c) — @sgkens)
 - Expose every TypeFlow option and copy-pasteable code on the playground. ([c9bc080](https://gitlab.com/staticcanvas/hawk/-/commit/c9bc080cee37a984f5198c3ebdb29b26e74c310f) — @sgkens)
 - Add debug/metrics plugin packages and a live playground page. ([ac7ecc9](https://gitlab.com/staticcanvas/hawk/-/commit/ac7ecc9c20d3520a01f4441067e9ad3d18987f10) — @sgkens)
 - Staggered results reveal and per-tab accent colors. ([d9d7ab1](https://gitlab.com/staticcanvas/hawk/-/commit/d9d7ab19772b8f9d8d14cd48bf47dd905be398fa) — @sgkens)
@@ -62,15 +106,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Update metadata for v0.43.0 release. ([9871787](https://gitlab.com/staticcanvas/hawk/-/commit/98717872f6a32d40a58cec4b1a8a7ce574cf847b) — @sgkens)
-- Update guide content, frontmatter contract, and article chrome. ([3079f6c](https://gitlab.com/staticcanvas/hawk/-/commit/3079f6c8b832d5333e0f876005874dd301027a86) — @sgkens)
-- Add SCSS compilation, theme CSS generation, and lume/sass tooling. ([7a0cbb0](https://gitlab.com/staticcanvas/hawk/-/commit/7a0cbb0b2cb7b456823c9c99cb224992a7d19523) — @sgkens)
-- Add release gate audit. ([117549a](https://gitlab.com/staticcanvas/hawk/-/commit/117549a74ca8d5334ad93c9479c02e881829fbf5) — @sgkens)
-- Add zero-TypeFlow mount example. ([f4db773](https://gitlab.com/staticcanvas/hawk/-/commit/f4db7737b580970f8263b5a9b9d81210ef79e9e1) — @sgkens)
-- Add frontmatter mapping examples. ([271b28c](https://gitlab.com/staticcanvas/hawk/-/commit/271b28cfc40242bf943750c96fe64aac8cacfead) — @sgkens)
-- Fix e2e ci job stage failure - Wider tablet/desktop layouts retain scrollbar stabilization. ([3b4c27a](https://gitlab.com/staticcanvas/hawk/-/commit/3b4c27aeebad14d1202aa86915020a8ab7fea7ad) — @sgkens)
-- Exclude generated site snapshot from lint. ([df60429](https://gitlab.com/staticcanvas/hawk/-/commit/df604294c3aac94965244df55432a2119b39d323) — @sgkens)
-- Update gitignore and readme. ([848d5ee](https://gitlab.com/staticcanvas/hawk/-/commit/848d5ee680ecb55f053c5b0473876fe57c8baf79) — @sgkens)
+- Update repository meta for release. ([5378ab6](https://gitlab.com/staticcanvas/hawk/-/commit/5378ab6e4e2acea55cfb61ce39fc8b58fb611f5a) — @sgkens)
+- Fix validate:release ci stage. ([f8b36cc](https://gitlab.com/staticcanvas/hawk/-/commit/f8b36ccf4caf210d0f22bb4909c53e12219c88ad) — @sgkens)
+- Update npm readme. ([b242c18](https://gitlab.com/staticcanvas/hawk/-/commit/b242c188f34fac7604b0e1051230bdc50e9fc449) — @sgkens)
+- Update rivet repo metadata. ([c545c0d](https://gitlab.com/staticcanvas/hawk/-/commit/c545c0daceb1c06b067d073a3ce86628bed810b6) — @sgkens)
+- Update rivet metatdata. ([3c04f1a](https://gitlab.com/staticcanvas/hawk/-/commit/3c04f1aa9b1043391be51f9cea01f7735f2ce3a6) — @sgkens)
+- Condense features, add build-from-source and resources. ([601d417](https://gitlab.com/staticcanvas/hawk/-/commit/601d4173ab057ca36f78a3a11de07f6796f667cf) — @sgkens)
+- Removed jq,zip install from build stage phellams-automator already has this dependancies installed. ([dce755d](https://gitlab.com/staticcanvas/hawk/-/commit/dce755da653e2db2a8aa8951d6b64b9d7f84994d) — @sgkens)
+- Update additional metadata for v0.43.0 release. ([422babc](https://gitlab.com/staticcanvas/hawk/-/commit/422babceee9803ac63bf705c4f4e32f1f9fe3867) — @sgkens)
+- Update metadata for v0.43.0 release. ([74b7f1a](https://gitlab.com/staticcanvas/hawk/-/commit/74b7f1a7392baf4411ea884dceb38e5a2743a2f4) — @sgkens)
+- Update guide content, frontmatter contract, and article chrome. ([ecabe19](https://gitlab.com/staticcanvas/hawk/-/commit/ecabe19f57cda57527cd91b213e660998003d499) — @sgkens)
+- Add SCSS compilation, theme CSS generation, and lume/sass tooling. ([6f87297](https://gitlab.com/staticcanvas/hawk/-/commit/6f8729795d4648e8d2cb5f9e2f7945eb765e2493) — @sgkens)
+- Add release gate audit. ([39c2bc8](https://gitlab.com/staticcanvas/hawk/-/commit/39c2bc8bb844d1c5f107102cf5bad1161f2cf6f0) — @sgkens)
+- Add zero-TypeFlow mount example. ([c634d65](https://gitlab.com/staticcanvas/hawk/-/commit/c634d655fcf151ef808fa1a17a851c02638236f9) — @sgkens)
+- Add frontmatter mapping examples. ([0a26d5e](https://gitlab.com/staticcanvas/hawk/-/commit/0a26d5e99befb548c05a0a21971c0a9abee96904) — @sgkens)
+- Fix e2e ci job stage failure - Wider tablet/desktop layouts retain scrollbar stabilization. ([fa16163](https://gitlab.com/staticcanvas/hawk/-/commit/fa16163a3b61594fa149098c05c0f91cd1de348d) — @sgkens)
+- Exclude generated site snapshot from lint. ([e8787f5](https://gitlab.com/staticcanvas/hawk/-/commit/e8787f54ba6e3b4d8bc929e5caab209f0992b397) — @sgkens)
+- Update gitignore and readme. ([39e539b](https://gitlab.com/staticcanvas/hawk/-/commit/39e539bbb861d51d3b369a5973ec004e23d4b160) — @sgkens)
 - 0.5.2 changelog. ([c422854](https://gitlab.com/staticcanvas/hawk/-/commit/c422854e1378f76227f691ec756077f926c6f706) — @sgkens)
 - Bump to 0.5.1. ([fff2759](https://gitlab.com/staticcanvas/hawk/-/commit/fff275982ed5347e0d5939d1b84dcac708b04f57) — @sgkens)
 - Refresh homepage feature grid for parity with hawk's features. ([60f43b3](https://gitlab.com/staticcanvas/hawk/-/commit/60f43b3f43ac894028abe3966b6b4a31899586d3) — @sgkens)
@@ -91,21 +143,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scaffold package from lume template. ([2a7b529](https://gitlab.com/staticcanvas/hawk/-/commit/2a7b529acb4469fa0eb98e15a05d9bc96ec9898c) — @sgkens)
 - Initial commit. ([3cb5baa](https://gitlab.com/staticcanvas/hawk/-/commit/3cb5baa59305dd6cd406a73aa8028c8a094952ec) — Garvey Snow)
 
+### Removed
+
+- Branding folder move to dedicated repository. ([924a3c9](https://gitlab.com/staticcanvas/hawk/-/commit/924a3c95d03c60b14c58e95312d4143e557b4b11) — @sgkens)
+
 ### Fixed
 
-- Normalize logcad's UMD default export shape. ([d7f6da6](https://gitlab.com/staticcanvas/hawk/-/commit/d7f6da6f75d0686d11f6c5279eb84b561b5d5a1b) — @sgkens)
-- Tighten compact result density. ([ccd5e92](https://gitlab.com/staticcanvas/hawk/-/commit/ccd5e92b8f37251c65098de02abc38c301d203a5) — @sgkens)
-- Prioritize result metadata and contrast. ([9465432](https://gitlab.com/staticcanvas/hawk/-/commit/94654321bc6222a595773c7713aed368aa9a8f22) — @sgkens)
-- Use explicit feature read more links. ([022789e](https://gitlab.com/staticcanvas/hawk/-/commit/022789ebd54515e8bccb1bf02a404763a88ae0ec) — @sgkens)
-- Use explicit feature read more links. ([cb34bdc](https://gitlab.com/staticcanvas/hawk/-/commit/cb34bdc35139333d78a451e7ef1cf2a8ca76e66b) — @sgkens)
-- Consolidate search gallery heading. ([1580885](https://gitlab.com/staticcanvas/hawk/-/commit/158088580111f73229becd2700e7527c76b4f87c) — @sgkens)
-- Widen search model gallery. ([a6834aa](https://gitlab.com/staticcanvas/hawk/-/commit/a6834aa57bb93901f9bc3021b849456e6bef25da) — @sgkens)
-- Audit theme gallery palettes. ([6a63638](https://gitlab.com/staticcanvas/hawk/-/commit/6a636386168f7b4ec212fbbdc827af57f258d1c7) — @sgkens)
-- Simplify configured model gallery. ([e40d224](https://gitlab.com/staticcanvas/hawk/-/commit/e40d2241accd02b23e7f38ad26f32293ef3d0db3) — @sgkens)
-- Align animation defaults. ([a353bbf](https://gitlab.com/staticcanvas/hawk/-/commit/a353bbfae53a705e173245f6943621fca39f1209) — @sgkens)
-- Compact markdown tables. ([7195cbd](https://gitlab.com/staticcanvas/hawk/-/commit/7195cbd9b9f05378cf89aced7464c366879365c5) — @sgkens)
-- Stabilise modal hover, add playground persistence, restyle pattern, update TypeFlow animation, add page transitions, restrict eyebrow to guides. ([d728a83](https://gitlab.com/staticcanvas/hawk/-/commit/d728a831784d21706616c9ab284c1e9e5d981858) — @sgkens)
-- Align playground workbench with header. ([5d9fd20](https://gitlab.com/staticcanvas/hawk/-/commit/5d9fd202ddc185f5fff05859e7b6a230d92a82ab) — @sgkens)
+- Harden docs and JSR release support. ([a05b921](https://gitlab.com/staticcanvas/hawk/-/commit/a05b9210e6950e7b6eab18a4eb8229302447a1e8) — @sgkens)
+- Normalize logcad's UMD default export shape. ([6e45d0a](https://gitlab.com/staticcanvas/hawk/-/commit/6e45d0a294c0afc8ba6bc74b26de3695edb481dc) — @sgkens)
+- Tighten compact result density. ([7b2ab51](https://gitlab.com/staticcanvas/hawk/-/commit/7b2ab5142d4b33361932be74a3dd7c4da19813c2) — @sgkens)
+- Prioritize result metadata and contrast. ([6e6dc24](https://gitlab.com/staticcanvas/hawk/-/commit/6e6dc249bf961f92e105a783062f7bd51cfaeb5d) — @sgkens)
+- Use explicit feature read more links. ([86294bb](https://gitlab.com/staticcanvas/hawk/-/commit/86294bb5a75429c25233da7ca1e25b6928b54ef1) — @sgkens)
+- Use explicit feature read more links. ([7f8af3f](https://gitlab.com/staticcanvas/hawk/-/commit/7f8af3f47b4e104fafbbac583c60c0f91058f5f7) — @sgkens)
+- Consolidate search gallery heading. ([a9a2ef9](https://gitlab.com/staticcanvas/hawk/-/commit/a9a2ef9a666988653699fc1cceb4b3e6fea511fe) — @sgkens)
+- Widen search model gallery. ([b414117](https://gitlab.com/staticcanvas/hawk/-/commit/b414117c5ab183d5a2b7ddc7460eebc22047cebc) — @sgkens)
+- Audit theme gallery palettes. ([3256ab0](https://gitlab.com/staticcanvas/hawk/-/commit/3256ab0ac8004559c7cc5338018125ec7636c004) — @sgkens)
+- Simplify configured model gallery. ([dfeec60](https://gitlab.com/staticcanvas/hawk/-/commit/dfeec606040e56f48dcfb395ef76d3e6455b581f) — @sgkens)
+- Align animation defaults. ([ec0609b](https://gitlab.com/staticcanvas/hawk/-/commit/ec0609b38500979dc9ddfd76f36f8dce82e20097) — @sgkens)
+- Compact markdown tables. ([533939f](https://gitlab.com/staticcanvas/hawk/-/commit/533939f7042d45ca97f38c9cdb1cc7a0c0a39965) — @sgkens)
+- Stabilise modal hover, add playground persistence, restyle pattern, update TypeFlow animation, add page transitions, restrict eyebrow to guides. ([401db02](https://gitlab.com/staticcanvas/hawk/-/commit/401db026551b0118801f22d64400f6555e9fbd11) — @sgkens)
+- Align playground workbench with header. ([6bb4b2c](https://gitlab.com/staticcanvas/hawk/-/commit/6bb4b2c9ee317398bc52496e67cd2e4917d35a5a) — @sgkens)
 - Scope bun test scripts away from the Playwright e2e directory. ([04e7968](https://gitlab.com/staticcanvas/hawk/-/commit/04e7968fa598feecce1e2dd2619456303a29ead7) — @sgkens)
 - Escape the search query before it reaches noResults()/innerHTML. ([51d6904](https://gitlab.com/staticcanvas/hawk/-/commit/51d690485c6563e987d2196d840acc9d547d98c1) — @sgkens)
 - Table/word overflow past the TOC, header overflow, hero alignment. ([1151a48](https://gitlab.com/staticcanvas/hawk/-/commit/1151a48cf8e74ac266bc251e2061610b30b3ccf3) — @sgkens)
