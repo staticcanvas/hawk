@@ -1,4 +1,4 @@
-<div align="left">
+<div align="center">
 
 ![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
 
@@ -17,11 +17,9 @@
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://jsr.io/%40staticcanvas/hawk)
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
 
-[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.1-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.7-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
-
-</div>
 
 ## Overview
 
@@ -33,6 +31,8 @@ hardcoded choices.
 
 Full usage, configuration, and theming detail lives in the docs site linked below — this README
 stays a short pitch plus what you need to build the project from source.
+
+</div>
 
 ---
 
@@ -48,7 +48,10 @@ stays a short pitch plus what you need to build the project from source.
 - [Installation](#installation)
 - [Quick start](#quick-start)
 - [Build from source](#build-from-source)
+- [Acknowledgments](#acknowledgments)
 - [Resources](#resources)
+- [Contributing](#contributing)
+- [Links](#links)
 - [Development & NPM Scripts](#development-npm-scripts)
 - [License](#license)
 
@@ -57,6 +60,8 @@ stays a short pitch plus what you need to build the project from source.
 ## Features
 
 - **Pagefind-backed** — chunked, lazily-loaded, typo-tolerant search index.
+- **Scale-safe result hydration** — bounded concurrent fragment loading and progressive rendering
+  keep Hawk's network and DOM work predictable for both small and very large indexes.
 - **Developer-configured tabs** — auto-derived category pills, or explicit Pagefind-filter tabs.
 - **Fit / medium / compact** density modes with a persisted in-modal toggle.
 - **Two-pane keyboard navigation** — Tab between input, filters, results, and preview.
@@ -97,6 +102,12 @@ new HawkSearch({
 });
 ```
 
+Hawk hydrates Pagefind result fragments in ordered batches: up to 6 requests run concurrently,
+the first completed batch renders immediately, and loading stops once `maxResults` is filled.
+Large or exclusion-heavy indexes are bounded to `maxCandidateResults` candidates (by default,
+three times `maxResults`). Both limits are configurable; see the
+[API reference](https://staticcanvas.gitlab.io/hawk/api/).
+
 That is the complete zero-config path — `trigger` renders hawk's own trigger button, so no
 host markup is required. See [Getting started](https://staticcanvas.gitlab.io/hawk/getting-started/)
 in the docs for the full TypeFlow-themed setup, frontmatter/metadata mapping, and every config
@@ -121,6 +132,18 @@ npm run docs:serve
 
 See [Development & NPM Scripts](#development-npm-scripts) for the full script reference.
 
+## Acknowledgments
+
+Hawk's development and distribution are supported by these services:
+
+- [jsDelivr](https://www.jsdelivr.com/) — open-source CDN delivery.
+- [UNPKG](https://unpkg.com/) — CDN delivery for npm packages.
+- [npm](https://www.npmjs.com/) — package registry and distribution.
+- [JSR](https://jsr.io/) — JavaScript and TypeScript package registry.
+- [Shields.io](https://shields.io/) — project and status badges.
+- [GitLab](https://gitlab.com/) — source hosting, CI/CD, releases, and documentation hosting.
+- [Codecov](https://codecov.io/) — test coverage reporting.
+
 ## Resources
 
 - **Documentation**: https://staticcanvas.gitlab.io/hawk/
@@ -138,23 +161,51 @@ See [Development & NPM Scripts](#development-npm-scripts) for the full script re
 - **Changelog**: [`CHANGELOG.md`](CHANGELOG.md)
 - **Issues**: https://gitlab.com/staticcanvas/hawk/-/issues
 
+## Contributing
+
+Contributions are welcome. For a substantial change, first open an
+[issue](https://gitlab.com/staticcanvas/hawk/-/issues) to discuss the proposal. For smaller fixes:
+
+1. Fork the project, then clone your fork: `git clone https://gitlab.com/YOUR_USERNAME/hawk.git`.
+2. Enter the checkout: `cd hawk`.
+3. Install the locked dependencies: `npm ci`.
+4. Create a branch from `develop`: `git switch develop && git switch -c feature/feature-name`.
+5. Make your changes, then run `npm run lint` and `npm test`.
+6. Commit and push: `git commit -m 'Add feature name' && git push -u origin feature/feature-name`.
+7. Open a merge request targeting `develop`:
+
+   [<img src="https://img.shields.io/badge/Open_Merge_Request-gitlab-orange?style=for-the-badge&logo=gitlab" alt="Open a GitLab merge request">](https://gitlab.com/staticcanvas/hawk/-/merge_requests/new?merge_request%5Btarget_branch%5D=develop)
+
+## Links
+
+- [GitLab repository](https://gitlab.com/staticcanvas/hawk)
+- [Issue tracker](https://gitlab.com/staticcanvas/hawk/-/issues)
+- [npm package](https://www.npmjs.com/package/@staticcanvas/hawk)
+- [JSR package](https://jsr.io/@staticcanvas/hawk)
+
 ## Development & NPM Scripts
 
 | Script                                      | Purpose                                                                                                                                                                                                                                                               |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run dev`                               | Vite dev server                                                                                                                                                                                                                                                       |
-| `npm run build`                             | Builds core + optional (`theme-typeflow`, `animation-typeflow`) bundles                                                                                                                                                                                               |
+| `npm run serve:demo`                        | Opens the local web utility demo in Vite                                                                                                                                                                                                                              |
+| `npm run build`                             | Builds core + optional (`theme-typeflow`, `animation-typeflow`, `debug`, `metrics`) bundles                                                                                                                                                                           |
 | `npm run dev:typeflow`                      | Builds hawk and copies the bundle + a preview Pagefind index into the sibling typeflow checkout's docs site, for live prototyping                                                                                                                                     |
 | `npm run pagefind:index`                    | Wraps `pagefind --site <dir>` — see `scripts/pagefind-index.mjs`                                                                                                                                                                                                      |
 | `npm test` / `npm run test:coverage`        | Vitest (jsdom) — unit coverage                                                                                                                                                                                                                                        |
+| `npm run test:bun` / `npm run test:coverage:bun` | Bun test runner, with optional coverage                                                                                                                                                                                                                          |
 | `npm run test:e2e`                          | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Runs in CI as `test:e2e` (`allow_failure: true` until it's proven stable there — see `.gitlab-ci.yml`). |
 | `npm run lint` / `npm run lint:fix`         | ESLint                                                                                                                                                                                                                                                                |
+| `npm run format`                            | Formats the repository with Prettier                                                                                                                                                                                                                                  |
 | `npm run docs:build` / `npm run docs:serve` | Builds and serves hawk's own Hugo docs site                                                                                                                                                                                                                           |
 | `npm run themes:css`                        | Generates one small standalone CSS file per gallery/template theme into `docs/static/assets/themes/` — see `scripts/generate-theme-css.mjs`                                                                                                                           |
 | `npm run docs:scss`                         | Compiles `docs/static/assets/scss/*.scss` into `docs/static/assets/docs.css`/`playground.css` — see `scripts/compile-docs-scss.mjs`. Also runs automatically as part of `docs:build`/`docs:serve`                                                                     |
 | `npm run check:size`                        | Enforces the gzip bundle size budget                                                                                                                                                                                                                                  |
+| `npm run check:jsr`                         | Validates the JSR package configuration and dry-run contents                                                                                                                                                                                                          |
 | `npm run validate:release`                  | CI release-artifact validation                                                                                                                                                                                                                                        |
+| `npm run check:quality`                     | Builds, checks the bundle size, and runs the Vitest suite                                                                                                                                                                                                             |
+| `npm run bench:size`                        | Compares bundle sizes against a selected Git reference                                                                                                                                                                                                                |
 
 ## License
 
-MIT
+Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.

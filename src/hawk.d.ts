@@ -163,6 +163,8 @@ export interface HawkSearchConfig {
   pagefindMergeIndexes?: Array<{ bundlePath: string; options?: Record<string, unknown> }>;
   categoryFilterName?: string;
   maxResults?: number;
+  resultHydrationConcurrency?: number;
+  maxCandidateResults?: number;
   showResultDate?: boolean;
   resultDateMetaKey?: string;
   resultDateFormat?: 'timestamp' | 'relative';

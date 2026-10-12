@@ -4,7 +4,7 @@
 
 [![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://www.npmjs.com/package/@staticcanvas/hawk)
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&color=%237fffd4)](https://jsr.io/%40staticcanvas/hawk)
-[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.4-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.7-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
 [![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://gitlab.com/staticcanvas/hawk)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
@@ -56,6 +56,8 @@ new HawkSearch({
   index: '/pagefind/',
   triggerSelector: '[data-search-trigger]',
   theme: 'typeflow',
+  resultHydrationConcurrency: 6,
+  maxCandidateResults: 54,
   showResultDate: true,
   showResultTags: true,
   headerControls: false,
@@ -64,6 +66,12 @@ new HawkSearch({
 
 Any element matching `triggerSelector` opens the modal. No other markup is required — hawk builds
 its own DOM.
+
+Result fragments load through a bounded, ordered concurrency pool and render progressively. The
+defaults allow 6 simultaneous Pagefind `data()` calls and inspect at most `maxResults * 3`
+candidates, keeping Hawk's request and DOM work bounded as an index grows. Most sites should keep
+these defaults; lower `resultHydrationConcurrency` for constrained origins, or raise
+`maxCandidateResults` when a large `excludePages` list requires deeper backfilling.
 
 ## Documentation
 

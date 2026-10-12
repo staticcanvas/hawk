@@ -34,3 +34,30 @@ typeflow's: `createHawkDebug(hawk, options)` / `createHawkMetrics(hawk, options)
 functions that wrap `HawkSearch`'s already-public methods/callbacks and poll its public `state`
 getter, rather than a new registration mechanism or any change to `hawk.js` itself. Non-invasive
 by construction — the same reason there's no `Hawk.use()`.
+
+## Bounded result hydration
+
+Pagefind owns index selection and ranking, but its search response contains lightweight result
+handles. Hawk must call each handle's `data()` method before it can render that page and its heading
+matches. Those independent fragment requests run through a bounded concurrency pool so neither a
+high-latency connection nor an extreme result set turns Hawk into a serial waterfall or an
+unbounded request fan-out.
+
+```mermaid
+flowchart LR
+  Q[Query or eager listing] --> P[Pagefind ordered handles]
+  P --> C[Candidate cap]
+  C --> B[Bounded concurrent batch]
+  B --> O[Restore Pagefind order]
+  O --> R[Progressive render]
+  R -->|Need more rows| B
+  R -->|maxResults filled| S[Stop hydration]
+  Q -. newer generation .-> X[Discard stale batches]
+  X -. invalidates .-> B
+```
+
+`resultHydrationConcurrency` bounds active fragment loads (default 6), while
+`maxCandidateResults` bounds how many handles Hawk will inspect when excluded pages prevent
+`maxResults` from filling (default `maxResults * 3`). Rendering happens only at completed batch
+boundaries, preserving Pagefind order and preventing partial out-of-order rows. Search-generation
+checks run after every batch so an older query can never overwrite newer results.

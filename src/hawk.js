@@ -204,6 +204,10 @@ export class HawkSearch {
    * @param {string} [config.categoryFilterName='category'] The Pagefind filter dimension used for the
    *   auto-derived tabs and the `categories` shorthand (see `data-pagefind-filter`).
    * @param {number} [config.maxResults=18] Maximum rendered result rows.
+   * @param {number} [config.resultHydrationConcurrency=6] Maximum Pagefind result fragments hydrated
+   *   at once. Results are still committed in Pagefind order and rendered after each completed batch.
+   * @param {number} [config.maxCandidateResults=maxResults*3] Maximum Pagefind result handles Hawk will
+   *   hydrate for one search while backfilling exclusions and expanding heading sub-results.
    * @param {boolean} [config.showResultDate=true] Renders the Pagefind metadata value named by
    *   resultDateMetaKey below the result excerpt.
    * @param {string} [config.resultDateMetaKey='date'] Pagefind metadata key used for result dates.
@@ -354,7 +358,15 @@ export class HawkSearch {
     this.pagefindMergeIndexes = Array.isArray(config.pagefindMergeIndexes)
       ? config.pagefindMergeIndexes
       : [];
-    this.maxResults = config.maxResults ?? 18;
+    this.maxResults = this.#nonNegativeInteger(config.maxResults, 18);
+    this.resultHydrationConcurrency = Math.max(
+      1,
+      this.#nonNegativeInteger(config.resultHydrationConcurrency, 6)
+    );
+    this.maxCandidateResults = this.#nonNegativeInteger(
+      config.maxCandidateResults,
+      this.maxResults * 3
+    );
     this.showResultDate = config.showResultDate !== false;
     this.resultDateMetaKey = config.resultDateMetaKey || 'date';
     this.resultDateFormat = config.resultDateFormat === 'relative' ? 'relative' : 'timestamp';
@@ -610,6 +622,12 @@ export class HawkSearch {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '') || 'tab'
     );
+  }
+
+  /** Returns a finite non-negative integer, or `fallback` for an invalid value. */
+  #nonNegativeInteger(value, fallback) {
+    const number = Number(value ?? fallback);
+    return Number.isFinite(number) && number >= 0 ? Math.floor(number) : fallback;
   }
 
   /**
@@ -1416,6 +1434,9 @@ export class HawkSearch {
       // Covers every search call, not just the initial load — a transient failure on a later
       // keystroke (not just Pagefind's runtime failing to load in the first place) shouldn't
       // throw out of the `input` listener as an unhandled rejection either.
+      if (generation !== this.#searchGeneration) {
+        return;
+      }
       this.#pagefindError = err;
       this.#renderLoadError();
       return;
@@ -1424,31 +1445,76 @@ export class HawkSearch {
       return; // a newer #executeSearch call started while this one was awaiting Pagefind
     }
 
+    const candidates = (results || []).slice(0, this.maxCandidateResults);
     const flattened = [];
-    for (const result of results || []) {
-      const data = await result.data();
-      if (this.#isExcludedPage(data.url)) continue;
-      flattened.push({
-        title: data.meta?.title || this.strings.untitled,
-        url: data.url,
-        excerpt: data.excerpt,
-        isAnchor: false,
-        meta: data.meta || {},
-      });
-      for (const sub of data.sub_results || []) {
-        if (sub.url === data.url) continue;
-        // sub_results don't carry their own meta — reuse the parent page's, so a section/category
-        // badge is consistent whether the row is the page itself or one of its anchors.
+    let committedLength = -1;
+    for (
+      let offset = 0;
+      offset < candidates.length && flattened.length < this.maxResults;
+      offset += this.resultHydrationConcurrency
+    ) {
+      const batch = candidates.slice(offset, offset + this.resultHydrationConcurrency);
+      let hydrated;
+      try {
+        // Pagefind deliberately returns lightweight handles whose data() calls fetch independent
+        // fragment files. Hydrate a bounded batch concurrently: serial awaits multiply network
+        // latency, while an unbounded Promise.all can flood a very large result set.
+        hydrated = await Promise.all(batch.map((result) => result.data()));
+      } catch (err) {
+        if (generation !== this.#searchGeneration) {
+          return;
+        }
+        this.#pagefindError = err;
+        this.#renderLoadError();
+        return;
+      }
+      if (generation !== this.#searchGeneration) {
+        return; // a newer search started while this batch's fragments were loading
+      }
+
+      for (const data of hydrated) {
+        if (this.#isExcludedPage(data.url)) continue;
         flattened.push({
-          title: sub.title,
-          url: sub.url,
-          excerpt: sub.excerpt,
-          isAnchor: true,
+          title: data.meta?.title || this.strings.untitled,
+          url: data.url,
+          excerpt: data.excerpt,
+          isAnchor: false,
           meta: data.meta || {},
         });
+        for (const sub of data.sub_results || []) {
+          if (sub.url === data.url) continue;
+          // sub_results don't carry their own meta — reuse the parent page's, so a section/category
+          // badge is consistent whether the row is the page itself or one of its anchors.
+          flattened.push({
+            title: sub.title,
+            url: sub.url,
+            excerpt: sub.excerpt,
+            isAnchor: true,
+            meta: data.meta || {},
+          });
+          if (flattened.length >= this.maxResults) break;
+        }
+        if (flattened.length >= this.maxResults) break;
       }
-      if (flattened.length >= this.maxResults) break;
+
+      // Commit complete batches progressively, but keep the loading state when a batch contained
+      // only excluded pages and more candidates remain. Promise.all preserves Pagefind order even
+      // when individual fragments resolve out of order.
+      if (flattened.length && flattened.length !== committedLength) {
+        this.#commitSearchResults(flattened);
+        committedLength = this.#matches.length;
+      }
     }
+    if (generation !== this.#searchGeneration) {
+      return;
+    }
+    if (committedLength !== Math.min(flattened.length, this.maxResults)) {
+      this.#commitSearchResults(flattened);
+    }
+  }
+
+  /** Commits one ordered progressive search batch and updates every result-derived surface. */
+  #commitSearchResults(flattened) {
     this.#matches = flattened.slice(0, this.maxResults);
     this.#pageCount = new Set(this.#matches.map((m) => m.url.split('#')[0])).size;
     this.#selectedIndex = this.#matches.length ? 0 : -1;
