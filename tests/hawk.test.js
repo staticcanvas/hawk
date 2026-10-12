@@ -944,6 +944,127 @@ describe('search results and keyboard navigation', () => {
   });
 });
 
+describe('bounded progressive result hydration', () => {
+  it('hydrates bounded batches concurrently, renders progressively, and preserves Pagefind order', async () => {
+    let active = 0;
+    let peakActive = 0;
+    const releases = [];
+    const results = Array.from({ length: 4 }, (_, index) => ({
+      data: vi.fn(() => new Promise((resolve) => {
+        active += 1;
+        peakActive = Math.max(peakActive, active);
+        releases[index] = () => {
+          active -= 1;
+          resolve({
+            meta: { title: `Page ${index + 1}` },
+            url: `/page-${index + 1}/`,
+            excerpt: `excerpt ${index + 1}`,
+            sub_results: [],
+          });
+        };
+      })),
+    }));
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({ results }),
+    });
+    const hawk = new HawkSearch({
+      pagefind,
+      eagerResults: false,
+      maxResults: 4,
+      resultHydrationConcurrency: 2,
+      maxCandidateResults: 4,
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'page';
+    input.dispatchEvent(new Event('input'));
+
+    await vi.waitFor(() => expect(releases.filter(Boolean)).toHaveLength(2));
+    expect(peakActive).toBe(2);
+    // Resolve out of order inside the batch; Promise.all must still commit Pagefind order.
+    releases[1]();
+    releases[0]();
+    await vi.waitFor(() => expect(hawk.state.matches).toHaveLength(2));
+    expect(hawk.state.matches.map((match) => match.title)).toEqual(['Page 1', 'Page 2']);
+
+    await vi.waitFor(() => expect(releases.filter(Boolean)).toHaveLength(4));
+    expect(hawk.state.matches).toHaveLength(2); // the second batch is still loading
+    releases[3]();
+    releases[2]();
+    await vi.waitFor(() => expect(hawk.state.matches).toHaveLength(4));
+    expect(hawk.state.matches.map((match) => match.title)).toEqual([
+      'Page 1',
+      'Page 2',
+      'Page 3',
+      'Page 4',
+    ]);
+    expect(peakActive).toBe(2);
+    hawk.destroy();
+  });
+
+  it('stops hydrating once maxResults is filled and never opens an unbounded request fan-out', async () => {
+    const results = Array.from({ length: 100 }, (_, index) =>
+      resultFor({
+        meta: { title: `Page ${index + 1}` },
+        url: `/page-${index + 1}/`,
+        excerpt: '',
+        sub_results: [],
+      })
+    );
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({ results }),
+    });
+    const hawk = new HawkSearch({
+      pagefind,
+      eagerResults: false,
+      maxResults: 2,
+      resultHydrationConcurrency: 3,
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'page';
+    input.dispatchEvent(new Event('input'));
+
+    await vi.waitFor(() => expect(hawk.state.matches).toHaveLength(2));
+    expect(results.filter((result) => result.data.mock.calls.length)).toHaveLength(3);
+    expect(results.slice(3).every((result) => result.data.mock.calls.length === 0)).toBe(true);
+    hawk.destroy();
+  });
+
+  it('caps candidate hydration when exclusions prevent maxResults from being filled', async () => {
+    const results = Array.from({ length: 20 }, (_, index) =>
+      resultFor({
+        meta: { title: `Excluded ${index + 1}` },
+        url: `/excluded-${index + 1}/`,
+        excerpt: '',
+        sub_results: [],
+      })
+    );
+    const pagefind = mockPagefind({
+      debouncedSearch: vi.fn().mockResolvedValue({ results }),
+    });
+    const hawk = new HawkSearch({
+      pagefind,
+      eagerResults: false,
+      excludePages: results.map((_, index) => `/excluded-${index + 1}/`),
+      maxResults: 2,
+      resultHydrationConcurrency: 2,
+      maxCandidateResults: 5,
+    });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'excluded';
+    input.dispatchEvent(new Event('input'));
+
+    await vi.waitFor(() =>
+      expect(results.filter((result) => result.data.mock.calls.length)).toHaveLength(5)
+    );
+    expect(hawk.state.matches).toHaveLength(0);
+    expect(results.slice(5).every((result) => result.data.mock.calls.length === 0)).toBe(true);
+    hawk.destroy();
+  });
+});
+
 describe('search race safety (#searchGeneration)', () => {
   // A real race, not a hypothetical one: eagerResults' own empty-query listing and a query typed
   // right after open() both go through #executeSearch, and both can be awaiting the same
@@ -1002,6 +1123,50 @@ describe('search race safety (#searchGeneration)', () => {
 
     expect(hawk.state.matches).toHaveLength(1);
     expect(hawk.state.matches[0].title).toBe('Second');
+    hawk.destroy();
+  });
+
+  it('discards an older search whose result fragments finish hydrating after a newer search', async () => {
+    let resolveOldData;
+    const oldResult = {
+      data: vi.fn(() => new Promise((resolve) => {
+        resolveOldData = resolve;
+      })),
+    };
+    const pagefind = mockPagefind({
+      debouncedSearch: vi
+        .fn()
+        .mockResolvedValueOnce({ results: [oldResult] })
+        .mockResolvedValueOnce({
+          results: [
+            resultFor({
+              meta: { title: 'New' },
+              url: '/new/',
+              excerpt: 'new',
+              sub_results: [],
+            }),
+          ],
+        }),
+    });
+    const hawk = new HawkSearch({ pagefind, eagerResults: false });
+    hawk.open();
+    const input = document.querySelector('.hawk-modal-input');
+    input.value = 'old';
+    input.dispatchEvent(new Event('input'));
+    await vi.waitFor(() => expect(oldResult.data).toHaveBeenCalled());
+
+    input.value = 'new';
+    input.dispatchEvent(new Event('input'));
+    await vi.waitFor(() => expect(hawk.state.matches[0]?.title).toBe('New'));
+
+    resolveOldData({
+      meta: { title: 'Old' },
+      url: '/old/',
+      excerpt: 'old',
+      sub_results: [],
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(hawk.state.matches[0].title).toBe('New');
     hawk.destroy();
   });
 });

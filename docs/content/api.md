@@ -40,6 +40,8 @@ related:
 | `inlineFilters`                | `boolean`                                                                              | `false`                                                   | Parses `dimension:value` tokens out of the typed query as filters. See [Inline filter syntax](#inline-filter-syntax).                                                                                                        |
 | `categoryFilterName`           | `string`                                                                               | `'category'`                                              | The Pagefind filter dimension used for the auto-derived tabs and the `categories` shorthand.                                                                                                                                 |
 | `maxResults`                   | `number`                                                                               | `18`                                                      | Maximum rendered result rows.                                                                                                                                                                                                |
+| `resultHydrationConcurrency`   | `number`                                                                               | `6`                                                       | Maximum Pagefind result fragments hydrated concurrently. Completed batches render progressively while preserving Pagefind order.                                                                                            |
+| `maxCandidateResults`          | `number`                                                                               | `maxResults * 3`                                          | Maximum Pagefind result handles Hawk hydrates per search while backfilling exclusions and expanding heading results.                                                                                                         |
 | `showResultDate`               | `boolean`                                                                              | `true`                                                    | Shows `meta[resultDateMetaKey]` beneath each result excerpt when present.                                                                                                                                                    |
 | `resultDateMetaKey`            | `string`                                                                               | `'date'`                                                  | Pagefind metadata key used for result dates.                                                                                                                                                                                 |
 | `resultDateFormat`             | `'timestamp' \| 'relative'`                                                            | `'timestamp'`                                              | `'relative'` renders the raw value as relative time ("7 days ago", "last month") via `Intl.RelativeTimeFormat`. The `<time datetime>` attribute always keeps the raw value.                                                 |
@@ -132,6 +134,8 @@ new HawkSearch({
   pagefindOptions: {},
   categoryFilterName: 'category',
   maxResults: 18,
+  resultHydrationConcurrency: 6,
+  maxCandidateResults: 54,
   showResultDate: true,
   resultDateMetaKey: 'date',
   resultDateFormat: 'timestamp',
@@ -168,6 +172,24 @@ new HawkSearch({
   hotkeys: { open: true, slash: true, escape: true },
 });
 ```
+
+### Result hydration and large indexes
+
+Pagefind returns lightweight ordered result handles; each handle's `data()` call loads the page
+fragment used for its title, excerpt, metadata, and heading matches. Hawk hydrates these handles
+in bounded concurrent batches rather than serially or with an unbounded `Promise.all`:
+
+- at most `resultHydrationConcurrency` fragment requests are active at once;
+- each complete batch is committed in Pagefind order and rendered immediately;
+- hydration stops once `maxResults` flattened page/heading rows are available;
+- no more than `maxCandidateResults` handles are inspected when exclusions prevent the visible
+  list from filling;
+- a newer query invalidates every still-loading batch from the older query.
+
+The defaults suit both small documentation sets and large indexes. Lower concurrency when the
+index origin has a strict request limit. Raise the candidate limit when many leading Pagefind
+results are intentionally removed through `excludePages`; doing so increases the maximum fragment
+work for a single query but does not change `maxResults`.
 
 `theme` defaults to the registered `typeflow` theme when available. `animation` follows the same
 rule for the TypeFlow driver and otherwise uses `instant`. Options without a meaningful default,

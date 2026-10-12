@@ -122,6 +122,8 @@ new HawkSearch({
   defaultPreviewUrl: '/getting-started/',
   defaultPreviewTitle: 'Getting started',
   eagerResults: true, // default — set false to keep the results pane empty until the visitor types
+  resultHydrationConcurrency: 6,
+  maxCandidateResults: 54,
 });
 ```
 
@@ -134,5 +136,10 @@ new HawkSearch({
   the results pane shows a default listing instead of "Type to search". This is a behavior
   change from hawk's very first releases, where the results pane stayed empty until the first
   keystroke — set `eagerResults: false` to keep that behavior.
+- **`resultHydrationConcurrency`** (default `6`) bounds simultaneous Pagefind fragment requests.
+  Hawk renders each ordered batch as soon as it completes instead of waiting for every candidate.
+- **`maxCandidateResults`** (default `maxResults * 3`) bounds how deeply Hawk hydrates Pagefind
+  handles when exclusions or heading expansion make the final row count differ from the candidate
+  count. It keeps Hawk's own work predictable even when the backing index is very large.
 - **`defaultTab`** is documented in [API reference — Tabs]({{< relref "/api" >}}#tabs); it also
   determines which tab's `filter` scopes the `eagerResults` listing.

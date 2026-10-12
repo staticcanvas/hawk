@@ -57,6 +57,8 @@ stays a short pitch plus what you need to build the project from source.
 ## Features
 
 - **Pagefind-backed** — chunked, lazily-loaded, typo-tolerant search index.
+- **Scale-safe result hydration** — bounded concurrent fragment loading and progressive rendering
+  keep Hawk's network and DOM work predictable for both small and very large indexes.
 - **Developer-configured tabs** — auto-derived category pills, or explicit Pagefind-filter tabs.
 - **Fit / medium / compact** density modes with a persisted in-modal toggle.
 - **Two-pane keyboard navigation** — Tab between input, filters, results, and preview.
@@ -96,6 +98,12 @@ new HawkSearch({
   trigger: { container: 'body' },
 });
 ```
+
+Hawk hydrates Pagefind result fragments in ordered batches: up to 6 requests run concurrently,
+the first completed batch renders immediately, and loading stops once `maxResults` is filled.
+Large or exclusion-heavy indexes are bounded to `maxCandidateResults` candidates (by default,
+three times `maxResults`). Both limits are configurable; see the
+[API reference](https://staticcanvas.gitlab.io/hawk/api/).
 
 That is the complete zero-config path — `trigger` renders hawk's own trigger button, so no
 host markup is required. See [Getting started](https://staticcanvas.gitlab.io/hawk/getting-started/)

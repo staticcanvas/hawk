@@ -56,6 +56,8 @@ new HawkSearch({
   index: '/pagefind/',
   triggerSelector: '[data-search-trigger]',
   theme: 'typeflow',
+  resultHydrationConcurrency: 6,
+  maxCandidateResults: 54,
   showResultDate: true,
   showResultTags: true,
   headerControls: false,
@@ -64,6 +66,12 @@ new HawkSearch({
 
 Any element matching `triggerSelector` opens the modal. No other markup is required — hawk builds
 its own DOM.
+
+Result fragments load through a bounded, ordered concurrency pool and render progressively. The
+defaults allow 6 simultaneous Pagefind `data()` calls and inspect at most `maxResults * 3`
+candidates, keeping Hawk's request and DOM work bounded as an index grows. Most sites should keep
+these defaults; lower `resultHydrationConcurrency` for constrained origins, or raise
+`maxCandidateResults` when a large `excludePages` list requires deeper backfilling.
 
 ## Documentation
 
