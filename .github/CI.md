@@ -95,7 +95,9 @@ lockfile. Generate snapshots in that container with the Node/Hugo versions from
 `actions/setup/action.yml`, run `npm ci --include=dev`, and use
 `npm run test:e2e -- --grep 'maintained screenshots' --update-snapshots=all`.
 Use a Linux filesystem checkout; for a bind-mounted checkout, Git must trust its
-container path (`actions/checkout` configures this in CI). Review both images,
+container path. The browser step explicitly trusts `$GITHUB_WORKSPACE` for
+Hugo's Git-based modification dates: checkout's temporary Git configuration
+does not cover Hugo running as root against the host-owned mount. Review both images,
 then run the complete browser suite without updating snapshots. The 1% pixel
 tolerance remains unchanged. Screenshot artifacts include rendering metadata
 with font load states, browser version, device scale, and dialog dimensions.
