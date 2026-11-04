@@ -1,23 +1,21 @@
 <div align="center">
 
-![Hawk Banner](https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
+![Hawk Banner](https://bucket.s3.silvercottage.dev/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
 
-[![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk)
-[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
-[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.7-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
-[![documentation](https://img.shields.io/badge/docs-online-7fffd4?style=flat-square&logo=gitbook&logoColor=0bea59)](https://staticcanvas.gitlab.io/hawk)
-[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
+[![license](https://img.shields.io/github/license/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk)
+[![github-pipeline](https://img.shields.io/github/actions/workflow/status/staticcanvas/hawk/ci.yml?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/staticcanvas/hawk/branch/main/graph/badge.svg?token=)](https://codecov.io/gh/staticcanvas/hawk)
+[![documentation](https://img.shields.io/badge/docs-online-7fffd4?style=flat-square&logo=gitbook&logoColor=0bea59)](https://staticcanvas.github.io/hawk)
+[![github-issues](https://img.shields.io/github/issues/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/issues)
 
-[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/releases/permalink/latest)
-[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/tags)
+[![github-release](https://img.shields.io/github/v/release/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/releases/latest)
+[![github-tag](https://img.shields.io/github/v/tag/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/tags)
 
 [![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
 [![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
 
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://jsr.io/%40staticcanvas/hawk)
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
-
-[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.7-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 
@@ -36,9 +34,9 @@ stays a short pitch plus what you need to build the project from source.
 
 ---
 
-> 🔹 Read the full documentation [here](https://staticcanvas.gitlab.io/hawk/)
+> 🔹 Read the full documentation [here](https://staticcanvas.github.io/hawk/)
 
-> 🔹 Use the playground [here](https://staticcanvas.gitlab.io/hawk/playground/)
+> 🔹 Use the playground [here](https://staticcanvas.github.io/hawk/playground/)
 
 <details>
 <summary><strong>📚Table of Contents</strong></summary>
@@ -106,17 +104,17 @@ Hawk hydrates Pagefind result fragments in ordered batches: up to 6 requests run
 the first completed batch renders immediately, and loading stops once `maxResults` is filled.
 Large or exclusion-heavy indexes are bounded to `maxCandidateResults` candidates (by default,
 three times `maxResults`). Both limits are configurable; see the
-[API reference](https://staticcanvas.gitlab.io/hawk/api/).
+[API reference](https://staticcanvas.github.io/hawk/api/).
 
 That is the complete zero-config path — `trigger` renders hawk's own trigger button, so no
-host markup is required. See [Getting started](https://staticcanvas.gitlab.io/hawk/getting-started/)
+host markup is required. See [Getting started](https://staticcanvas.github.io/hawk/getting-started/)
 in the docs for the full TypeFlow-themed setup, frontmatter/metadata mapping, and every config
 option.
 
 ## Build from source
 
 ```bash
-git clone https://gitlab.com/staticcanvas/hawk.git
+git clone https://github.com/staticcanvas/hawk.git
 cd hawk
 npm install
 npm run build   # core + optional (theme-typeflow, animation-typeflow, debug, metrics) bundles
@@ -141,13 +139,13 @@ Hawk's development and distribution are supported by these services:
 - [npm](https://www.npmjs.com/) — package registry and distribution.
 - [JSR](https://jsr.io/) — JavaScript and TypeScript package registry.
 - [Shields.io](https://shields.io/) — project and status badges.
-- [GitLab](https://gitlab.com/) — source hosting, CI/CD, releases, and documentation hosting.
+- [GitHub](https://github.com/) — source hosting, CI/CD, releases, and documentation hosting.
 - [Codecov](https://codecov.io/) — test coverage reporting.
 
 ## Resources
 
-- **Documentation**: https://staticcanvas.gitlab.io/hawk/
-- **Playground**: https://staticcanvas.gitlab.io/hawk/playground/
+- **Documentation**: https://staticcanvas.github.io/hawk/
+- **Playground**: https://staticcanvas.github.io/hawk/playground/
 - **API reference**: [`docs/content/api.md`](docs/content/api.md)
 - **Guides**: [Pagefind setup, tabs, and inline filters](docs/content/guides/pagefind-setup.md) ·
   [Density and keyboard navigation](docs/content/guides/density-and-navigation.md) ·
@@ -159,27 +157,27 @@ Hawk's development and distribution are supported by these services:
   [`theme-interface.md`](architecture/theme-interface.md) ·
   [`animation-driver-interface.md`](architecture/animation-driver-interface.md)
 - **Changelog**: [`CHANGELOG.md`](CHANGELOG.md)
-- **Issues**: https://gitlab.com/staticcanvas/hawk/-/issues
+- **Issues**: https://github.com/staticcanvas/hawk/issues
 
 ## Contributing
 
 Contributions are welcome. For a substantial change, first open an
-[issue](https://gitlab.com/staticcanvas/hawk/-/issues) to discuss the proposal. For smaller fixes:
+[issue](https://github.com/staticcanvas/hawk/issues) to discuss the proposal. For smaller fixes:
 
-1. Fork the project, then clone your fork: `git clone https://gitlab.com/YOUR_USERNAME/hawk.git`.
+1. Fork the project, then clone your fork: `git clone https://github.com/YOUR_USERNAME/hawk.git`.
 2. Enter the checkout: `cd hawk`.
 3. Install the locked dependencies: `npm ci`.
 4. Create a branch from `develop`: `git switch develop && git switch -c feature/feature-name`.
 5. Make your changes, then run `npm run lint` and `npm test`.
 6. Commit and push: `git commit -m 'Add feature name' && git push -u origin feature/feature-name`.
-7. Open a merge request targeting `develop`:
+7. Open a pull request targeting `develop`:
 
-   [<img src="https://img.shields.io/badge/Open_Merge_Request-gitlab-orange?style=for-the-badge&logo=gitlab" alt="Open a GitLab merge request">](https://gitlab.com/staticcanvas/hawk/-/merge_requests/new?merge_request%5Btarget_branch%5D=develop)
+   [<img src="https://img.shields.io/badge/Open_Pull_Request-github-orange?style=for-the-badge&logo=github" alt="Open a GitHub pull request">](https://github.com/staticcanvas/hawk/compare/develop...)
 
 ## Links
 
-- [GitLab repository](https://gitlab.com/staticcanvas/hawk)
-- [Issue tracker](https://gitlab.com/staticcanvas/hawk/-/issues)
+- [GitHub repository](https://github.com/staticcanvas/hawk)
+- [Issue tracker](https://github.com/staticcanvas/hawk/issues)
 - [npm package](https://www.npmjs.com/package/@staticcanvas/hawk)
 - [JSR package](https://jsr.io/@staticcanvas/hawk)
 
@@ -194,7 +192,7 @@ Contributions are welcome. For a substantial change, first open an
 | `npm run pagefind:index`                         | Wraps `pagefind --site <dir>` — see `scripts/pagefind-index.mjs`                                                                                                                                                                                                      |
 | `npm test` / `npm run test:coverage`             | Vitest (jsdom) — unit coverage                                                                                                                                                                                                                                        |
 | `npm run test:bun` / `npm run test:coverage:bun` | Bun test runner, with optional coverage                                                                                                                                                                                                                               |
-| `npm run test:e2e`                               | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Runs in CI as `test:e2e` (`allow_failure: true` until it's proven stable there — see `.gitlab-ci.yml`). |
+| `npm run test:e2e`                               | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Runs as a required browser check in [GitHub Actions](.github/workflows/ci.yml). |
 | `npm run lint` / `npm run lint:fix`              | ESLint                                                                                                                                                                                                                                                                |
 | `npm run format`                                 | Formats the repository with Prettier                                                                                                                                                                                                                                  |
 | `npm run docs:build` / `npm run docs:serve`      | Builds and serves hawk's own Hugo docs site                                                                                                                                                                                                                           |
@@ -209,3 +207,5 @@ Contributions are welcome. For a substantial change, first open an
 ## License
 
 Distributed under the MIT License. See [`LICENSE`](LICENSE) for details.
+
+CI and release setup is documented in [GitHub Actions](.github/CI.md).

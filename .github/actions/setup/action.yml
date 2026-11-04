@@ -1,0 +1,31 @@
+name: Set up Hawk
+description: Install the pinned Node runtime, dependencies, and optionally Hugo Extended.
+inputs:
+  hugo:
+    description: Install Hugo Extended for documentation and browser tests.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version: '24.22.2'
+        cache: npm
+    - shell: bash
+      run: npm ci --include=dev --no-audit --prefer-offline
+    - if: inputs.hugo == 'true'
+      shell: bash
+      env:
+        HUGO_VERSION: '0.169.0'
+      run: |
+        archive="hugo_extended_${HUGO_VERSION}_linux-amd64.tar.gz"
+        directory="$(mktemp -d)"
+        curl --fail --silent --show-error --location \
+          "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/${archive}" \
+          --output "$directory/$archive"
+        curl --fail --silent --show-error --location \
+          "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_${HUGO_VERSION}_checksums.txt" \
+          --output "$directory/checksums.txt"
+        (cd "$directory" && grep " $archive\$" checksums.txt | sha256sum --check --strict)
+        tar -xzf "$directory/$archive" -C "$directory" hugo
+        echo "$directory" >> "$GITHUB_PATH"

@@ -70,3 +70,5 @@ mr.md
 
 # gx
 gx/
+# Generated GitHub release metadata staged into the documentation site
+/docs/static/data/releases.json

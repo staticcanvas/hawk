@@ -89,9 +89,6 @@
         {{ end }}
 
         <div class="header-actions">
-          <a class="icon-link" href="{{ site.Params.repository }}" target="_blank" rel="noreferrer" aria-label="Hawk on GitLab">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 22 3 9l3.2-9.5h.1L9.4 9h5.2L17.7-.5h.1L21 9z" transform="translate(0 2)"/></svg>
-          </a>
           <a class="icon-link" href="{{ site.Params.github }}" target="_blank" rel="noreferrer" aria-label="Hawk on GitHub">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.1.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.15-1.11-1.46-1.11-1.46-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.09-.65.35-1.08.64-1.33-2.22-.25-4.56-1.11-4.56-4.95 0-1.1.39-2 1.03-2.7-.1-.25-.45-1.26.1-2.62 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.9-1.3 2.75-1.02 2.75-1.02.55 1.36.2 2.37.1 2.62.64.7 1.03 1.6 1.03 2.7 0 3.85-2.34 4.7-4.57 4.95.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></svg>
           </a>
@@ -144,8 +141,7 @@
       </nav>
       <nav class="footer-column" aria-label="Project links">
         <strong>Project</strong>
-        <a href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitLab</a>
-        <a href="{{ site.Params.github }}" target="_blank" rel="noreferrer">GitHub</a>
+        <a href="{{ site.Params.repository }}" target="_blank" rel="noreferrer">GitHub</a>
         <a href="{{ "changelog/" | relURL }}">Changelog</a>
       </nav>
     </div>

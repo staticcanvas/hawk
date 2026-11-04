@@ -16,6 +16,6 @@ related:
 ## Changelog
 
 This page is generated from the repository's canonical
-[CHANGELOG.md](https://gitlab.com/staticcanvas/hawk/-/blob/main/CHANGELOG.md).
+[CHANGELOG.md](https://github.com/staticcanvas/hawk/blob/main/CHANGELOG.md).
 
 {{< canonical-changelog >}}

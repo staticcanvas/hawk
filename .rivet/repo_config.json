@@ -8,8 +8,8 @@
     "defaultBranch": "main",
     "npmPackage": "@staticcanvas/hawk",
     "jsrPackage": "@staticcanvas/hawk",
-    "bannerUrl": "https://r2os.staticcanvas.me/logos/hawk/dist/webp/hawk-banner-1024x410.webp",
-    "documentationUrl": "https://staticcanvas.gitlab.io/hawk"
+    "bannerUrl": "https://bucket.s3.silvercottage.dev/logos/hawk/hawk-banner-1024x410.webp",
+    "documentationUrl": "https://staticcanvas.github.io/hawk"
   },
   "readmeHeader": {
     "alignment": "left",
@@ -109,7 +109,7 @@
       {
         "name": "ci",
         "description": "pipeline configuration and quality gates",
-        "paths": [".gitlab-ci.yml", "ci-failures.md"]
+        "paths": [".github/workflows/*.yml", ".github/actions/**/action.yml", "ci-failures.md"]
       },
       { "name": "none", "description": "omit the commit scope", "paths": ["**"] }
     ],

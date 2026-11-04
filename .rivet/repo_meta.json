@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "provider": "gitlab",
+  "provider": "github",
   "scope": "project",
   "project": {
     "description": "Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.",

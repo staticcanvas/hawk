@@ -16,11 +16,11 @@ related:
 
 ## Choose a release
 
-This page is generated from published GitLab Releases. Each release includes its release notes and
-every linked asset, generic-package file, and GitLab source archive.
+This page is generated from published GitHub Releases. Each release includes its release notes and
+every uploaded asset and GitHub source archive.
 
 <div class="callout" role="note">
-  <p><strong>Asset provenance.</strong> Every download uses a public GitLab release endpoint. The source link beside each asset opens the tagged repository tree used for that release.</p>
+  <p><strong>Asset provenance.</strong> Every download uses a public GitHub release endpoint. The source link beside each asset opens the tagged repository tree used for that release.</p>
 </div>
 
 {{< release-downloads >}}
@@ -29,4 +29,4 @@ every linked asset, generic-package file, and GitLab source archive.
 
 - [Getting started]({{< relref "/getting-started" >}}) for npm, browser/CDN, ESM, and JSR installation.
 - [API reference]({{< relref "/api" >}}) for module exports and runtime options.
-- [GitLab releases](https://gitlab.com/staticcanvas/hawk/-/releases) for signed release notes and the original asset records.
+- [GitHub releases](https://github.com/staticcanvas/hawk/releases) for release notes and the original asset records.

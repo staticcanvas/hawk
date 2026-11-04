@@ -60,17 +60,17 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
 
     const logo = page.locator('.brand-logo');
     await expect(logo).toBeVisible();
-    await expect.poll(() => logo.evaluate((image) => image.complete && image.naturalWidth > 0)).toBe(
-      true
-    );
+    await expect
+      .poll(() => logo.evaluate((image) => image.complete && image.naturalWidth > 0))
+      .toBe(true);
 
     const sidebar = page.locator('.doc-sidebar');
     await expect(sidebar.locator('.sidebar-group-label')).toHaveText('Resources');
     await expect(sidebar.getByRole('link', { name: 'Resources', exact: true })).toHaveCount(0);
 
-    const sidebarTargets = await sidebar.locator('a').evaluateAll((links) =>
-      links.map((link) => new URL(link.href).pathname)
-    );
+    const sidebarTargets = await sidebar
+      .locator('a')
+      .evaluateAll((links) => links.map((link) => new URL(link.href).pathname));
     expect(sidebarTargets).toContain('/public-e2e/getting-started/');
     expect(sidebarTargets).toContain('/public-e2e/downloads/');
     expect(new Set(sidebarTargets).size).toBeGreaterThan(10);
@@ -88,9 +88,7 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     const logo = titleRow.locator('.hero-logo');
     const title = titleRow.locator('.hero-title');
 
-    await expect(release).toHaveText(
-      `Version v${packageDocument.version} released · MIT License`
-    );
+    await expect(release).toHaveText(`Version v${packageDocument.version} released · MIT License`);
     await expect(logo).toBeVisible();
     await expect(title).toHaveText('hawk.js');
 
@@ -287,9 +285,9 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
       .poll(() =>
         page.evaluate(() => {
           const shortcuts = document.querySelector('.header-shortcuts');
-          const gitlab = document.querySelector('[aria-label="Hawk on GitLab"]');
+          const github = document.querySelector('[aria-label="Hawk on GitHub"]');
           return Boolean(
-            shortcuts.compareDocumentPosition(gitlab) & Node.DOCUMENT_POSITION_FOLLOWING
+            shortcuts.compareDocumentPosition(github) & Node.DOCUMENT_POSITION_FOLLOWING
           );
         })
       )
@@ -472,6 +470,15 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
       await page.locator('.hawk-modal-input').fill('frontmatter');
       await expect(page.locator('.hawk-modal-counter')).toContainText('matching result');
       await expect(page.locator('.hawk-discovery-row')).toHaveAttribute('aria-busy', 'false');
+      // Fragment hydration can render several batches. Wait for the real index's requests
+      // to settle before capturing, then normalize Git-derived dates: committing a docs
+      // change must not invalidate an otherwise identical layout screenshot.
+      await page.waitForLoadState('networkidle');
+      await page.locator('.hawk-result-date').evaluateAll((dates) => {
+        for (const date of dates) {
+          date.textContent = '2000-01-01';
+        }
+      });
       await page.addStyleTag({
         content:
           '*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }',

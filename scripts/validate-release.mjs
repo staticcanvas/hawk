@@ -50,10 +50,10 @@ for (const marker of ['source_url', 'release_notes', 'Release notes', 'download-
 }
 
 const releaseDataGenerator = readFileSync(
-  join(projectRoot, 'tools/Get-ReleaseDownloads.ps1'),
+  join(projectRoot, 'scripts/generate-release-downloads.mjs'),
   'utf8'
 );
-for (const marker of ["-Name 'description'", "-Name 'sources'", 'Request-GenericPackage']) {
+for (const marker of ['browser_download_url', 'zipball_url', 'tarball_url', 'release.body']) {
   if (!releaseDataGenerator.includes(marker)) {
     throw new Error(`Release data generator is missing API source: ${marker}`);
   }
@@ -97,9 +97,10 @@ if (!jsrVersion || jsrVersion !== packageVersion) {
   );
 }
 
-const releaseTag = process.env.CI_COMMIT_TAG;
-if (releaseTag?.endsWith('-release')) {
-  const tagVersion = releaseTag.replace(/^v/, '').replace(/-release$/, '');
+const releaseTag = process.env.GITHUB_REF_TYPE === 'tag' ? process.env.GITHUB_REF_NAME : undefined;
+if (releaseTag) {
+  const match = /^v?(\d+\.\d+\.\d+)-release(\+[a-zA-Z0-9.-]+)?$/.exec(releaseTag);
+  const tagVersion = match ? `${match[1]}${match[2] || ''}` : undefined;
   if (tagVersion !== packageVersion) {
     throw new Error(
       `Production tag ${releaseTag} does not match package.json version ${packageVersion}.`
