@@ -81,7 +81,20 @@ normalizes Git-derived result dates to `2000-01-01` before capture. Its reviewed
 phone and tablet baselines retain real Pagefind results and the existing pixel
 tolerance.
 
+PR #2's browser artifacts showed a tablet screenshot mismatch (8,495 pixels),
+including a selected query and differences around text. Chromium now explicitly
+uses slight font hinting and disables LCD text rendering so system fontconfig
+defaults do not choose different rasterization settings. The screenshot test
+also waits for `open()`'s delayed focus/select callback before filling the query.
+The baselines were regenerated in Ubuntu 24.04 with those settings; the 1% pixel
+tolerance remains unchanged. When updating snapshots, use these same launch
+settings and install Playwright's system dependencies.
+Local verification passed all 24 browser tests in Ubuntu 24.04 and five repeated
+phone/tablet screenshot runs, plus ESLint, Prettier, and `actionlint`. GitHub
+verification requires pushing these changes and rerunning the checks.
+
 The shared bug knowledge base was unavailable during validation. The Node 25
-storage compatibility and missing-font findings are documented here instead.
+storage compatibility, missing-font, rasterization, and delayed-focus findings
+are documented here instead.
 On this Windows-mounted checkout, Node's recursive bundle copy also returned
 `EINVAL`; the builds and checks passed from an isolated Linux filesystem copy.

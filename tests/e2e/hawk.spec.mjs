@@ -467,7 +467,11 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('guides/pagefind-setup/index.html');
       await page.locator('[data-search-trigger]').first().click();
-      await page.locator('.hawk-modal-input').fill('frontmatter');
+      const input = page.locator('.hawk-modal-input');
+      // open() focuses and selects the input asynchronously. Wait before filling so
+      // that callback cannot select the query later on a faster CI runner.
+      await expect(input).toBeFocused();
+      await input.fill('frontmatter');
       await expect(page.locator('.hawk-modal-counter')).toContainText('matching result');
       await expect(page.locator('.hawk-discovery-row')).toHaveAttribute('aria-busy', 'false');
       // Fragment hydration can render several batches. Wait for the real index's requests
