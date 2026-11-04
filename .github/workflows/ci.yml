@@ -38,10 +38,12 @@ jobs:
         run: npm run lint
       - if: matrix.check == 'unit'
         run: npm test
-      - if: matrix.check == 'browser'
-        run: |
-          npx playwright install --with-deps chromium
-          npm run test:e2e
+      - name: Install Chromium and system dependencies
+        if: matrix.check == 'browser'
+        run: npx playwright install --with-deps chromium
+      - name: Run browser tests
+        if: matrix.check == 'browser'
+        run: npm run test:e2e
       - name: Browser failure artifacts
         if: failure() && matrix.check == 'browser'
         uses: actions/upload-artifact@v7

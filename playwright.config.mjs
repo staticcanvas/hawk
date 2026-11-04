@@ -31,6 +31,11 @@ export default defineConfig({
   },
   use: {
     baseURL: `http://localhost:${PORT}/public-e2e/`,
+    // Keep text rasterization consistent between local Linux and hosted runners.
+    // System fontconfig defaults otherwise change glyph pixels and vertical metrics.
+    launchOptions: {
+      args: ['--font-render-hinting=slight', '--disable-lcd-text'],
+    },
   },
   projects: [{ name: 'chromium', use: { browserName: 'chromium' } }],
 });
