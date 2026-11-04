@@ -1,15 +1,15 @@
-<div align="center">
+<div align="left">
 
 ![Hawk Banner](https://bucket.s3.silvercottage.dev/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
 
-[![license](https://img.shields.io/github/license/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk)
-[![github-pipeline](https://img.shields.io/github/actions/workflow/status/staticcanvas/hawk/ci.yml?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/staticcanvas/hawk/branch/main/graph/badge.svg?token=)](https://codecov.io/gh/staticcanvas/hawk)
+[![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk)
+[![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
+[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.7-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
 [![documentation](https://img.shields.io/badge/docs-online-7fffd4?style=flat-square&logo=gitbook&logoColor=0bea59)](https://staticcanvas.github.io/hawk)
-[![github-issues](https://img.shields.io/github/issues/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/issues)
+[![gitlab-issues](https://img.shields.io/gitlab/issues/open/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/work_items?sort=created_date&state=opened&first_page_size=20)
 
-[![github-release](https://img.shields.io/github/v/release/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/releases/latest)
-[![github-tag](https://img.shields.io/github/v/tag/staticcanvas/hawk?style=flat-square&logo=github&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://github.com/staticcanvas/hawk/tags)
+[![gitlab-release](https://img.shields.io/gitlab/v/release/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/releases/permalink/latest)
+[![gitlab-tag](https://img.shields.io/gitlab/v/tag/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/tags)
 
 [![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
 [![npm-downloads](https://img.shields.io/npm/dw/@staticcanvas/hawk?style=flat-square&logo=npm&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://www.npmjs.com/package/@staticcanvas/hawk)
@@ -17,18 +17,9 @@
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://jsr.io/%40staticcanvas/hawk)
 [![jsdelivr-hitsperweek](https://img.shields.io/jsdelivr/npm/hw/@staticcanvas/hawk?style=flat-square&logo=jsdelivr&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://cdn.jsdelivr.net/package/npm/@staticcanvas/hawk)
 
+[![runtime-badge](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/v0.43.7-release/raw/runtime-badge-flat.svg?job=generate-runtime-badge)](https://gitlab.com/api/v4/projects/staticcanvas%2Fhawk/jobs/artifacts/main/raw/runtime-badge-flat.svg?job=generate-runtime-badge)
+
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
-
-## Overview
-
-Hawk is a themeable, pluggable command-palette search widget for static sites: `npm install` + a
-constructor call, no host markup beyond a trigger element required. [Pagefind](https://pagefind.app/)
-owns indexing, ranking, and typo-tolerant matching; hawk owns the modal, keyboard navigation, and
-result rendering, with visual theme and reveal animation as swappable plugins rather than
-hardcoded choices.
-
-Full usage, configuration, and theming detail lives in the docs site linked below — this README
-stays a short pitch plus what you need to build the project from source.
 
 </div>
 
@@ -41,7 +32,6 @@ stays a short pitch plus what you need to build the project from source.
 <details>
 <summary><strong>📚Table of Contents</strong></summary>
 
-- [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
 - [Quick start](#quick-start)
@@ -183,26 +173,26 @@ Contributions are welcome. For a substantial change, first open an
 
 ## Development & NPM Scripts
 
-| Script                                           | Purpose                                                                                                                                                                                                                                                               |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                                    | Vite dev server                                                                                                                                                                                                                                                       |
-| `npm run serve:demo`                             | Opens the local web utility demo in Vite                                                                                                                                                                                                                              |
-| `npm run build`                                  | Builds core + optional (`theme-typeflow`, `animation-typeflow`, `debug`, `metrics`) bundles                                                                                                                                                                           |
-| `npm run dev:typeflow`                           | Builds hawk and copies the bundle + a preview Pagefind index into the sibling typeflow checkout's docs site, for live prototyping                                                                                                                                     |
-| `npm run pagefind:index`                         | Wraps `pagefind --site <dir>` — see `scripts/pagefind-index.mjs`                                                                                                                                                                                                      |
-| `npm test` / `npm run test:coverage`             | Vitest (jsdom) — unit coverage                                                                                                                                                                                                                                        |
-| `npm run test:bun` / `npm run test:coverage:bun` | Bun test runner, with optional coverage                                                                                                                                                                                                                               |
+| Script                                           | Purpose                                                                                                                                                                                                                                       |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                                    | Vite dev server                                                                                                                                                                                                                               |
+| `npm run serve:demo`                             | Opens the local web utility demo in Vite                                                                                                                                                                                                      |
+| `npm run build`                                  | Builds core + optional (`theme-typeflow`, `animation-typeflow`, `debug`, `metrics`) bundles                                                                                                                                                   |
+| `npm run dev:typeflow`                           | Builds hawk and copies the bundle + a preview Pagefind index into the sibling typeflow checkout's docs site, for live prototyping                                                                                                             |
+| `npm run pagefind:index`                         | Wraps `pagefind --site <dir>` — see `scripts/pagefind-index.mjs`                                                                                                                                                                              |
+| `npm test` / `npm run test:coverage`             | Vitest (jsdom) — unit coverage                                                                                                                                                                                                                |
+| `npm run test:bun` / `npm run test:coverage:bun` | Bun test runner, with optional coverage                                                                                                                                                                                                       |
 | `npm run test:e2e`                               | Playwright, real Chromium against a real built docs site + Pagefind index (not a fixture) — builds the docs site with a `localhost` `baseURL` override first. Runs as a required browser check in [GitHub Actions](.github/workflows/ci.yml). |
-| `npm run lint` / `npm run lint:fix`              | ESLint                                                                                                                                                                                                                                                                |
-| `npm run format`                                 | Formats the repository with Prettier                                                                                                                                                                                                                                  |
-| `npm run docs:build` / `npm run docs:serve`      | Builds and serves hawk's own Hugo docs site                                                                                                                                                                                                                           |
-| `npm run themes:css`                             | Generates one small standalone CSS file per gallery/template theme into `docs/static/assets/themes/` — see `scripts/generate-theme-css.mjs`                                                                                                                           |
-| `npm run docs:scss`                              | Compiles `docs/static/assets/scss/*.scss` into `docs/static/assets/docs.css`/`playground.css` — see `scripts/compile-docs-scss.mjs`. Also runs automatically as part of `docs:build`/`docs:serve`                                                                     |
-| `npm run check:size`                             | Enforces the gzip bundle size budget                                                                                                                                                                                                                                  |
-| `npm run check:jsr`                              | Validates the JSR package configuration and dry-run contents                                                                                                                                                                                                          |
-| `npm run validate:release`                       | CI release-artifact validation                                                                                                                                                                                                                                        |
-| `npm run check:quality`                          | Builds, checks the bundle size, and runs the Vitest suite                                                                                                                                                                                                             |
-| `npm run bench:size`                             | Compares bundle sizes against a selected Git reference                                                                                                                                                                                                                |
+| `npm run lint` / `npm run lint:fix`              | ESLint                                                                                                                                                                                                                                        |
+| `npm run format`                                 | Formats the repository with Prettier                                                                                                                                                                                                          |
+| `npm run docs:build` / `npm run docs:serve`      | Builds and serves hawk's own Hugo docs site                                                                                                                                                                                                   |
+| `npm run themes:css`                             | Generates one small standalone CSS file per gallery/template theme into `docs/static/assets/themes/` — see `scripts/generate-theme-css.mjs`                                                                                                   |
+| `npm run docs:scss`                              | Compiles `docs/static/assets/scss/*.scss` into `docs/static/assets/docs.css`/`playground.css` — see `scripts/compile-docs-scss.mjs`. Also runs automatically as part of `docs:build`/`docs:serve`                                             |
+| `npm run check:size`                             | Enforces the gzip bundle size budget                                                                                                                                                                                                          |
+| `npm run check:jsr`                              | Validates the JSR package configuration and dry-run contents                                                                                                                                                                                  |
+| `npm run validate:release`                       | CI release-artifact validation                                                                                                                                                                                                                |
+| `npm run check:quality`                          | Builds, checks the bundle size, and runs the Vitest suite                                                                                                                                                                                     |
+| `npm run bench:size`                             | Compares bundle sizes against a selected Git reference                                                                                                                                                                                        |
 
 ## License
 
