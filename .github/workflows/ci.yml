@@ -1,0 +1,239 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+    # GitHub tag filters are globs; the build job enforces the release-tag regex.
+    tags: ['*-release', '*-release+*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Never interrupt a release halfway through publishing.
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  checks:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [lint, unit, browser]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          # Hugo uses commit dates in the docs and browser snapshots.
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          hugo: ${{ matrix.check == 'browser' && 'true' || 'false' }}
+      - if: matrix.check == 'lint'
+        run: npm run lint
+      - if: matrix.check == 'unit'
+        run: npm test
+      - if: matrix.check == 'browser'
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+      - name: Browser failure artifacts
+        if: failure() && matrix.check == 'browser'
+        uses: actions/upload-artifact@v7
+        with:
+          name: browser-failure
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 3
+          if-no-files-found: ignore
+
+  build:
+    name: Build and validate release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    outputs:
+      version: ${{ steps.package.outputs.version }}
+      release: ${{ steps.package.outputs.release }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          hugo: 'true'
+      - name: Validate package and release tag
+        id: package
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          const { version } = JSON.parse(readFileSync('package.json', 'utf8'));
+          if (!/^\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?$/.test(version)) {
+            throw new Error(`Invalid package version: ${version}`);
+          }
+          const release = process.env.GITHUB_REF_TYPE === 'tag';
+          if (release) {
+            const match = /^v?(\d+\.\d+\.\d+)-release(\+[a-zA-Z0-9.-]+)?$/.exec(process.env.GITHUB_REF_NAME);
+            if (!match || `${match[1]}${match[2] || ''}` !== version) {
+              throw new Error(`Release tag ${process.env.GITHUB_REF_NAME} must match package version ${version}`);
+            }
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, `version=${version}\nrelease=${release}\n`);
+          JS
+      - run: npm run build
+      - run: npm run check:size
+      - name: Package browser bundles
+        env:
+          VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          tar -czf "$RUNNER_TEMP/hawk-${VERSION}.tar.gz" -C dist/hawk dist
+          (cd dist/hawk && zip -qr "$RUNNER_TEMP/hawk-${VERSION}.zip" dist)
+          mv "$RUNNER_TEMP/hawk-${VERSION}.tar.gz" "$RUNNER_TEMP/hawk-${VERSION}.zip" dist/hawk/dist/
+      - run: npm run docs:data
+      - run: npm run validate:release -- dist/hawk
+      - run: npm run check:jsr -- dist/hawk
+      - run: hugo --source docs --gc --minify --cleanDestinationDir
+      - uses: actions/upload-artifact@v7
+        with:
+          name: release-package
+          path: dist/hawk/
+          retention-days: 7
+          if-no-files-found: error
+
+  coverage:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: [checks, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - run: npm run test:coverage
+      - uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          files: coverage/lcov.info
+          flags: unit
+          fail_ci_if_error: true
+
+  release:
+    if: github.event_name == 'push' && needs.build.outputs.release == 'true'
+    needs: [checks, build, coverage]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: release
+    concurrency:
+      group: package-release
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - uses: actions/download-artifact@v8
+        with:
+          name: release-package
+          path: dist/hawk
+      - name: Publish npm with trusted publishing
+        working-directory: dist/hawk
+        run: |
+          npm install -g npm@latest
+          name="$(node -p 'JSON.parse(require("fs").readFileSync("package.json")).name')"
+          version="$(node -p 'JSON.parse(require("fs").readFileSync("package.json")).version')"
+          if npm view "$name@$version" version --json > "$RUNNER_TEMP/npm-version.json" 2> "$RUNNER_TEMP/npm-error.txt"; then
+            echo "$name@$version is already published; skipping."
+          elif grep -q E404 "$RUNNER_TEMP/npm-error.txt"; then
+            npm publish --access public --provenance
+          else
+            cat "$RUNNER_TEMP/npm-error.txt" >&2
+            exit 1
+          fi
+      - name: Publish JSR with GitHub OIDC
+        working-directory: dist/hawk
+        # JSR skips versions that are already published, allowing safe reruns.
+        run: node "$GITHUB_WORKSPACE/node_modules/jsr/dist/bin.js" publish --allow-dirty
+      - name: Create or update GitHub release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          notes="$RUNNER_TEMP/release-notes.md"
+          cp release-notes.md "$notes"
+          node --input-type=module - "$notes" <<'JS'
+          import { appendFileSync, readFileSync } from 'node:fs';
+          const { name, version } = JSON.parse(readFileSync('package.json', 'utf8'));
+          appendFileSync(process.argv[2], `\n\n## Packages\n\n- [npm](https://www.npmjs.com/package/${name}/v/${version})\n- [JSR](https://jsr.io/${name}/${version})\n- [jsDelivr](https://cdn.jsdelivr.net/npm/${name}@${version}/dist/)\n- [unpkg](https://unpkg.com/${name}@${version}/dist/)\n`);
+          JS
+          status="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" --jq .id 2> "$RUNNER_TEMP/release-error.txt" || true)"
+          if [ -z "$status" ]; then
+            if ! grep -q 'HTTP 404' "$RUNNER_TEMP/release-error.txt"; then
+              cat "$RUNNER_TEMP/release-error.txt" >&2
+              exit 1
+            fi
+            gh release create "$RELEASE_TAG" --verify-tag --draft --title "Hawk $VERSION" --notes-file "$notes"
+          fi
+          (cd dist/hawk/dist && sha256sum -- * > SHA256SUMS)
+          gh release upload "$RELEASE_TAG" dist/hawk/dist/* --clobber
+          gh release edit "$RELEASE_TAG" --draft=false --latest --title "Hawk $VERSION" --notes-file "$notes"
+
+  pages-build:
+    if: >-
+      always() && github.event_name == 'push' &&
+      needs.checks.result == 'success' && needs.build.result == 'success' &&
+      (github.ref == 'refs/heads/main' || needs.release.result == 'success')
+    needs: [checks, build, release]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+        with:
+          hugo: 'true'
+      - uses: actions/configure-pages@v6
+        id: pages
+      - name: Fetch GitHub release downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/generate-release-downloads.mjs
+      - name: Build Hugo and Pagefind
+        env:
+          HUGO_BASEURL: ${{ steps.pages.outputs.base_url }}/
+        run: npm run docs:build
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: public
+
+  pages-deploy:
+    if: always() && needs.pages-build.result == 'success'
+    needs: pages-build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: github-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/deploy-pages@v5
+        id: deployment

@@ -110,11 +110,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.com/staticcanvas/hawk.git"
+    "url": "https://github.com/staticcanvas/hawk.git"
   },
-  "homepage": "https://staticcanvas.gitlab.io/hawk",
+  "homepage": "https://staticcanvas.github.io/hawk",
   "bugs": {
-    "url": "https://gitlab.com/staticcanvas/hawk/-/issues"
+    "url": "https://github.com/staticcanvas/hawk/issues"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",

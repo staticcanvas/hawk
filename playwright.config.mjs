@@ -8,7 +8,7 @@ const PORT = 4174;
  * docs/content/_index.md: "This site's own search box ... is hawk searching itself — there's no
  * separate demo page, because dogfooding it here is the demo" — so `npm run test:e2e` first
  * builds hawk and the docs site with a `localhost` `baseURL` override (production `docs:build`'s
- * real GitLab Pages baseURL doesn't serve local test assets) and then exercises the actual
+ * real GitHub Pages baseURL doesn't serve local test assets) and then exercises the actual
  * production mount in `docs/layouts/_default/baseof.html`, not a synthetic fixture.
  *
  * Builds into public-e2e/, not the real public/ — deliberately isolated from `npm run docs:build`

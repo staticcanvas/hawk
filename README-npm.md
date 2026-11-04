@@ -1,19 +1,19 @@
-<img src="https://gitlab.com/staticcanvas/hawk/-/raw/main/branding/hawk-logo.svg" width="64" height="64" alt="Hawk logo" />
+<img src="https://bucket.s3.silvercottage.dev/logos/hawk/hawk-banner.svg" width="64" height="64" alt="Hawk logo" />
 
 # **@staticcanvas/hawk**
 
 [![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://www.npmjs.com/package/@staticcanvas/hawk)
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&color=%237fffd4)](https://jsr.io/%40staticcanvas/hawk)
 [![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.7-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
-[![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://gitlab.com/staticcanvas/hawk)
+[![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://github.com/staticcanvas/hawk)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 
 ---
 
-> 🔹 Read the full documentation [here](https://staticcanvas.gitlab.io/hawk/)
+> 🔹 Read the full documentation [here](https://staticcanvas.github.io/hawk/)
 
-> 🔹 Use the playground [here](https://staticcanvas.gitlab.io/hawk/playground/)
+> 🔹 Use the playground [here](https://staticcanvas.github.io/hawk/playground/)
 
 ## Installation
 
@@ -76,7 +76,7 @@ these defaults; lower `resultHydrationConcurrency` for constrained origins, or r
 ## Documentation
 
 Full docs, theming/animation-driver guides, and API reference:
-https://staticcanvas.gitlab.io/hawk
+https://staticcanvas.github.io/hawk
 
 ## License
 

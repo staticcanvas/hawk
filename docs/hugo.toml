@@ -1,4 +1,4 @@
-baseURL = 'https://staticcanvas.gitlab.io/hawk/'
+baseURL = 'https://staticcanvas.github.io/hawk/'
 locale = 'en-AU'
 title = 'Hawk documentation'
 publishDir = '../public'
@@ -8,7 +8,7 @@ disableKinds = ['taxonomy', 'term']
 
 [params]
   description = 'Themeable, pluggable command-palette search for static sites. Pagefind-powered indexing, swappable reveal animations, swappable visual themes.'
-  repository = 'https://gitlab.com/staticcanvas/hawk'
+  repository = 'https://github.com/staticcanvas/hawk'
   github = 'https://github.com/staticcanvas/hawk'
 
 [markup]
