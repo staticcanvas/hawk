@@ -459,7 +459,9 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
       .toBeLessThanOrEqual(360);
   });
 
-  test('phone and tablet search layouts match maintained screenshots', async ({ page }) => {
+  test('phone and tablet search layouts match maintained screenshots', async ({
+    page,
+  }, testInfo) => {
     for (const [width, snapshot] of [
       [360, 'hawk-search-phone.png'],
       [768, 'hawk-search-tablet.png'],
@@ -486,6 +488,23 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
       await page.addStyleTag({
         content:
           '*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }',
+      });
+      await testInfo.attach(`rendering-${width}.json`, {
+        body: JSON.stringify(
+          await page.evaluate(() => ({
+            userAgent: navigator.userAgent,
+            devicePixelRatio: window.devicePixelRatio,
+            fonts: [...document.fonts].map(({ family, weight, status }) => ({
+              family,
+              weight,
+              status,
+            })),
+            dialog: document.querySelector('.hawk-modal-dialog').getBoundingClientRect().toJSON(),
+          })),
+          null,
+          2
+        ),
+        contentType: 'application/json',
       });
       await expect(page.locator('.hawk-modal-dialog')).toHaveScreenshot(snapshot, {
         animations: 'disabled',

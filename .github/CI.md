@@ -4,8 +4,10 @@
 `develop`, and manual runs check lint, unit tests, Chromium browser tests, bundle
 budgets, release artifacts, JSR publish contents, and Hugo rendering. Dependencies
 come from `npm ci` with an npm cache; Node 24 LTS and Hugo Extended are pinned in
-`actions/setup/action.yml`. Jobs use GitHub-hosted Ubuntu runners, without the
-GitLab automator image or external release scripts.
+`actions/setup/action.yml`. Jobs use GitHub-hosted Ubuntu runners. The browser job
+runs inside the official Playwright 1.62.1 Noble image, pinned by digest in the
+workflow, with its preinstalled Chromium, fonts, and rendering libraries.
+Coverage, publishing, and Pages all require this browser job to pass.
 
 ## One-time service setup
 
@@ -81,17 +83,25 @@ normalizes Git-derived result dates to `2000-01-01` before capture. Its reviewed
 phone and tablet baselines retain real Pagefind results and the existing pixel
 tolerance.
 
-PR #2's browser artifacts showed a tablet screenshot mismatch (8,495 pixels),
-including a selected query and differences around text. Chromium now explicitly
-uses slight font hinting and disables LCD text rendering so system fontconfig
-defaults do not choose different rasterization settings. The screenshot test
-also waits for `open()`'s delayed focus/select callback before filling the query.
-The baselines were regenerated in Ubuntu 24.04 with those settings; the 1% pixel
-tolerance remains unchanged. When updating snapshots, use these same launch
-settings and install Playwright's system dependencies.
-Local verification passed all 24 browser tests in Ubuntu 24.04 and five repeated
-phone/tablet screenshot runs, plus ESLint, Prettier, and `actionlint`. GitHub
-verification requires pushing these changes and rerunning the checks.
+PR #2's browser artifacts showed a tablet screenshot mismatch (8,495 pixels).
+Waiting for `open()`'s delayed focus/select callback removed the selected query,
+but pinning Chromium hinting and disabling LCD text rendering was insufficient:
+run `41853451061` still differed by 8,294 pixels. A generic Ubuntu installation
+does not reproduce the hosted runner's complete rendering environment.
+
+The browser job and screenshot generation now use the same digest-pinned
+Playwright container. Keep its version aligned with `@playwright/test` in the
+lockfile. Generate snapshots in that container with the Node/Hugo versions from
+`actions/setup/action.yml`, run `npm ci --include=dev`, and use
+`npm run test:e2e -- --grep 'maintained screenshots' --update-snapshots=all`.
+Use a Linux filesystem checkout; for a bind-mounted checkout, Git must trust its
+container path (`actions/checkout` configures this in CI). Review both images,
+then run the complete browser suite without updating snapshots. The 1% pixel
+tolerance remains unchanged. Screenshot artifacts include rendering metadata
+with font load states, browser version, device scale, and dialog dimensions.
+The pinned-image verification passed a fresh dependency install and site build,
+all 24 browser tests, and three repeated screenshot tests. The regenerated
+images matched the committed baselines, so no image changes were needed.
 
 The shared bug knowledge base was unavailable during validation. The Node 25
 storage compatibility, missing-font, rasterization, and delayed-focus findings
