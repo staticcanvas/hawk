@@ -24,28 +24,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [lint, unit, browser]
+        check: [lint, unit]
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-          # Hugo uses commit dates in the docs and browser snapshots.
-          fetch-depth: 0
       - uses: ./.github/actions/setup
-        with:
-          hugo: ${{ matrix.check == 'browser' && 'true' || 'false' }}
       - if: matrix.check == 'lint'
         run: npm run lint
       - if: matrix.check == 'unit'
         run: npm test
-      - name: Install Chromium and system dependencies
-        if: matrix.check == 'browser'
-        run: npx playwright install --with-deps chromium
+
+  browser:
+    name: browser
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      # Keep this version aligned with the lockfile and regenerate snapshots in this image.
+      image: mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+        with:
+          hugo: 'true'
       - name: Run browser tests
-        if: matrix.check == 'browser'
         run: npm run test:e2e
       - name: Browser failure artifacts
-        if: failure() && matrix.check == 'browser'
+        if: failure()
         uses: actions/upload-artifact@v7
         with:
           name: browser-failure
@@ -109,7 +118,7 @@ jobs:
 
   coverage:
     if: github.event_name == 'push' && github.ref_type == 'tag'
-    needs: [checks, build]
+    needs: [checks, browser, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -130,7 +139,7 @@ jobs:
 
   release:
     if: github.event_name == 'push' && needs.build.outputs.release == 'true'
-    needs: [checks, build, coverage]
+    needs: [checks, browser, build, coverage]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     environment: release
@@ -195,9 +204,10 @@ jobs:
   pages-build:
     if: >-
       always() && github.event_name == 'push' &&
-      needs.checks.result == 'success' && needs.build.result == 'success' &&
+      needs.checks.result == 'success' && needs.browser.result == 'success' &&
+      needs.build.result == 'success' &&
       (github.ref == 'refs/heads/main' || needs.release.result == 'success')
-    needs: [checks, build, release]
+    needs: [checks, browser, build, release]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
