@@ -52,7 +52,11 @@ jobs:
         with:
           hugo: 'true'
       - name: Run browser tests
-        run: npm run test:e2e
+        run: |
+          # The mounted workspace belongs to the host runner, while this container runs as root.
+          # Hugo invokes Git for Lastmod outside checkout's temporary Git configuration.
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          npm run test:e2e
       - name: Browser failure artifacts
         if: failure()
         uses: actions/upload-artifact@v7

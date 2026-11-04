@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 const packageDocument = JSON.parse(
   readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
@@ -489,8 +489,10 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
         content:
           '*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent !important; }',
       });
-      await testInfo.attach(`rendering-${width}.json`, {
-        body: JSON.stringify(
+      const renderingPath = testInfo.outputPath(`rendering-${width}.json`);
+      writeFileSync(
+        renderingPath,
+        JSON.stringify(
           await page.evaluate(() => ({
             userAgent: navigator.userAgent,
             devicePixelRatio: window.devicePixelRatio,
@@ -503,7 +505,10 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
           })),
           null,
           2
-        ),
+        )
+      );
+      await testInfo.attach(`rendering-${width}.json`, {
+        path: renderingPath,
         contentType: 'application/json',
       });
       await expect(page.locator('.hawk-modal-dialog')).toHaveScreenshot(snapshot, {
