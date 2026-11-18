@@ -76,7 +76,19 @@ if (revealTargets.length && !reduceMotion && 'IntersectionObserver' in window) {
     },
     { threshold: 0.15, rootMargin: '0px 0px -40px 0px' }
   );
-  revealTargets.forEach((el) => observer.observe(el));
+  // Read positions together before adding animation state. Visible content is already painted.
+  const positions = Array.from(revealTargets, (target) => ({
+    target,
+    bounds: target.getBoundingClientRect(),
+  }));
+  for (const { target, bounds } of positions) {
+    if (bounds.top < window.innerHeight && bounds.bottom > 0) {
+      target.classList.add('is-revealed');
+    } else {
+      target.classList.add('is-reveal-pending');
+      observer.observe(target);
+    }
+  }
 } else {
   revealTargets.forEach((el) => el.classList.add('is-revealed'));
 }

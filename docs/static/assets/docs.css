@@ -955,6 +955,11 @@ a {
 /* Scroll-reveal state classes for [data-reveal] elements — see docs/static/assets/js/scroll-effects.js. */
 /* ── Scroll-reveal (IntersectionObserver, see baseof.html) ────────────────── */
 [data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+
+[data-reveal].is-reveal-pending {
   opacity: 0;
   transform: translateY(14px);
   transition: opacity 0.5s ease, transform 0.5s ease;
@@ -986,7 +991,8 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-reveal] {
+  [data-reveal],
+  [data-reveal].is-reveal-pending {
     opacity: 1;
     transform: none;
     transition: none;

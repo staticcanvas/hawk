@@ -1,6 +1,6 @@
 /**
- * @fileoverview Types the table of contents and breadcrumb trail back in with TypeFlow, once per
- * page load. Both are already fully rendered, real, working navigation server-side — a failed or
+ * @fileoverview Enhances the table of contents and breadcrumb trail with TypeFlow before first
+ * paint only. Both are already fully rendered, real, working navigation server-side — a failed or
  * slow module load, or `prefers-reduced-motion`, just leaves the original static content in
  * place rather than an empty element.
  *
@@ -43,7 +43,12 @@ const TYPEFLOW_CHROME_CONFIGS = {
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-if (!reduceMotion) {
+// A late module must not clear and replay navigation the visitor can already see.
+const canAnimateBeforePaint =
+  window.PerformanceObserver?.supportedEntryTypes?.includes('paint') &&
+  performance.getEntriesByType('paint').length === 0;
+
+if (!reduceMotion && canAnimateBeforePaint) {
   document.querySelectorAll('[data-typeflow-target]').forEach((container) => {
     const config = TYPEFLOW_CHROME_CONFIGS[container.dataset.typeflowTarget];
     if (!config) return;

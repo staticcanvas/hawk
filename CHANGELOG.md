@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep server-rendered documentation visible during deferred module loading; avoid replaying painted navigation and limit scroll reveals to offscreen content.
+
 <!-- rivet:changelog:start -->
 
 - No release-note commits were found in the selected range.

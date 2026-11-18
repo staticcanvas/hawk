@@ -16,6 +16,82 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await page.goto('index.html');
   });
 
+  test('late chrome modules do not replay navigation that has already painted', async ({
+    page,
+  }) => {
+    let releaseTypeflow;
+    const delayedTypeflow = new Promise((resolve) => {
+      releaseTypeflow = resolve;
+    });
+    await page.route('**/webutil/libs/typeflow.mjs', async (route) => {
+      await delayedTypeflow;
+      await route.continue();
+    });
+    await page.goto('getting-started/', { waitUntil: 'commit' });
+    const navigation = page.locator('[data-typeflow-target]');
+    await expect(navigation.first()).toBeVisible();
+    await page.waitForFunction(() => performance.getEntriesByType('paint').length > 0);
+    await page.evaluate(() => {
+      window.chromeReplayCount = 0;
+      window.chromeReplayObserver = new MutationObserver((records) => {
+        window.chromeReplayCount += records.filter((record) => record.type === 'childList').length;
+      });
+      document.querySelectorAll('[data-typeflow-target]').forEach((target) => {
+        window.chromeReplayObserver.observe(target, { childList: true, subtree: true });
+      });
+    });
+    releaseTypeflow();
+    await page.waitForLoadState('load');
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    );
+    expect(await page.evaluate(() => window.chromeReplayCount)).toBe(0);
+    await expect(page.locator('[data-typeflow-target="toc"]')).toContainText('Install');
+  });
+
+  test('content stays visible when scroll enhancements arrive after the viewer', async ({
+    page,
+  }) => {
+    let releaseScroll;
+    const delayedScroll = new Promise((resolve) => {
+      releaseScroll = resolve;
+    });
+    await page.route('**/assets/js/scroll-effects.js', async (route) => {
+      await delayedScroll;
+      await route.continue();
+    });
+    await page.goto('index.html', { waitUntil: 'commit' });
+    const card = page.locator('[data-reveal]').first();
+    await card.scrollIntoViewIfNeeded();
+    await expect(card).toHaveCSS('opacity', '1');
+    releaseScroll();
+    await page.waitForLoadState('load');
+    await expect(card).toHaveClass(/is-revealed/);
+    await expect(card).not.toHaveClass(/is-reveal-pending/);
+    const laterCard = page.locator('.guide-card[data-reveal]').last();
+    await expect(laterCard).toHaveClass(/is-reveal-pending/);
+    await laterCard.scrollIntoViewIfNeeded();
+    await expect(laterCard).toHaveCSS('opacity', '1');
+  });
+
+  test('server-rendered sections remain readable without JavaScript', async ({
+    browser,
+    baseURL,
+  }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, baseURL });
+    try {
+      const page = await context.newPage();
+      await page.goto('index.html');
+      const cards = page.locator('[data-reveal]');
+      expect(await cards.count()).toBeGreaterThan(0);
+      for (const card of await cards.all()) {
+        await expect(card).toHaveCSS('opacity', '1');
+      }
+    } finally {
+      await context.close();
+    }
+  });
+
   test('opens via the trigger button and via Ctrl+K, and Escape closes it', async ({ page }) => {
     const modal = page.locator('.hawk-modal');
     await expect(modal).toBeHidden();
