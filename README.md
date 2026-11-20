@@ -1,6 +1,7 @@
-<div align="left">
+<div align="center">
+<img src="https://bucket.s3.silvercottage.dev/logos/hawk/hawk-logo.svg" width="128">
 
-![Hawk Banner](https://bucket.s3.silvercottage.dev/logos/hawk/dist/webp/hawk-banner-1024x410.webp)
+<br>
 
 [![license](https://img.shields.io/gitlab/license/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk)
 [![gitlab-pipeline](https://img.shields.io/gitlab/pipeline-status/staticcanvas/hawk?style=flat-square&logo=gitlab&labelColor=%235f8575&color=%237fffd4&logoColor=%230bea59)](https://gitlab.com/staticcanvas/hawk/-/pipelines)
