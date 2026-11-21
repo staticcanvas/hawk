@@ -42,7 +42,7 @@ const server = createServer(async (req, res) => {
     let servedPath = filePath;
     let stats = await stat(servedPath);
     if (stats.isDirectory()) {
-      // Directory-index resolution — every real static host (GitLab Pages, Netlify, nginx,
+      // Directory-index resolution — every real static host (GitHub Pages, Netlify, nginx,
       // Hugo's own dev server) does this automatically; without it, a directory-style URL
       // (Pagefind's own item.url values are directory-style, no trailing /index.html) 404s here
       // even though it's a completely normal URL everywhere else, silently masking real

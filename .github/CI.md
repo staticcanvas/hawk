@@ -1,6 +1,6 @@
 # GitHub Actions
 
-`workflows/ci.yml` replaces the GitLab pipeline. Pull requests, pushes to `main` and
+`workflows/ci.yml` runs on pull requests, pushes to `main` and
 `develop`, and manual runs check lint, unit tests, Chromium browser tests, bundle
 budgets, release artifacts, JSR publish contents, and Hugo rendering. Dependencies
 come from `npm ci` with an npm cache; Node 24 LTS and Hugo Extended are pinned in
@@ -21,7 +21,7 @@ Coverage, publishing, and Pages all require this browser job to pass.
   so only release maintainers can create or update them.
 - On npm, configure the trusted publisher for `@staticcanvas/hawk`: GitHub owner
   `staticcanvas`, repository `hawk`, workflow filename **`ci.yml`**, environment
-  **`release`**. Replace the previous GitLab publisher. The repository URL in
+  **`release`**. The repository URL in
   `package.json` must match this repository. No npm token is required.
 - On JSR, link `@staticcanvas/hawk` to `staticcanvas/hawk` in the package settings
   and enable publishing from GitHub Actions. No `JSR_API_KEY` is required.
@@ -53,9 +53,9 @@ registry versions and update the existing GitHub release and assets.
 Pages deploys on successful `main` pushes and successful releases. The downloads
 page reads GitHub release assets, source archive links, and release notes through
 `scripts/generate-release-downloads.mjs`. Drafts and prereleases are excluded;
-an empty repository renders a link to GitHub Releases. Historical GitLab packages
-are not copied automatically. The old PowerShell GitLab download helpers remain
-available for accessing those historical packages but are no longer used by CI.
+an empty repository renders a link to GitHub Releases. Release assets must be
+uploaded to GitHub Releases to appear on the downloads page. The obsolete
+PowerShell package-download helpers have been removed.
 
 Publishing cannot be atomic across npm and JSR. If one succeeds and a later step
 fails, fix the cause and rerun the failed jobs for the same tag. Releases are

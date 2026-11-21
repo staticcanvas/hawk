@@ -1,7 +1,8 @@
 import { defineConfig } from 'vite';
-import { cpSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import terser from '@rollup/plugin-terser';
+import { normalizeProjectLinks } from './scripts/normalize-project-links.mjs';
 
 const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'));
 const packageDist = `dist/${pkg.name.split('/').pop()}`;
@@ -64,9 +65,11 @@ const stageOptionalAssets = {
     // runtime. The adapter keeps TypeFlow external in published bundles, while this one official
     // package file is staged beside the docs assets and resolved through the import map below.
     if (process.env.npm_config_mode === 'animation-typeflow') {
-      cpSync(
-        resolve('node_modules/@staticcanvas/typeflow/dist/typeflow.mjs'),
-        resolve(destination, 'typeflow.mjs')
+      writeFileSync(
+        resolve(destination, 'typeflow.mjs'),
+        normalizeProjectLinks(
+          readFileSync(resolve('node_modules/@staticcanvas/typeflow/dist/typeflow.mjs'), 'utf8')
+        )
       );
       cpSync(
         resolve('node_modules/@staticcanvas/typeflow/dist/typeflow.mjs.map'),
