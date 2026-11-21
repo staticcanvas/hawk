@@ -43,7 +43,7 @@ automation-devops
 # Local task-list backup
 pending-tasks copy.md
 
-# Local GitLab issue staging
+# Local issue staging
 issues/
 
 # Local devt task tracker state

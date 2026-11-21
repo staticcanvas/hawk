@@ -4,8 +4,8 @@
 
 [![npm-version](https://img.shields.io/npm/v/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://www.npmjs.com/package/@staticcanvas/hawk)
 [![jsr-version](https://img.shields.io/jsr/v/%40staticcanvas/hawk?style=flat-square&logo=jsr&color=%237fffd4)](https://jsr.io/%40staticcanvas/hawk)
-[![codecov](https://codecov.io/gl/staticcanvas/hawk/branch/v0.43.7-release/graph/badge.svg?token=)](https://codecov.io/gl/staticcanvas/hawk)
-[![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://gitlab.com/staticcanvas/hawk)
+[![codecov](https://codecov.io/gh/staticcanvas/hawk/graph/badge.svg)](https://codecov.io/gh/staticcanvas/hawk)
+[![license](https://img.shields.io/npm/l/@staticcanvas/hawk?style=flat-square&color=%237fffd4)](https://github.com/staticcanvas/hawk/blob/main/LICENSE)
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 

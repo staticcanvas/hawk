@@ -41,7 +41,7 @@ debug.dispose(); // restore hawk's original methods/callbacks entirely
 
 ## Logcad, or a console fallback
 
-If [`@staticcanvas/logcad`](https://gitlab.com/staticcanvas/logcad) is installed, every event
+If [`@staticcanvas/logcad`](https://github.com/staticcanvas/logcad) is installed, every event
 routes through its `logd()` for styled, filterable console output. If it isn't, `createHawkDebug`
 falls back to plain styled `console.*` calls — debugging works out of the box either way.
 
