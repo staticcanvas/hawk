@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite';
 import copy from 'rollup-plugin-copy';
 import { resolve } from 'node:path';
-import { cpSync, existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import terser from '@rollup/plugin-terser';
+import { normalizeProjectLinks } from './scripts/normalize-project-links.mjs';
 
 const pkg = JSON.parse(readFileSync(resolve('package.json'), 'utf8'));
 const packageName = pkg.name.split('/').pop();
@@ -51,7 +52,10 @@ function stageWebUtilityAssets() {
       ];
       for (const [source, filename] of pickrAssets) {
         if (existsSync(resolve(source))) {
-          cpSync(resolve(source), resolve(destination, filename));
+          writeFileSync(
+            resolve(destination, filename),
+            normalizeProjectLinks(readFileSync(resolve(source), 'utf8'))
+          );
         }
       }
       const brandingDestination = resolve('docs/static/webutil/assets/branding');

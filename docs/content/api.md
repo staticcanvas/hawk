@@ -709,7 +709,7 @@ See [Theming]({{< relref "/guides/theming" >}}) and
 
 Optional, non-invasive console diagnostics for a `HawkSearch` instance — wraps its public
 `open`/`close`/`destroy`/`setParams`/`onSelect` and polls its public `state` while open. Routes
-through [`@staticcanvas/logcad`](https://gitlab.com/staticcanvas/logcad) if installed, else falls
+through [`@staticcanvas/logcad`](https://github.com/staticcanvas/logcad) if installed, else falls
 back to styled `console.*` output.
 
 ```ts
