@@ -1,22 +1,25 @@
 <!-- rivet:release-notes:start -->
 
-Generated from `v0.43.7-release..HEAD` for Hawk.
+Generated from `v0.43.7-release..HEAD` for Hawk `0.43.8`.
 
 ### Changed
 
-- Migrate project metadata and badges to GitHub. ([6bec544](https://gitlab.com/staticcanvas/hawk/-/commit/6bec544bf0a9f6c990a0ce4b069cd55a1b469880) — @sgkens)
-- Update revit config and readme logo. ([5476d56](https://gitlab.com/staticcanvas/hawk/-/commit/5476d5620355dd0b992f26a1c3237a63e905a113) — @sgkens)
-- Update docs hawk build artifacts. ([2b9f1a7](https://gitlab.com/staticcanvas/hawk/-/commit/2b9f1a739d801d0375d95148c31d403f2e13272b) — @sgkens)
-- Update rivet metadata. ([0c210c3](https://gitlab.com/staticcanvas/hawk/-/commit/0c210c357fc226480a5a79b734c73ba96cc654ca) — @sgkens)
-- Migrate GitLab pipeline to GitHub Actions. ([a8671cf](https://gitlab.com/staticcanvas/hawk/-/commit/a8671cf324010026640688f1fe629d71343f5ea5) — @sgkens)
+- Update jsr semver. ([8336ec3](https://gitlab.com/staticcanvas/hawk/-/commit/8336ec3db8263bc66ac1eb61bcb8ceca905c4c1c) — @sgkens)
+- Update rivet meta data. ([42c58aa](https://gitlab.com/staticcanvas/hawk/-/commit/42c58aa5e2c5da11f8b9daf6d63f25a9f592f6f6) — @sgkens)
+- Migrate project metadata and badges to GitHub. ([2fa5dca](https://gitlab.com/staticcanvas/hawk/-/commit/2fa5dca8dd17bad1d9305b61194b10892a9c1e30) — @sgkens)
+- Update docs hawk build artifacts. ([f8ef9b9](https://gitlab.com/staticcanvas/hawk/-/commit/f8ef9b9759fdceb0f0a1277664e0350d3ca6ef1f) — @sgkens)
+- Update rivet metadata. ([ccd5496](https://gitlab.com/staticcanvas/hawk/-/commit/ccd54961bc0afea6b7549f76777b5017459e9848) — @sgkens)
+- Migrate GitLab pipeline to GitHub Actions. ([3e45b8b](https://gitlab.com/staticcanvas/hawk/-/commit/3e45b8bbf9259eae3f23a3de94a814837c5df1bf) — @sgkens)
 - Regeneration docs site changelog from source CHANGELOG.md. ([8cfcc78](https://gitlab.com/staticcanvas/hawk/-/commit/8cfcc7801fee6505af00a3f82028886fc0043476) — @sgkens)
 - Remove test runtime badge in readme. ([6c36b2e](https://gitlab.com/staticcanvas/hawk/-/commit/6c36b2e30d402cb85edaa230f3ab73a7aa9d99ce) — @sgkens)
 - Correct incorrect changelog generation reset release-notes.md. ([17aeddb](https://gitlab.com/staticcanvas/hawk/-/commit/17aeddb6c8feace468fba3fe0f915970263b1b21) — @sgkens)
 
 ### Fixed
 
-- Trust mounted browser workspace for Hugo. ([1788438](https://gitlab.com/staticcanvas/hawk/-/commit/1788438a57348c6daf09e0ea44e9927008afff6f) — @sgkens)
-- Pin browser test rendering environment. ([a6700e6](https://gitlab.com/staticcanvas/hawk/-/commit/a6700e634cc1edaed9f2d3fb79e05fe562de7895) — @sgkens)
-- Stabilize browser screenshot checks. ([f486c08](https://gitlab.com/staticcanvas/hawk/-/commit/f486c08de44a982db508c579cf856e0c5e91f0a7) — @sgkens)
+- Deploy Pages only after successful main pushes. ([90aa598](https://gitlab.com/staticcanvas/hawk/-/commit/90aa5987ca892ebf077f80361bd61f4df40687d7) — @sgkens)
+- Reconcile migration documentation with develop. ([95a729c](https://gitlab.com/staticcanvas/hawk/-/commit/95a729cf09add9557b6f3f6b20476678aa34fbbe) — @sgkens)
+- Trust mounted browser workspace for Hugo. ([0d8d580](https://gitlab.com/staticcanvas/hawk/-/commit/0d8d580c5c1e633806771cec455d8ca60058cda3) — @sgkens)
+- Pin browser test rendering environment. ([5cae235](https://gitlab.com/staticcanvas/hawk/-/commit/5cae235642205a05c4e8bf853d4e930bb54fce36) — @sgkens)
+- Stabilize browser screenshot checks. ([ef73a2e](https://gitlab.com/staticcanvas/hawk/-/commit/ef73a2e5fd9d01c60868ac6bcf06d9693fdf3877) — @sgkens)
 
 <!-- rivet:release-notes:end -->
