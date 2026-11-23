@@ -57,6 +57,19 @@ It finds existing drafts in the authenticated releases list, then uploads and
 publishes by release ID, avoiding another lookup by tag after draft creation.
 The release body uses the extracted `.github/release-body-template.md`.
 
+`npm run check:package -- dist/hawk` verifies that the staged `README.md` matches
+`README-npm.md`, the staged package identity/version matches the checkout, and
+the npm pack listing contains the README and all declared entrypoints at the
+correct paths. It runs before artifact upload and after artifact download.
+The root `prepublishOnly` guard rejects accidental publication from the repository
+root; publish the staged package with `npm publish ./dist/hawk` instead.
+
+The npm `0.43.8` upload contained the repository README and nested
+`dist/hawk` package files. A new version is required to replace that package and
+update npm's rendered README. The JSR `0.43.8` uploaded README already matches
+`README-npm.md`; use **package Settings → Readme Source → Readme** to display it
+instead of entrypoint module documentation. These are separate registry issues.
+
 Pages deploys after successful checks on pushes to `main`, including merged pull
 requests. Pull request runs, release tags, and manual runs do not deploy. The downloads
 page reads GitHub release assets, source archive links, and release notes through

@@ -111,6 +111,7 @@ jobs:
           mv "$RUNNER_TEMP/hawk-${VERSION}.tar.gz" "$RUNNER_TEMP/hawk-${VERSION}.zip" dist/hawk/dist/
       - run: npm run docs:data
       - run: npm run validate:release -- dist/hawk
+      - run: npm run check:package -- dist/hawk
       - run: npm run check:jsr -- dist/hawk
       - run: hugo --source docs --gc --minify --cleanDestinationDir
       - uses: actions/upload-artifact@v7
@@ -163,6 +164,8 @@ jobs:
         with:
           name: release-package
           path: dist/hawk
+      - name: Verify package README and packed entrypoints
+        run: npm run check:package -- dist/hawk
       - name: Publish npm with trusted publishing
         working-directory: dist/hawk
         run: |
