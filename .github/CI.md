@@ -46,12 +46,16 @@ version. Unsupported or mismatched tags fail validation before publishing.
 
 After all checks and coverage upload succeed, the workflow publishes the validated
 artifact to npm and JSR. It then creates a GitHub release, attaches every browser
-bundle, source map, versioned zip/tar.gz archive, and a `SHA256SUMS` file. A new
+bundle, source map, versioned zip/tar.gz archive, `release-notes.md`,
+`generic-package-links.json`, `generic-package-checksums.json`, and `SHA256SUMS`. A new
 release stays in draft until its assets finish uploading. Reruns skip existing
 registry versions and update the existing GitHub release and assets.
-`scripts/publish-github-release.mjs` reads `release-notes.md` from the checkout,
-finds existing drafts in the authenticated releases list, and uploads and publishes
-by release ID. This avoids a second lookup by tag immediately after draft creation.
+`scripts/publish-github-release.mjs` restores the original commit-body note
+generation over `origin/main..HEAD`, falling back to the root `release-notes.md`
+when there are no classified entries. The release checkout fetches full history.
+It finds existing drafts in the authenticated releases list, then uploads and
+publishes by release ID, avoiding another lookup by tag after draft creation.
+The release body uses the extracted `.github/release-body-template.md`.
 
 Pages deploys after successful checks on pushes to `main`, including merged pull
 requests. Pull request runs, release tags, and manual runs do not deploy. The downloads
@@ -68,6 +72,33 @@ it does not publish or deploy.
 
 The old runtime SVG artifact badge is replaced by the Actions status badge and
 GitHub's run timing display.
+
+## GitLab release parity audit (2026-11-23)
+
+The source is [the last GitLab CI YAML before migration](https://github.com/staticcanvas/hawk/blob/f3fde5da49047ed5a628c922e89fc198b36c811e/.gitlab-ci.yml),
+removed by `3e45b8b`. The body template was extracted from
+`release:gitlab`'s `DESCRIPTION` heredoc. It retains the package sections,
+all four CDN variants for both providers, and the UMD/ESM usage examples.
+Only CI variable names and the obsolete `www.jsr.io/npm/.../v/...` URL were adapted.
+The release title again uses `Release <package name> <version>`.
+
+| Original step                                       | GitHub equivalent and audit result                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Release tag rules and package version validation    | Release-tag filters and matching version validation are retained. The `release` environment and repository tag rules provide protection.                                                                                                                                                                                                                                   |
+| `lint`, `test`, `test:e2e`                          | All retained and required before publishing; browser artifacts remain available on failure.                                                                                                                                                                                                                                                                                |
+| Build, bundle budget, zip/tar.gz, one-week artifact | Retained in the build job and `release-package` artifact.                                                                                                                                                                                                                                                                                                                  |
+| Artifact, docs, isolated JSR, and Hugo validation   | Retained. PowerShell syntax checks were removed with the GitLab-only download helpers.                                                                                                                                                                                                                                                                                     |
+| Coverage and Codecov                                | Retained; GitHub OIDC replaces the GitLab token. Coverage must succeed before publishing.                                                                                                                                                                                                                                                                                  |
+| Generic Registry upload of every bundle             | Replaced by GitHub release asset uploads of every built file, including all optional plugins and source maps.                                                                                                                                                                                                                                                              |
+| npm existing-version check and trusted publishing   | Retained, with GitHub trusted publishing and provenance. Non-404 lookup failures stop publishing.                                                                                                                                                                                                                                                                          |
+| JSR existing-version handling and publishing        | Retained through the pinned JSR CLI's existing-version handling; GitHub OIDC replaces the API key.                                                                                                                                                                                                                                                                         |
+| Full history and `Get-ReleaseNotes -AheadOnly`      | Restored using the same `origin/main..HEAD` range and five selected commit-body categories: Notes, Feature Notes, Breaking Changes, Feature Additions, Feature Updates. The pinned source at `automator-devops` commit `cec29eddec3c78342c75d7b18360a8da61db158a` was inspected. Generated notes take precedence; root notes remain the fallback. Commit links use GitHub. |
+| Download/checksum metadata JSON                     | Restored under the original filenames, with GitHub download URLs and SHA256 values. JSON covers the built bundles and archives; `SHA256SUMS` also covers the notes and JSON without circular self-checksums.                                                                                                                                                               |
+| Generated notes artifact                            | Restored as a downloadable `release-notes.md` asset, as well as being included in the release body.                                                                                                                                                                                                                                                                        |
+| Release body and create-or-update behavior          | Detailed template restored; existing drafts/releases are resumed by ID. A new release publishes after every asset upload succeeds.                                                                                                                                                                                                                                         |
+| Serialized registry/release operations              | Retained through release concurrency and non-canceling tag runs.                                                                                                                                                                                                                                                                                                           |
+| Pages on main and release tags                      | Main-only deployment is the user's explicit change. Hugo/Pagefind and live release-download metadata are retained.                                                                                                                                                                                                                                                         |
+| Runtime SVG badge notification job                  | Removed in the GitHub migration; Actions status and run timing replaced it. This audit records that difference rather than adding the GitLab badge machinery back.                                                                                                                                                                                                         |
 
 ## Migration validation
 

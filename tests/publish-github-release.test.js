@@ -12,6 +12,7 @@ const options = {
   repository: 'staticcanvas/hawk',
   token: 'test-token',
   tag: release.tag_name,
+  name: '@staticcanvas/hawk',
   version: '0.43.8',
   notes: 'Release notes with package links',
   assets: [{ name: 'hawk file.mjs', data: Buffer.from('bundle') }],
