@@ -207,11 +207,8 @@ jobs:
 
   pages-build:
     if: >-
-      always() && github.event_name == 'push' &&
-      needs.checks.result == 'success' && needs.browser.result == 'success' &&
-      needs.build.result == 'success' &&
-      (github.ref == 'refs/heads/main' || needs.release.result == 'success')
-    needs: [checks, browser, build, release]
+      github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [checks, browser, build]
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

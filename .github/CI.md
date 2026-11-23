@@ -13,8 +13,8 @@ Coverage, publishing, and Pages all require this browser job to pass.
 
 - Enable Actions in `staticcanvas/hawk`.
 - Set **Settings → Pages → Build and deployment → Source** to **GitHub Actions**.
-  The `github-pages` environment must allow `main` and `*-release` / `*-release+*`
-  tags. Pages builds use the URL returned by `configure-pages`, including a custom
+  The `github-pages` environment must allow `main`.
+  Pages builds use the URL returned by `configure-pages`, including a custom
   domain if one is configured.
 - Create a `release` environment. Restrict it to the release tag patterns and add
   required reviewers if desired. Protect release tags with a repository ruleset
@@ -50,7 +50,8 @@ bundle, source map, versioned zip/tar.gz archive, and a `SHA256SUMS` file. A new
 release stays in draft until its assets finish uploading. Reruns skip existing
 registry versions and update the existing GitHub release and assets.
 
-Pages deploys on successful `main` pushes and successful releases. The downloads
+Pages deploys after successful checks on pushes to `main`, including merged pull
+requests. Pull request runs, release tags, and manual runs do not deploy. The downloads
 page reads GitHub release assets, source archive links, and release notes through
 `scripts/generate-release-downloads.mjs`. Drafts and prereleases are excluded;
 an empty repository renders a link to GitHub Releases. Release assets must be
