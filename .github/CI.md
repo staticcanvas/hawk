@@ -49,6 +49,9 @@ artifact to npm and JSR. It then creates a GitHub release, attaches every browse
 bundle, source map, versioned zip/tar.gz archive, and a `SHA256SUMS` file. A new
 release stays in draft until its assets finish uploading. Reruns skip existing
 registry versions and update the existing GitHub release and assets.
+`scripts/publish-github-release.mjs` reads `release-notes.md` from the checkout,
+finds existing drafts in the authenticated releases list, and uploads and publishes
+by release ID. This avoids a second lookup by tag immediately after draft creation.
 
 Pages deploys after successful checks on pushes to `main`, including merged pull
 requests. Pull request runs, release tags, and manual runs do not deploy. The downloads
