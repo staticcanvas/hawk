@@ -5,10 +5,11 @@
  */
 
 [data-hawk-theme-preset='stingray'] {
+  color-scheme: dark;
   --hawk-bg-canvas: #12181e;
   --hawk-bg-surface: #182027;
   --hawk-bg-surface-elevated: #202a33;
-  --hawk-border-subtle: #2b3844;
+  --hawk-border-subtle: rgba(43, 56, 68, 0.65);
   --hawk-border-default: #2b3844;
   --hawk-border-strong: #5b6d75;
   --hawk-text-primary: #dbe6ec;
@@ -16,16 +17,16 @@
   --hawk-text-muted: #5b6d75;
   --hawk-accent: #2fd9e8;
   --hawk-accent-alt: #7fe0c4;
-  --hawk-accent-dim: #23414f;
-  --hawk-accent-glow: #23414f;
-  --hawk-accent-alt-dim: #23414f;
-  --hawk-accent-alt-glow: #23414f;
+  --hawk-accent-dim: rgba(47, 217, 232, 0.1);
+  --hawk-accent-glow: rgba(47, 217, 232, 0.18);
+  --hawk-accent-alt-dim: rgba(127, 224, 196, 0.1);
+  --hawk-accent-alt-glow: rgba(127, 224, 196, 0.16);
   --hawk-backdrop: rgb(0 0 0 / 0.72);
-  --hawk-preview-bg: #182027;
-  --hawk-shadow: 0 24px 64px rgb(0 0 0 / 0.48), 0 0 0 1px #23414f;
+  --hawk-preview-bg: #12181e;
+  --hawk-shadow: 0 2px 8px rgba(18, 24, 30, 0.16), 0 24px 64px rgb(0 0 0 / 0.48), inset 0 1px 0 rgba(219, 230, 236, 0.04);
   --hawk-mark-bg: #23414f;
   --hawk-mark-color: #dbe6ec;
-  --hawk-scrollbar-thumb: #5b6d75;
+  --hawk-scrollbar-thumb: rgba(91, 109, 117, 0.45);
   --hawk-scrollbar-thumb-active: #2fd9e8;
   --hawk-powered-by-color: #8fa3ad;
 }

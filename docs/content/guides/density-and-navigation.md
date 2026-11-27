@@ -61,7 +61,7 @@ new HawkSearch({
   index: '/pagefind/',
   headerControls: {
     density: false, // hide Fit / Medium / Compact
-    escape: true,   // keep the Escape close button
+    escape: true, // keep the Escape close button
   },
 });
 ```
@@ -70,6 +70,30 @@ new HawkSearch({
 even when `headerControls.density` is `true`. Hiding the Escape button does not disable the
 Escape keyboard shortcut; use `hotkeys.escape: false` when the keyboard behavior must also be
 disabled.
+
+### Individual size buttons
+
+Use a density object to omit individual buttons. Omitted keys remain enabled:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  headerControls: { density: { fit: false, medium: true, compact: true } },
+});
+```
+
+Setting all three keys to `false` omits the group. These options control the available
+buttons; they do not restrict `params.density` or the automatic narrow-screen layout.
+
+The whole group can also be hidden or shown on an existing instance:
+
+```js
+search.setParams({ allowDensityToggle: false });
+search.setParams({ allowDensityToggle: true });
+```
+
+This retains the chosen density and the configured individual buttons. An explicit
+`headerControls.density: false` or `headerControls: false` keeps the group disabled.
 
 ## Two-pane keyboard navigation
 
@@ -101,7 +125,7 @@ separate "view result" button.
 ### Scrollbars
 
 The results pane, preview pane, and filter strip all get a themed scrollbar (thin, low-opacity at
-rest, brightening on hover *or* while actively scrolling — see
+rest, brightening on hover _or_ while actively scrolling — see
 [Theming — token list]({{< relref "/guides/theming" >}}#token-list) for
 `--hawk-scrollbar-thumb`/`-active`). The scroll trigger fires on a `scroll` event regardless of
 cause, so keyboard-driven scrolling (arrow keys in the preview pane) lights it up the same as a

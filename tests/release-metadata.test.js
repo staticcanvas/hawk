@@ -17,6 +17,7 @@ const options = {
   version: '0.43.8',
   template,
   fallbackNotes: 'Repository release notes',
+  packageReadme: '# Package overview\n\nPackage usage from README-npm.md.',
   assets: [{ name: 'hawk.esm.js', data: Buffer.from('abc') }],
 };
 
@@ -75,6 +76,10 @@ describe('GitLab release metadata parity', () => {
   it('restores both registries, all eight CDN variants, and both usage examples', () => {
     const { body } = generateReleaseMetadata(options);
     expect(body).toContain('Repository release notes');
+    expect(body).toContain(options.packageReadme);
+    expect(body.indexOf('Repository release notes')).toBeLessThan(
+      body.indexOf('# Package overview')
+    );
     expect(body).toContain('## **Package Links**');
     expect(body).toContain('https://www.npmjs.com/package/@staticcanvas/hawk/v/0.43.8');
     expect(body).toContain('https://jsr.io/@staticcanvas/hawk/0.43.8');

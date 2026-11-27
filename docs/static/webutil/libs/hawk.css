@@ -350,24 +350,38 @@
 
 .hawk-density-toggle {
   display: flex;
-  gap: 0.2rem;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.1875rem;
+  border: 1px solid var(--hawk-border-subtle, #1e293b);
+  border-radius: calc(var(--hawk-radius, 14px) * 0.6);
+  background: var(--hawk-bg-canvas, #0b1220);
 }
 .hawk-density-btn {
   background: transparent;
-  border: 1px solid var(--hawk-border-default, #253347);
-  border-radius: 6px;
-  padding: 0.2rem 0.5rem;
+  border: 1px solid transparent;
+  border-radius: calc(var(--hawk-radius, 14px) * 0.4);
+  min-block-size: 1.75rem;
+  padding: 0.25rem 0.5rem;
   font-size: 0.72rem;
+  font-family: inherit;
+  font-weight: 500;
+  line-height: 1.2;
   cursor: pointer;
-  color: var(--hawk-text-muted, #64748b);
+  color: var(--hawk-text-secondary, #94a3b8);
+}
+.hawk-density-btn:hover {
+  background: var(--hawk-bg-surface-elevated, #1e293b);
+  color: var(--hawk-text-primary, #f1f5f9);
 }
 .hawk-density-btn:focus-visible {
   outline: 2px solid var(--hawk-accent, #38bdf8);
   outline-offset: 1px;
 }
-.hawk-density-btn.active {
+.hawk-density-btn[aria-pressed='true'] {
   border-color: var(--hawk-accent, #38bdf8);
-  color: var(--hawk-accent, #38bdf8);
+  color: var(--hawk-text-primary, #f1f5f9);
+  font-weight: 600;
   background: var(--hawk-accent-dim, rgba(56, 189, 248, 0.12));
 }
 
@@ -573,7 +587,9 @@
 }
 [data-hawk-compact='true'][data-hawk-show-preview='true'] .hawk-preview-pane,
 [data-hawk-density='compact'][data-hawk-show-preview='true'] .hawk-preview-pane,
-.hawk-modal[data-hawk-show-preview='true'] .hawk-modal-body[data-hawk-columns='1'] .hawk-preview-pane {
+.hawk-modal[data-hawk-show-preview='true']
+  .hawk-modal-body[data-hawk-columns='1']
+  .hawk-preview-pane {
   display: block;
 }
 
@@ -698,9 +714,18 @@
   font-size: 0.68rem;
   padding: 0.05rem 0.45rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--hawk-result-accent, var(--hawk-border-default, #253347)) 60%, transparent);
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--hawk-result-accent, var(--hawk-border-default, #253347)) 60%,
+      transparent
+    );
   background: color-mix(in srgb, var(--hawk-result-accent, transparent) 14%, transparent);
-  color: color-mix(in srgb, var(--hawk-result-accent, var(--hawk-text-muted, #64748b)) 80%, var(--hawk-text-primary, #f1f5f9));
+  color: color-mix(
+    in srgb,
+    var(--hawk-result-accent, var(--hawk-text-muted, #64748b)) 80%,
+    var(--hawk-text-primary, #f1f5f9)
+  );
   white-space: nowrap;
 }
 .hawk-pin-btn {
@@ -783,8 +808,16 @@
      --hawk-text-secondary rather than --hawk-text-primary (55% vs. the old 75%, toward the
      muted end rather than the bright one) — reads as a soft, blended hashtag label rather than a
      bordered chip competing with the title/excerpt for attention. */
-  background: color-mix(in srgb, var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 8%, transparent);
-  color: color-mix(in srgb, var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 55%, var(--hawk-text-secondary, #94a3b8));
+  background: color-mix(
+    in srgb,
+    var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 8%,
+    transparent
+  );
+  color: color-mix(
+    in srgb,
+    var(--hawk-tag-accent, var(--hawk-result-accent, var(--hawk-accent, #38bdf8))) 55%,
+    var(--hawk-text-secondary, #94a3b8)
+  );
   font-size: 0.64rem;
   line-height: 1.35;
 }

@@ -33,12 +33,15 @@ const accentColors = {
 
 const { categories, categoryDefaults, excludePages } = window.__HAWK_DOCS_SEARCH_DATA__;
 
-new HawkSearch(
+const search = new HawkSearch(
   createHawkDocsSearchConfig({
     index: document.body.dataset.hawkIndex,
     excludePages,
     categories,
     categoryDefaults,
     accentColors,
+    overrides: { preload: true },
   })
 );
+
+document.getElementById(search.id).dataset.hawkDocsSearch = 'true';

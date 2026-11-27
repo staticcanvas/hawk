@@ -101,6 +101,21 @@ describe('documentation theme gallery', () => {
     }
   });
 
+  it("keeps preview text readable on each theme's separate preview surface", () => {
+    for (const theme of themes) {
+      const surface = theme.tokens['--hawk-preview-bg'] || theme.tokens['--hawk-bg-surface'];
+      const canvas = theme.tokens['--hawk-bg-canvas'];
+      expect(
+        contrast(theme.tokens['--hawk-text-primary'], surface, canvas),
+        theme.id
+      ).toBeGreaterThanOrEqual(4.5);
+      expect(
+        contrast(theme.tokens['--hawk-text-secondary'], surface, canvas),
+        theme.id
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it('defines Simple dark as a seamless minimal layout, not another palette swap', () => {
     const simpleDark = themes.find(({ id }) => id === 'simple-dark');
 

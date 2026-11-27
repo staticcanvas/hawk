@@ -23,7 +23,14 @@ animationRegistry.set('instant', HawkAnimationInstant);
 
 // Subtle pastel range for config.tagAccentColors' default — distinct enough to tell tags apart
 // at a glance without competing with --hawk-accent or reading as loud/saturated.
-const DEFAULT_TAG_ACCENT_COLORS = ['#f5c2e7', '#cba6f7', '#94e2d5', '#a6e3a1', '#fab387', '#89dceb'];
+const DEFAULT_TAG_ACCENT_COLORS = [
+  '#f5c2e7',
+  '#cba6f7',
+  '#94e2d5',
+  '#a6e3a1',
+  '#fab387',
+  '#89dceb',
+];
 
 const DEFAULT_PARAMS = {
   scale: 1,
@@ -156,6 +163,8 @@ export class HawkSearch {
    * @param {object} [config.pagefind] A pre-loaded Pagefind module (or compatible mock) to use
    *   instead of dynamically importing one from `config.index` — e.g. when the consumer already
    *   bundles Pagefind, or in tests.
+   * @param {boolean} [config.preload=false] Loads Pagefind during idle time after page load,
+   *   warming the initial listing when eagerResults is enabled without opening the dialog.
    * @param {string} [config.triggerSelector='[data-search-trigger]'] Elements that open the modal on click.
    * @param {HTMLElement} [config.container=document.body] Where the modal is mounted.
    * @param {Partial<typeof DEFAULT_PARAMS>} [config.params] Layout params: scale/position/offset/alignment/
@@ -232,9 +241,10 @@ export class HawkSearch {
    *   (`item.isAnchor`) and draws a vertical connector line against its parent page's row above it
    *   (`.hawk-result-item--subpage`), signaling "this is part of that page" at a glance. Set `false`
    *   for a flat list where every row — page or heading match alike — looks the same.
-   * @param {boolean|{density?: boolean, escape?: boolean}} [config.headerControls]
+   * @param {boolean|{density?: boolean|{fit?: boolean, medium?: boolean, compact?: boolean}, escape?: boolean}} [config.headerControls]
    *   Controls the Fit/Medium/Compact group and Escape button at the right of the search input.
    *   Pass false for a minimal input-only header, or disable either control independently.
+   *   A density object can hide individual size buttons; omitted choices remain enabled.
    * @param {string|string[]} [config.excludePages=[]] Page URLs or paths to omit from results.
    *   Matching ignores query strings, hashes, and a trailing slash, so excluding a page also
    *   excludes all of its section/anchor results (e.g. `excludePages: ['/']` omits the home page).
@@ -383,11 +393,14 @@ export class HawkSearch {
           : DEFAULT_TAG_ACCENT_COLORS;
     this.showSubpageConnector = config.showSubpageConnector !== false;
     const headerControls = config.headerControls === false ? false : config.headerControls || {};
+    this.densityChoices = [...DENSITY_VALUES].filter(
+      (density) => headerControls.density?.[density] !== false
+    );
     this.headerControls = {
       density:
         headerControls !== false &&
         headerControls.density !== false &&
-        this.params.allowDensityToggle,
+        this.densityChoices.length > 0,
       escape: headerControls !== false && headerControls.escape !== false,
     };
     const excludedPages = Array.isArray(config.excludePages)
@@ -456,6 +469,7 @@ export class HawkSearch {
 
     if (this.container) {
       this.#mount();
+      if (config.preload === true) this.#schedulePreload();
     }
   }
 
@@ -475,6 +489,9 @@ export class HawkSearch {
   #isOpen;
   #pagefind;
   #pagefindLoadPromise;
+  #preloadPromise;
+  #cancelPreload;
+  #destroyed = false;
   #pagefindError;
   #previewTitleController;
   #previewController;
@@ -713,9 +730,12 @@ export class HawkSearch {
       this.#root.style.setProperty('--hawk-results-stagger', `${this.resultsRevealStagger}ms`);
     }
     if (this.backdrop.color) this.#root.style.setProperty('--hawk-backdrop', this.backdrop.color);
-    if (this.backdrop.gradient) this.#root.style.setProperty('--hawk-backdrop-gradient', this.backdrop.gradient);
-    if (this.backdrop.opacity !== undefined) this.#root.style.setProperty('--hawk-backdrop-opacity', String(this.backdrop.opacity));
-    if (this.backdrop.blur) this.#root.style.setProperty('--hawk-backdrop-blur', this.backdrop.blur);
+    if (this.backdrop.gradient)
+      this.#root.style.setProperty('--hawk-backdrop-gradient', this.backdrop.gradient);
+    if (this.backdrop.opacity !== undefined)
+      this.#root.style.setProperty('--hawk-backdrop-opacity', String(this.backdrop.opacity));
+    if (this.backdrop.blur)
+      this.#root.style.setProperty('--hawk-backdrop-blur', this.backdrop.blur);
     this.#applyParams();
     this.#renderDiscovery('empty');
     if (this.#tabsExplicit) {
@@ -732,11 +752,11 @@ export class HawkSearch {
     this.#root.querySelectorAll('[data-search-close]').forEach((el) => {
       el.addEventListener('click', () => this.close());
     });
-    this.#root.querySelectorAll('.hawk-density-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        this.setParams({ density: btn.dataset.density });
-        this.#persistDensity(btn.dataset.density);
-      });
+    this.#root.addEventListener('click', (event) => {
+      const btn = event.target.closest('.hawk-density-btn');
+      if (!btn || !this.#root.contains(btn)) return;
+      this.setParams({ density: btn.dataset.density });
+      this.#persistDensity(btn.dataset.density);
     });
 
     this.#input.addEventListener('input', () => {
@@ -819,6 +839,18 @@ export class HawkSearch {
     return `${icon}<span class="hawk-trigger-label">${s.triggerLabelLong}</span>${kbd}`;
   }
 
+  #densityControlsMarkup() {
+    if (!this.headerControls.density || !this.params.allowDensityToggle) return '';
+    const s = this.strings;
+    const labels = { fit: s.densityFit, medium: s.densityMedium, compact: s.densityCompact };
+    return `<div class="hawk-density-toggle" role="group" aria-label="${this.#escapeHtml(s.densityGroupLabel)}">${this.densityChoices
+      .map(
+        (density) =>
+          `<button type="button" class="hawk-density-btn" data-density="${density}">${this.#escapeHtml(labels[density])}</button>`
+      )
+      .join('')}</div>`;
+  }
+
   #markup() {
     const s = this.strings;
     return `
@@ -831,15 +863,7 @@ export class HawkSearch {
                 aria-autocomplete="list" aria-controls="${this.id}-results" />
               ${this.rotatingPlaceholders.length ? `<span class="hawk-input-ghost" aria-hidden="true"></span>` : ''}
             </div>
-            ${
-              this.headerControls.density
-                ? `<div class="hawk-density-toggle" role="group" aria-label="${s.densityGroupLabel}">
-              <button type="button" class="hawk-density-btn" data-density="fit">${s.densityFit}</button>
-              <button type="button" class="hawk-density-btn" data-density="medium">${s.densityMedium}</button>
-              <button type="button" class="hawk-density-btn" data-density="compact">${s.densityCompact}</button>
-            </div>`
-                : ''
-            }
+            ${this.#densityControlsMarkup()}
             ${
               this.headerControls.escape
                 ? `<button class="hawk-modal-esc" data-search-close type="button"><kbd>${s.escKey}</kbd></button>`
@@ -875,6 +899,16 @@ export class HawkSearch {
   }
 
   #applyParams() {
+    const controls = this.#root.querySelector('.hawk-density-toggle');
+    const showControls = this.headerControls.density && this.params.allowDensityToggle;
+    if (controls && !showControls) {
+      if (controls.contains(document.activeElement)) this.#input.focus();
+      controls.remove();
+    } else if (!controls && showControls) {
+      this.#root
+        .querySelector('.hawk-input-wrap')
+        .insertAdjacentHTML('afterend', this.#densityControlsMarkup());
+    }
     const { scale, position, offset, columns, breakpoint, density, verticalFit } = this.params;
     this.#root.style.setProperty('--hawk-scale', String(scale));
     this.#root.style.setProperty('--hawk-offset-x', this.#cssLength(offset.x));
@@ -1083,7 +1117,7 @@ export class HawkSearch {
   }
 
   /**
-   * Updates layout params after construction (scale/position/offset/alignment/columns/breakpoint).
+   * Updates layout params after construction, including density-button visibility.
    * @param {Partial<typeof DEFAULT_PARAMS>} params
    */
   setParams(params) {
@@ -1095,33 +1129,76 @@ export class HawkSearch {
     this.#applyParams();
   }
 
+  #schedulePreload() {
+    if (navigator.connection?.saveData) return;
+    const schedule = () => {
+      if (this.#destroyed) return;
+      const run = () => {
+        this.#cancelPreload = null;
+        void this.preload();
+      };
+      if (typeof window.requestIdleCallback === 'function') {
+        const id = window.requestIdleCallback(run, { timeout: 2000 });
+        this.#cancelPreload = () => window.cancelIdleCallback?.(id);
+      } else {
+        const id = setTimeout(run, 0);
+        this.#cancelPreload = () => clearTimeout(id);
+      }
+    };
+    if (document.readyState === 'complete') schedule();
+    else {
+      window.addEventListener('load', schedule, { once: true });
+      this.#cancelPreload = () => window.removeEventListener('load', schedule);
+    }
+  }
+
+  /**
+   * Warms Pagefind and the initial listing without opening or focusing the dialog.
+   * Concurrent calls and an overlapping open share the same initialization.
+   * @returns {Promise<boolean>} Whether Pagefind loaded; false after failure or destruction.
+   */
+  preload() {
+    this.#cancelPreload?.();
+    this.#cancelPreload = null;
+    if (this.#destroyed || !this.#root) return Promise.resolve(false);
+    if (!this.#preloadPromise) {
+      this.#preloadPromise = this.#ensurePagefindLoaded().then((pagefind) => {
+        if (!pagefind && !this.#destroyed) {
+          // A speculative failure must not prevent a user-initiated retry.
+          this.#pagefindLoadPromise = null;
+          this.#preloadPromise = null;
+        }
+        return Boolean(pagefind) && !this.#destroyed;
+      });
+    }
+    return this.#preloadPromise;
+  }
+
   async #ensurePagefindLoaded() {
-    if (this.#pagefind) {
-      return this.#pagefind;
-    }
-    if (this.#injectedPagefind) {
-      this.#pagefind = this.#injectedPagefind;
-      await this.#configurePagefind(this.#pagefind);
-      await this.#deriveTabs();
-      await this.#afterPagefindReady();
-      return this.#pagefind;
-    }
+    if (this.#destroyed) return null;
+    if (this.#pagefind) return this.#pagefind;
     if (!this.#pagefindLoadPromise) {
-      this.#pagefindLoadPromise = import(/* @vite-ignore */ `${this.indexBasePath}pagefind.js`)
+      const load = this.#injectedPagefind
+        ? Promise.resolve(this.#injectedPagefind)
+        : import(/* @vite-ignore */ `${this.indexBasePath}pagefind.js`);
+      this.#pagefindLoadPromise = load
         .then(async (mod) => {
-          await this.#configurePagefind(mod, { basePath: this.indexBasePath });
+          if (this.#destroyed) return null;
+          await this.#configurePagefind(
+            mod,
+            this.#injectedPagefind ? {} : { basePath: this.indexBasePath }
+          );
+          if (this.#destroyed) return null;
+          this.#pagefindError = null;
           this.#pagefind = mod;
           await this.#deriveTabs();
+          if (this.#destroyed) return null;
           await this.#afterPagefindReady();
           return mod;
         })
         .catch((err) => {
-          // A 404/network failure loading Pagefind's own runtime — `this.#pagefind` stays null,
-          // so callers' existing `if (!this.#pagefind) return;` guards already no-op correctly.
-          // This promise resolving (not rejecting) to null is what keeps that guard sufficient —
-          // without it, every `await this.#ensurePagefindLoaded()` call site would need its own
-          // try/catch instead of one shared one here. Cached like a success, so a failed load
-          // isn't retried on every keystroke.
+          if (this.#destroyed) return null;
+          this.#pagefind = null;
           this.#pagefindError = err;
           this.#renderLoadError();
           return null;
@@ -1394,6 +1471,7 @@ export class HawkSearch {
   }
 
   async #executeSearch(query) {
+    if (this.#destroyed) return;
     this.#query = query;
     this.#renderDiscovery('loading');
     // A search call resolving out of the order it started in is a real race, not a hypothetical
@@ -1405,7 +1483,7 @@ export class HawkSearch {
     // staleness guard for the same reason.
     const generation = ++this.#searchGeneration;
     await this.#ensurePagefindLoaded();
-    if (!this.#pagefind) {
+    if (!this.#pagefind || this.#destroyed) {
       return;
     }
 
@@ -2140,6 +2218,9 @@ export class HawkSearch {
 
   /** Opens the search modal and focuses the input. */
   open() {
+    if (this.#destroyed) return;
+    this.#cancelPreload?.();
+    this.#cancelPreload = null;
     clearTimeout(this.#revealTimer);
     delete this.#root.dataset.hawkAnimState;
     this.#root.hidden = false;
@@ -2233,6 +2314,10 @@ export class HawkSearch {
 
   /** Removes the modal from the DOM and detaches listeners. */
   destroy() {
+    this.#destroyed = true;
+    this.#searchGeneration++;
+    this.#cancelPreload?.();
+    this.#cancelPreload = null;
     this.#stopPreviewAnimations();
     if (this.#placeholderController) {
       this.#animation.stop(this.#placeholderController);

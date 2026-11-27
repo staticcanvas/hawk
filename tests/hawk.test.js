@@ -242,6 +242,64 @@ describe('density', () => {
     hawk.destroy();
   });
 
+  it('can omit individual size buttons without changing the configured layout', () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      params: { density: 'compact' },
+      headerControls: { density: { compact: false } },
+    });
+    const buttons = [...document.querySelectorAll('.hawk-density-btn')];
+    expect(buttons.map((button) => button.dataset.density)).toEqual(['fit', 'medium']);
+    expect(document.getElementById(hawk.id).dataset.hawkDensity).toBe('compact');
+    buttons[1].click();
+    expect(hawk.params.density).toBe('medium');
+    expect(buttons[1].getAttribute('aria-pressed')).toBe('true');
+    hawk.destroy();
+  });
+
+  it('omits an empty size group while keeping the close control', () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      headerControls: { density: { fit: false, medium: false, compact: false } },
+    });
+    expect(document.querySelector('.hawk-density-toggle')).toBeNull();
+    expect(document.querySelector('.hawk-modal-esc')).not.toBeNull();
+    hawk.destroy();
+  });
+
+  it('can hide and restore configured size buttons on an existing instance', () => {
+    const hawk = new HawkSearch({
+      pagefind: mockPagefind(),
+      params: { allowDensityToggle: false, density: 'medium' },
+      headerControls: { density: { fit: false } },
+    });
+    expect(document.querySelector('.hawk-density-toggle')).toBeNull();
+    hawk.setParams({ allowDensityToggle: true });
+    expect(
+      [...document.querySelectorAll('.hawk-density-btn')].map((button) => button.dataset.density)
+    ).toEqual(['medium', 'compact']);
+    document.querySelector('[data-density="compact"]').click();
+    expect(hawk.params.density).toBe('compact');
+    expect(localStorage.getItem('hawk:density')).toBe('compact');
+    hawk.setParams({ allowDensityToggle: false });
+    expect(document.querySelector('.hawk-density-toggle')).toBeNull();
+    expect(hawk.params.density).toBe('compact');
+    hawk.setParams({ allowDensityToggle: true });
+    const compact = document.querySelector('[data-density="compact"]');
+    expect(compact.getAttribute('aria-pressed')).toBe('true');
+    document.querySelector('[data-density="medium"]').click();
+    expect(hawk.params.density).toBe('medium');
+    hawk.destroy();
+  });
+
+  it('keeps header configuration authoritative when the runtime density toggle is enabled', () => {
+    const hawk = new HawkSearch({ pagefind: mockPagefind(), headerControls: { density: false } });
+    hawk.setParams({ allowDensityToggle: false });
+    hawk.setParams({ allowDensityToggle: true });
+    expect(document.querySelector('.hawk-density-toggle')).toBeNull();
+    hawk.destroy();
+  });
+
   it('supports a minimal search header with all right-side controls hidden', () => {
     const hawk = new HawkSearch({ pagefind: mockPagefind(), headerControls: false });
     expect(document.querySelector('.hawk-density-toggle')).toBeNull();

@@ -21,7 +21,13 @@
 
 /** Theme plugin that applies Hawk's `typeflow` data attribute and CSS token interface. @type {HawkTheme} */
 export const HawkThemeTypeflow = {
+  /** @type {string} Stable registration name used by Hawk's theme registry. */
   name: 'typeflow',
+  /**
+   * Selects TypeFlow styles through the root data attribute; CSS is loaded separately.
+   * @param {HTMLElement} rootEl Hawk root element receiving the theme attribute.
+   * @returns {void}
+   */
   apply(rootEl) {
     rootEl.dataset.hawkTheme = 'typeflow';
   },

@@ -5,6 +5,7 @@
  */
 
 [data-hawk-theme-preset='pastel-dusk'] {
+  color-scheme: dark;
   --hawk-bg-canvas: #191724;
   --hawk-bg-surface: #1f1d2e;
   --hawk-bg-surface-elevated: #26233a;

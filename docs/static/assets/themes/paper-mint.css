@@ -5,6 +5,7 @@
  */
 
 [data-hawk-theme-preset='paper-mint'] {
+  color-scheme: light;
   --hawk-bg-canvas: #f5faf8;
   --hawk-bg-surface: #ffffff;
   --hawk-bg-surface-elevated: #e9f4f0;

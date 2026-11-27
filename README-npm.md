@@ -9,6 +9,10 @@
 
 > Themeable, pluggable command-palette search UI for static sites, powered by Pagefind.
 
+Hawk provides a search dialog with keyboard navigation, page previews, configurable
+size controls, theme tokens, and optional TypeFlow animation. Pagefind supplies the
+index and ranking; Hawk renders the results and handles the dialog interaction.
+
 ---
 
 > 🔹 Read the full documentation [here](https://staticcanvas.github.io/hawk/)
@@ -56,6 +60,7 @@ new HawkSearch({
   index: '/pagefind/',
   triggerSelector: '[data-search-trigger]',
   theme: 'typeflow',
+  preload: true,
   resultHydrationConcurrency: 6,
   maxCandidateResults: 54,
   showResultDate: true,
@@ -66,6 +71,21 @@ new HawkSearch({
 
 Any element matching `triggerSelector` opens the modal. No other markup is required — hawk builds
 its own DOM.
+
+`preload: true` warms search during idle time after page load, without opening the
+dialog. It honors Save-Data. The library keeps lazy loading as the default; call
+`await search.preload()` when the host application needs to control the timing.
+Concurrent preloads and opening share initialization, and a failed preload can be
+retried when the visitor opens search.
+
+To keep selected size controls visible instead of the input-only header above:
+
+```js
+new HawkSearch({
+  index: '/pagefind/',
+  headerControls: { density: { fit: false, medium: true, compact: true } },
+});
+```
 
 Result fragments load through a bounded, ordered concurrency pool and render progressively. The
 defaults allow 6 simultaneous Pagefind `data()` calls and inspect at most `maxResults * 3`

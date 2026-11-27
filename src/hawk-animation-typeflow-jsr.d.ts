@@ -9,13 +9,13 @@ import type { TypeFlowConfig, TypeFlowRotateConfig } from 'jsr:@staticcanvas/typ
 
 /** Configuration overrides for each animated Hawk surface. */
 export interface HawkAnimationTypeflowOptions {
-  /** TypeFlow configuration for page-title reveals. */
+  /** Page-title overrides; omitted fields keep the zoom-in-space, left, 2 ms baseline. */
   title?: TypeFlowConfig;
-  /** TypeFlow configuration for anchor/section-title reveals. */
+  /** Anchor-title overrides; defaults match the page-title baseline. */
   anchorTitle?: TypeFlowConfig;
-  /** TypeFlow configuration for HTML-aware preview-content reveals. */
+  /** Preview overrides; HTML mode and the preview tag allow-list are enabled by default. */
   content?: TypeFlowConfig;
-  /** TypeFlow configuration for rotating search placeholders. */
+  /** Placeholder overrides; nested typeConfig/eraseConfig merge with their own defaults. */
   rotate?: TypeFlowRotateConfig;
 }
 

@@ -98,6 +98,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     assets: bundles,
     template: readFileSync(new URL('../.github/release-body-template.md', import.meta.url), 'utf8'),
     fallbackNotes: existsSync('release-notes.md') ? readFileSync('release-notes.md', 'utf8') : '',
+    packageReadme: readFileSync('README-npm.md', 'utf8'),
   });
   for (const asset of metadata.metadataAssets) {
     writeFileSync(resolve('dist/hawk', asset.name), asset.data);

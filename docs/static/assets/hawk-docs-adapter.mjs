@@ -220,6 +220,13 @@ const TEMPLATE_VARIANTS = Object.freeze([
   Object.freeze({ position: 'center', density: 'medium', revealAnimation: 'spring' }),
 ]);
 
+/** Derives translucent state colors from a template's existing six-digit palette. */
+function paletteAlpha(hex, opacity) {
+  if (!/^#[\da-f]{6}$/i.test(hex)) return hex;
+  const channels = [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
+  return `rgba(${channels.join(', ')}, ${opacity})`;
+}
+
 /**
  * Maps the shared `/theme-templates/*.json` palette schema (`{colors: {ui, syntax}, mode,
  * name, license}`) to Hawk's complete `--hawk-*` theme-token interface, plus a deterministic
@@ -239,7 +246,8 @@ export function createHawkGalleryThemeFromTemplate(id, template) {
   const syntax = template?.colors?.syntax;
   if (!HAWK_GALLERY_TEMPLATE_IDS.includes(id) || !ui || !syntax) return null;
   const alternateAccent = syntax.function === ui.accent ? syntax.string : syntax.function;
-  const variant = TEMPLATE_VARIANTS[HAWK_GALLERY_TEMPLATE_IDS.indexOf(id) % TEMPLATE_VARIANTS.length];
+  const variant =
+    TEMPLATE_VARIANTS[HAWK_GALLERY_TEMPLATE_IDS.indexOf(id) % TEMPLATE_VARIANTS.length];
   const shadowTint = template.mode === 'light' ? 'rgb(26 26 26 / 0.16)' : 'rgb(0 0 0 / 0.48)';
   return Object.freeze({
     id,
@@ -249,7 +257,7 @@ export function createHawkGalleryThemeFromTemplate(id, template) {
       '--hawk-bg-canvas': ui.bg,
       '--hawk-bg-surface': ui.bgAlt,
       '--hawk-bg-surface-elevated': ui.bgElev,
-      '--hawk-border-subtle': ui.border,
+      '--hawk-border-subtle': paletteAlpha(ui.border, 0.65),
       '--hawk-border-default': ui.border,
       '--hawk-border-strong': ui.textFaint,
       '--hawk-text-primary': ui.text,
@@ -257,16 +265,16 @@ export function createHawkGalleryThemeFromTemplate(id, template) {
       '--hawk-text-muted': ui.textFaint,
       '--hawk-accent': ui.accent,
       '--hawk-accent-alt': alternateAccent,
-      '--hawk-accent-dim': ui.selection,
-      '--hawk-accent-glow': ui.selection,
-      '--hawk-accent-alt-dim': ui.selection,
-      '--hawk-accent-alt-glow': ui.selection,
+      '--hawk-accent-dim': paletteAlpha(ui.accent, 0.1),
+      '--hawk-accent-glow': paletteAlpha(ui.accent, 0.18),
+      '--hawk-accent-alt-dim': paletteAlpha(alternateAccent, 0.1),
+      '--hawk-accent-alt-glow': paletteAlpha(alternateAccent, 0.16),
       '--hawk-backdrop': template.mode === 'light' ? 'rgb(26 26 26 / 0.28)' : 'rgb(0 0 0 / 0.72)',
-      '--hawk-preview-bg': ui.bgAlt,
-      '--hawk-shadow': `0 24px 64px ${shadowTint}, 0 0 0 1px ${ui.selection}`,
+      '--hawk-preview-bg': ui.bg,
+      '--hawk-shadow': `0 2px 8px ${paletteAlpha(ui.bg, 0.16)}, 0 24px 64px ${shadowTint}, inset 0 1px 0 ${paletteAlpha(ui.text, 0.04)}`,
       '--hawk-mark-bg': ui.selection,
       '--hawk-mark-color': ui.text,
-      '--hawk-scrollbar-thumb': ui.textFaint,
+      '--hawk-scrollbar-thumb': paletteAlpha(ui.textFaint, 0.45),
       '--hawk-scrollbar-thumb-active': ui.accent,
       '--hawk-powered-by-color': ui.textMuted,
     }),
@@ -364,10 +372,11 @@ export async function loadAllHawkGalleryThemes(templateBaseUrl = 'assets/theme-t
  *   createHawkDocsTheme('gallery-nightforge', theme.tokens, 'typeflow', theme.id)
  * );
  */
-export function createHawkDocsTheme(name, tokens = {}, baseTheme = 'typeflow', presetId = null) {
+export function createHawkDocsTheme(name, tokens = {}, baseTheme = 'typeflow', presetId = null, colorMode = null) {
   return {
     name,
     apply(element) {
+      element.style.colorScheme = colorMode || '';
       if (baseTheme) element.dataset.hawkTheme = baseTheme;
       else delete element.dataset.hawkTheme;
       if (presetId) element.dataset.hawkThemePreset = presetId;

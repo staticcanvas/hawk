@@ -1,5 +1,7 @@
 ${RELEASE_NOTES}
 
+${PACKAGE_README}
+
 ## **Package Links**
 
 ### ▪️ NPM Registry

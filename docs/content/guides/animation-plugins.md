@@ -50,6 +50,22 @@ new HawkSearch({ index: '/pagefind/', animation: 'typeflow' });
 The adapter imports the released `@staticcanvas/typeflow` package directly. For advanced
 configuration, `createHawkAnimationTypeflow(TypeFlow, options)` remains available as a factory.
 
+### TypeFlow configuration groups
+
+Each option is optional. Overrides apply to the named surface; omitted fields keep the
+built-in defaults. npm and JSR expose the same groups.
+
+| Option        | Type                   | Default                                                               | Surface                    |
+| ------------- | ---------------------- | --------------------------------------------------------------------- | -------------------------- |
+| `title`       | `TypeFlowConfig`       | `zoom-in-space`, left, 2 ms, no cursor, reduced-motion support        | Page titles                |
+| `anchorTitle` | `TypeFlowConfig`       | Same baseline as `title`                                              | Heading and section titles |
+| `content`     | `TypeFlowConfig`       | Same reveal baseline, HTML enabled with the preview tag allow-list    | Preview content            |
+| `rotate`      | `TypeFlowRotateConfig` | 3000 ms hold, 200 ms pause, baseline type reveal, `end` erase at 2 ms | Placeholder overlay        |
+
+`rotate.typeConfig` and `rotate.eraseConfig` are merged separately with their defaults.
+Controllers returned by any animated surface are passed back to the driver's `stop()`
+before rerendering or destroying the search instance.
+
 ### TypeFlow reveal styles
 
 The factory accepts complete TypeFlow configuration objects for `title`, `anchorTitle`,

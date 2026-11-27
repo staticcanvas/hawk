@@ -33,6 +33,51 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(modal).toBeHidden();
   });
 
+  test('warms the production index before opening search without taking focus', async ({
+    page,
+  }) => {
+    const moduleRequests = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname.endsWith('/pagefind.js'))
+        moduleRequests.push(request.url());
+    });
+    await page.goto('getting-started/index.html');
+    await expect(page.locator('.hawk-result-item').first()).toBeAttached();
+    await expect(page.locator('.hawk-modal')).toBeHidden();
+    await expect(page.locator('.hawk-modal-input')).not.toBeFocused();
+    expect(moduleRequests).toHaveLength(1);
+    await page.locator('[data-search-trigger]').first().click();
+    await expect(page.locator('.hawk-modal')).toBeVisible();
+    await expect(page.locator('.hawk-result-item').first()).toBeVisible();
+    expect(moduleRequests).toHaveLength(1);
+  });
+
+  test('playground can omit individual size buttons in its live preview', async ({ page }) => {
+    await page.goto('playground/index.html');
+    await page.locator('#pg-size-compact').uncheck();
+    await page.locator('[data-playground-trigger]').first().click();
+    const preview = page.locator('#hawk-playground-search');
+    await expect(preview).toBeVisible();
+    await expect(preview.locator('[data-density="compact"]')).toHaveCount(0);
+    await expect(preview.locator('[data-density="fit"]')).toBeVisible();
+    await expect(preview.locator('[data-density="medium"]')).toBeVisible();
+  });
+
+  test('opening search can retry a failed background module request', async ({ page }) => {
+    let requests = 0;
+    await page.route('**/pagefind.js*', async (route) => {
+      requests++;
+      if (requests === 1) await route.abort();
+      else await route.continue();
+    });
+    await page.goto('getting-started/index.html');
+    await expect(page.locator('.hawk-load-error')).toBeAttached();
+    await expect(page.locator('.hawk-modal')).toBeHidden();
+    await page.locator('[data-search-trigger]').first().click();
+    await expect(page.locator('.hawk-result-item').first()).toBeVisible();
+    expect(requests).toBe(2);
+  });
+
   test('documentation code blocks expose a working copy control', async ({ page }) => {
     await page.addInitScript(() => {
       Object.defineProperty(navigator, 'clipboard', {
@@ -349,6 +394,35 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(page.locator('#pg-reveal-animation')).toHaveValue('fade');
     await expect(page.locator('[data-hawk-token="--hawk-accent"]')).toHaveValue('#008f6c');
     await expect(page.locator('[data-hawk-token="--hawk-bg-canvas"]')).toHaveValue('#f5faf8');
+  });
+
+  test('template themes keep preview surfaces distinct in dark and light palettes', async ({
+    page,
+  }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('themes/index.html');
+    for (const theme of ['metro-dark', 'glacier-blue']) {
+      await page.locator(`[data-gallery-theme="${theme}"]`).click();
+      const modal = page.locator('.hawk-modal:visible');
+      const input = modal.locator('.hawk-modal-input');
+      await expect(input).toBeFocused();
+      await input.fill('frontmatter');
+      await expect(modal.locator('.hawk-result-item').first()).toBeVisible();
+      await page.waitForLoadState('networkidle');
+      const surfaces = await modal.evaluate((root) => ({
+        dialog: getComputedStyle(root.querySelector('.hawk-modal-dialog')).backgroundColor,
+        preview: getComputedStyle(root.querySelector('.hawk-preview-pane')).backgroundColor,
+      }));
+      expect(surfaces.preview).not.toBe(surfaces.dialog);
+      await expect(modal.locator('.hawk-modal-input')).toHaveCSS('color-scheme', theme === 'glacier-blue' ? 'light' : 'dark');
+      const inheritedTabAccent = await modal.evaluate((root) => getComputedStyle(root.querySelector('[data-filter="all"]')).getPropertyValue('--hawk-tab-accent').trim());
+      expect(inheritedTabAccent).toBe('');
+      await modal
+        .locator('.hawk-modal-dialog')
+        .screenshot({ path: testInfo.outputPath(`${theme}.png`), animations: 'disabled' });
+      await page.keyboard.press('Escape');
+      await expect(modal).toBeHidden();
+    }
   });
 
   test('playground TypeFlow controls use the Hawk wrapper defaults', async ({ page }) => {

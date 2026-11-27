@@ -50,6 +50,7 @@ export function generateReleaseMetadata({
   template,
   commits = [],
   fallbackNotes = '',
+  packageReadme,
   assets,
 }) {
   if (!assets.length) throw new Error('No release bundles found.');
@@ -64,6 +65,7 @@ export function generateReleaseMetadata({
   );
   const values = {
     RELEASE_NOTES: notes,
+    PACKAGE_README: packageReadme || '',
     PACKAGE_NAME: name,
     PROJECT_NAME: projectName,
     PROJECT_VERSION: version,

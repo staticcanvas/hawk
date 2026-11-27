@@ -55,7 +55,7 @@ function renderCss(theme) {
  */
 
 [data-hawk-theme-preset='${theme.id}'] {
-${declarations}
+${theme.colorModes.length === 1 ? `  color-scheme: ${theme.colorModes[0]};\n` : ''}${declarations}
 }
 `;
 }

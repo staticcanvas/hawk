@@ -5,10 +5,11 @@
  */
 
 [data-hawk-theme-preset='solar-flare'] {
+  color-scheme: dark;
   --hawk-bg-canvas: #171310;
   --hawk-bg-surface: #1e1812;
   --hawk-bg-surface-elevated: #292018;
-  --hawk-border-subtle: #3d2f1e;
+  --hawk-border-subtle: rgba(61, 47, 30, 0.65);
   --hawk-border-default: #3d2f1e;
   --hawk-border-strong: #8f7854;
   --hawk-text-primary: #f7ecd9;
@@ -16,16 +17,16 @@
   --hawk-text-muted: #8f7854;
   --hawk-accent: #f2b705;
   --hawk-accent-alt: #e2a53a;
-  --hawk-accent-dim: #4a3a1e;
-  --hawk-accent-glow: #4a3a1e;
-  --hawk-accent-alt-dim: #4a3a1e;
-  --hawk-accent-alt-glow: #4a3a1e;
+  --hawk-accent-dim: rgba(242, 183, 5, 0.1);
+  --hawk-accent-glow: rgba(242, 183, 5, 0.18);
+  --hawk-accent-alt-dim: rgba(226, 165, 58, 0.1);
+  --hawk-accent-alt-glow: rgba(226, 165, 58, 0.16);
   --hawk-backdrop: rgb(0 0 0 / 0.72);
-  --hawk-preview-bg: #1e1812;
-  --hawk-shadow: 0 24px 64px rgb(0 0 0 / 0.48), 0 0 0 1px #4a3a1e;
+  --hawk-preview-bg: #171310;
+  --hawk-shadow: 0 2px 8px rgba(23, 19, 16, 0.16), 0 24px 64px rgb(0 0 0 / 0.48), inset 0 1px 0 rgba(247, 236, 217, 0.04);
   --hawk-mark-bg: #4a3a1e;
   --hawk-mark-color: #f7ecd9;
-  --hawk-scrollbar-thumb: #8f7854;
+  --hawk-scrollbar-thumb: rgba(143, 120, 84, 0.45);
   --hawk-scrollbar-thumb-active: #f2b705;
   --hawk-powered-by-color: #c9ab7c;
 }

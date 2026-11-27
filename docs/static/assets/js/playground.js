@@ -472,9 +472,16 @@ function currentHawkConfig(animationName) {
         : undefined) // undefined, not [] — falls through to hawk.js's own built-in pastel default
       : false,
     headerControls: {
-      density: checked('pg-header-density'),
+      density: checked('pg-header-density')
+        ? {
+            fit: checked('pg-size-fit'),
+            medium: checked('pg-size-medium'),
+            compact: checked('pg-size-compact'),
+          }
+        : false,
       escape: checked('pg-header-escape'),
     },
+    preload: checked('pg-preload'),
     poweredByHref: val('pg-powered-href').trim() || 'https://pagefind.app/',
     enablePins: checked('pg-pins'),
     pinStorageKey: val('pg-pin-key').trim(),
@@ -692,7 +699,7 @@ async function mount() {
   if (radio('pg-theme') !== 'none') {
     HawkSearch.registerTheme(
       'playground-typeflow',
-      createHawkDocsTheme('playground-typeflow', currentThemeTokens())
+      createHawkDocsTheme('playground-typeflow', currentThemeTokens(), 'typeflow', activePreset?.id || null, activePreset?.colorModes?.length === 1 ? activePreset.colorModes[0] : null)
     );
   }
   search = new HawkSearch(currentHawkConfig(resolvedAnimation));

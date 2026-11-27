@@ -32,7 +32,9 @@
   --hawk-accent-alt-glow: rgba(41, 255, 198, 0.18);
   --hawk-backdrop: rgba(26, 34, 39, 0.82);
   --hawk-preview-bg: rgba(47, 60, 69, 0.78);
-  --hawk-shadow: 0 24px 64px rgba(10, 16, 19, 0.48), 0 0 0 1px var(--hawk-accent-dim);
+  --hawk-shadow:
+    0 2px 8px rgba(10, 16, 19, 0.22), 0 24px 64px rgba(10, 16, 19, 0.48),
+    inset 0 1px 0 rgba(244, 248, 247, 0.04);
   --hawk-radius: 14px;
 }
 
@@ -56,7 +58,9 @@
   --hawk-accent-alt-glow: rgba(0, 167, 123, 0.16);
   --hawk-backdrop: rgba(15, 23, 42, 0.35);
   --hawk-preview-bg: rgba(241, 245, 249, 0.75);
-  --hawk-shadow: 0 24px 64px rgba(15, 23, 42, 0.18), 0 0 0 1px var(--hawk-accent-dim);
+  --hawk-shadow:
+    0 2px 8px rgba(15, 23, 42, 0.06), 0 24px 64px rgba(15, 23, 42, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 /* Follow the OS only when the host has not declared a theme. Explicit host state remains the
@@ -80,6 +84,8 @@
     --hawk-accent-alt-glow: rgba(0, 167, 123, 0.16);
     --hawk-backdrop: rgba(15, 23, 42, 0.35);
     --hawk-preview-bg: rgba(241, 245, 249, 0.75);
-    --hawk-shadow: 0 24px 64px rgba(15, 23, 42, 0.18), 0 0 0 1px var(--hawk-accent-dim);
+    --hawk-shadow:
+      0 2px 8px rgba(15, 23, 42, 0.06), 0 24px 64px rgba(15, 23, 42, 0.14),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
   }
 }

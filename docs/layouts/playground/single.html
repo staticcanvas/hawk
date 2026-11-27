@@ -293,11 +293,15 @@
           <label data-lume="config.params.breakpoint — viewport width below which the modal forces a single column.">breakpoint <input type="number" id="pg-breakpoint" value="768" min="320" max="1600" class="pg-number"> px</label>
           <label data-lume="config.params.allowDensityToggle — lets the visitor switch density from the modal header."><input type="checkbox" id="pg-density-toggle" checked> density toggle</label>
           <label data-lume="config.headerControls.density — shows the Fit/Medium/Compact group in the header."><input type="checkbox" id="pg-header-density" checked> show density control</label>
+          <label data-lume="config.headerControls.density.fit — shows the Fit size button."><input type="checkbox" id="pg-size-fit" checked> Fit button</label>
+          <label data-lume="config.headerControls.density.medium — shows the Medium size button."><input type="checkbox" id="pg-size-medium" checked> Medium button</label>
+          <label data-lume="config.headerControls.density.compact — shows the Compact size button."><input type="checkbox" id="pg-size-compact" checked> Compact button</label>
           <label data-lume="config.headerControls.escape — shows the Escape button in the header."><input type="checkbox" id="pg-header-escape" checked> show Escape control</label>
         </details>
 
         <details class="pg-section pg-card-wide" open>
           <summary data-lume="Index, trigger, tabs, previews, and discovery-row options.">Hawk search behavior</summary>
+          <label data-lume="config.preload — warms search during idle time after page load without opening the dialog."><input type="checkbox" id="pg-preload"> preload search after page load</label>
           <label data-lume="config.index — the Pagefind index URL to search against.">index <input type="text" id="pg-index" value="{{ "pagefind/" | relURL }}" class="pg-text pg-text-wide"></label>
           <label data-lume="config.id — the modal's own DOM id, also used to namespace ARIA ids.">instance id <input type="text" id="pg-id" value="hawk-playground-search" class="pg-text"></label>
           <label data-lume="config.triggerSelector — elements that open the modal on click.">trigger selector <input type="text" id="pg-trigger-selector" value="[data-playground-trigger]" class="pg-text pg-text-wide"></label>

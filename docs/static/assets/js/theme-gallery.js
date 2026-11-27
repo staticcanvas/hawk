@@ -83,7 +83,7 @@ gallery.addEventListener('click', (event) => {
   activePreview = new HawkSearch({
     index: document.body.dataset.hawkIndex,
     triggerSelector: '[data-gallery-trigger-unused]',
-    theme: createHawkDocsTheme(`gallery-${definition.id}`, definition.tokens, 'typeflow', definition.id),
+    theme: createHawkDocsTheme(`gallery-${definition.id}`, definition.tokens, 'typeflow', definition.id, definition.colorModes.length === 1 ? definition.colorModes[0] : null),
     animation: 'typeflow',
     params: definition.params,
     revealAnimation: definition.revealAnimation,

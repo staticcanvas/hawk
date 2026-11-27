@@ -8,7 +8,11 @@
 export interface HawkTheme {
   /** Stable theme registration name. */
   name: string;
-  /** Applies the theme to a Hawk root element. */
+  /**
+   * Applies theme attributes or styles to the Hawk root.
+   * @param rootEl Hawk root element owned by the search instance.
+   * @returns No value; stylesheets may be loaded separately by the consumer.
+   */
   apply(rootEl: HTMLElement): void;
   /** Optional CSS custom-property overrides. */
   tokens?: Record<string, string>;
@@ -16,13 +20,35 @@ export interface HawkTheme {
 
 /** Animation-driver interface used for result and placeholder transitions. */
 export interface HawkAnimationDriver {
-  /** Renders or animates a result title. */
+  /**
+   * Renders or animates a result title.
+   * @param el Result-title element owned by Hawk.
+   * @param text Plain page or anchor title.
+   * @param options Identifies heading/anchor results for drivers with a separate title style.
+   * @returns A driver-specific controller, or null for synchronous rendering.
+   */
   typeTitle(el: HTMLElement, text: string, options?: { isAnchor?: boolean }): unknown;
-  /** Renders or animates result-preview HTML. */
+  /**
+   * Renders or animates result-preview HTML.
+   * @param el Preview-content container owned by Hawk.
+   * @param html Preview HTML prepared by the caller.
+   * @param options Driver-specific rendering options.
+   * @returns A driver-specific controller, or null for synchronous rendering.
+   */
   typeContent(el: HTMLElement, html: string, options?: Record<string, unknown>): unknown;
-  /** Rotates the search-input placeholder strings. */
+  /**
+   * Displays or rotates the search-input placeholder strings.
+   * @param el Placeholder overlay element, not the input's native placeholder attribute.
+   * @param strings Placeholder messages in display order; an empty list clears the overlay.
+   * @param options Driver-specific rotation options.
+   * @returns A driver-specific controller, or null for synchronous rendering.
+   */
   rotatePlaceholder(el: HTMLElement, strings: string[], options?: Record<string, unknown>): unknown;
-  /** Stops a controller previously returned by this driver. */
+  /**
+   * Stops a controller previously returned by this driver before rerendering or destruction.
+   * @param controller Previous driver return value, including null.
+   * @returns No value.
+   */
   stop(controller: unknown): void;
 }
 
@@ -35,6 +61,7 @@ export interface HawkParams {
   columns?: 1 | 2;
   breakpoint?: number;
   density?: 'fit' | 'medium' | 'compact';
+  /** Show available size buttons; can also be changed with setParams(). Defaults to true. */
   allowDensityToggle?: boolean;
   verticalFit?: boolean;
 }
@@ -144,6 +171,8 @@ export interface HawkTriggerConfig {
 
 /** Complete configuration accepted by {@link HawkSearch}. */
 export interface HawkSearchConfig {
+  /** Warm search during idle time after page load. Defaults to false; honors Save-Data. */
+  preload?: boolean;
   index?: string;
   pagefind?: Record<string, unknown>;
   id?: string;
@@ -173,7 +202,13 @@ export interface HawkSearchConfig {
   resultAccentColors?: string[] | false;
   tagAccentColors?: string[] | false;
   showSubpageConnector?: boolean;
-  headerControls?: false | { density?: boolean; escape?: boolean };
+  /** Hide the header controls or individual size buttons. Omitted controls remain enabled. */
+  headerControls?:
+    | false
+    | {
+        density?: boolean | { fit?: boolean; medium?: boolean; compact?: boolean };
+        escape?: boolean;
+      };
   excludePages?: string | string[];
   contentSelector?: string;
   disableDefaultMarkdownStyles?: boolean;
@@ -232,6 +267,8 @@ export declare class HawkSearch {
   readonly state: HawkState;
   /** Updates layout parameters without rebuilding the instance. */
   setParams(params: Partial<HawkParams>): void;
+  /** Warm search without opening it; concurrent callers share work. False means unavailable. */
+  preload(): Promise<boolean>;
   /** Opens the search interface. */
   open(): void;
   /** Closes the search interface. */

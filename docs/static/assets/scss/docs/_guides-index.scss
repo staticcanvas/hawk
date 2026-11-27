@@ -390,15 +390,15 @@
   color: var(--hawk-accent, var(--site-green));
 }
 
-.hawk-filter-pill[data-filter='all'] {
+[data-hawk-docs-search] .hawk-filter-pill[data-filter='all'] {
   --hawk-tab-accent: #7ee8c6;
 }
 
-.hawk-filter-pill[data-filter='pinned'] {
+[data-hawk-docs-search] .hawk-filter-pill[data-filter='pinned'] {
   --hawk-tab-accent: #29ffc6;
 }
 
-.hawk-filter-pill[data-filter='recently-viewed'] {
+[data-hawk-docs-search] .hawk-filter-pill[data-filter='recently-viewed'] {
   --hawk-tab-accent: #0cebeb;
 }
 

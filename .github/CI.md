@@ -56,6 +56,9 @@ when there are no classified entries. The release checkout fetches full history.
 It finds existing drafts in the authenticated releases list, then uploads and
 publishes by release ID, avoiding another lookup by tag after draft creation.
 The release body uses the extracted `.github/release-body-template.md`.
+It also includes `README-npm.md` as the package description, as requested after
+the template restoration. Release notes and the original package-link/usage
+sections are retained.
 
 `npm run check:package -- dist/hawk` verifies that the staged `README.md` matches
 `README-npm.md`, the staged package identity/version matches the checkout, and
