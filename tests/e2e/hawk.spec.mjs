@@ -5,6 +5,39 @@ const packageDocument = JSON.parse(
   readFileSync(new URL('../../package.json', import.meta.url), 'utf8')
 );
 
+// Start on a blank page so the shared homepage setup cannot preload Pagefind first.
+test('warms the production index before opening search without taking focus', async ({ page }) => {
+  const moduleRequests = [];
+  page.on('request', (request) => {
+    if (new URL(request.url()).pathname.endsWith('/pagefind.js'))
+      moduleRequests.push(request.url());
+  });
+  await page.goto('getting-started/index.html');
+  await expect(page.locator('.hawk-result-item').first()).toBeAttached();
+  await expect(page.locator('.hawk-modal')).toBeHidden();
+  await expect(page.locator('.hawk-modal-input')).not.toBeFocused();
+  expect(moduleRequests).toHaveLength(1);
+  await page.locator('[data-search-trigger]').first().click();
+  await expect(page.locator('.hawk-modal')).toBeVisible();
+  await expect(page.locator('.hawk-result-item').first()).toBeVisible();
+  expect(moduleRequests).toHaveLength(1);
+});
+
+test('opening search can retry a failed background module request', async ({ page }) => {
+  let requests = 0;
+  await page.route((url) => url.pathname.endsWith('/pagefind.js'), async (route) => {
+    requests++;
+    if (requests === 1) await route.abort();
+    else await route.continue();
+  });
+  await page.goto('getting-started/index.html');
+  await expect(page.locator('.hawk-load-error')).toBeAttached();
+  await expect(page.locator('.hawk-modal')).toBeHidden();
+  await page.locator('[data-search-trigger]').first().click();
+  await expect(page.locator('.hawk-result-item').first()).toBeVisible();
+  expect(requests).toBe(2);
+});
+
 /**
  * Real-browser coverage against hawk's own docs site — its actual production mount
  * (docs/layouts/_default/baseof.html), a real built Pagefind index over real content, not a
@@ -33,25 +66,6 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(modal).toBeHidden();
   });
 
-  test('warms the production index before opening search without taking focus', async ({
-    page,
-  }) => {
-    const moduleRequests = [];
-    page.on('request', (request) => {
-      if (new URL(request.url()).pathname.endsWith('/pagefind.js'))
-        moduleRequests.push(request.url());
-    });
-    await page.goto('getting-started/index.html');
-    await expect(page.locator('.hawk-result-item').first()).toBeAttached();
-    await expect(page.locator('.hawk-modal')).toBeHidden();
-    await expect(page.locator('.hawk-modal-input')).not.toBeFocused();
-    expect(moduleRequests).toHaveLength(1);
-    await page.locator('[data-search-trigger]').first().click();
-    await expect(page.locator('.hawk-modal')).toBeVisible();
-    await expect(page.locator('.hawk-result-item').first()).toBeVisible();
-    expect(moduleRequests).toHaveLength(1);
-  });
-
   test('playground can omit individual size buttons in its live preview', async ({ page }) => {
     await page.goto('playground/index.html');
     await page.locator('#pg-size-compact').uncheck();
@@ -61,21 +75,6 @@ test.describe('hawk against a real Pagefind index in a real browser', () => {
     await expect(preview.locator('[data-density="compact"]')).toHaveCount(0);
     await expect(preview.locator('[data-density="fit"]')).toBeVisible();
     await expect(preview.locator('[data-density="medium"]')).toBeVisible();
-  });
-
-  test('opening search can retry a failed background module request', async ({ page }) => {
-    let requests = 0;
-    await page.route('**/pagefind.js*', async (route) => {
-      requests++;
-      if (requests === 1) await route.abort();
-      else await route.continue();
-    });
-    await page.goto('getting-started/index.html');
-    await expect(page.locator('.hawk-load-error')).toBeAttached();
-    await expect(page.locator('.hawk-modal')).toBeHidden();
-    await page.locator('[data-search-trigger]').first().click();
-    await expect(page.locator('.hawk-result-item').first()).toBeVisible();
-    expect(requests).toBe(2);
   });
 
   test('documentation code blocks expose a working copy control', async ({ page }) => {

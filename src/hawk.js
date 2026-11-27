@@ -20,6 +20,7 @@ const themeRegistry = new Map();
 /** @type {Map<string, import('./hawk-animation-instant.js').HawkAnimationDriver>} */
 const animationRegistry = new Map();
 animationRegistry.set('instant', HawkAnimationInstant);
+let pagefindImportRetries = 0;
 
 // Subtle pastel range for config.tagAccentColors' default — distinct enough to tell tags apart
 // at a glance without competing with --hawk-accent or reading as loud/saturated.
@@ -490,6 +491,7 @@ export class HawkSearch {
   #pagefind;
   #pagefindLoadPromise;
   #preloadPromise;
+  #pagefindImportRetry = 0;
   #cancelPreload;
   #destroyed = false;
   #pagefindError;
@@ -1178,9 +1180,14 @@ export class HawkSearch {
     if (this.#destroyed) return null;
     if (this.#pagefind) return this.#pagefind;
     if (!this.#pagefindLoadPromise) {
+      const retry = this.#pagefindImportRetry ? `?hawk-retry=${this.#pagefindImportRetry}` : '';
       const load = this.#injectedPagefind
         ? Promise.resolve(this.#injectedPagefind)
-        : import(/* @vite-ignore */ `${this.indexBasePath}pagefind.js`);
+        : import(/* @vite-ignore */ `${this.indexBasePath}pagefind.js${retry}`).catch((err) => {
+            // Browsers cache module-load failures by URL for the lifetime of the document.
+            this.#pagefindImportRetry = ++pagefindImportRetries;
+            throw err;
+          });
       this.#pagefindLoadPromise = load
         .then(async (mod) => {
           if (this.#destroyed) return null;
